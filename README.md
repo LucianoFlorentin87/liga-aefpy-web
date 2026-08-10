@@ -7,12 +7,11 @@ Incluye sitio público (fixture, resultados, posiciones, goleadores, disciplina,
 equipos, reglamento) y un panel de administración privado con autenticación,
 roles y permisos, para cargar todos los datos del torneo.
 
-> **Sobre el logo:** no se recibió el archivo del logo oficial de la
-> asociación. `src/components/Logo.tsx` dibuja un monograma provisorio
-> ("EF") en la paleta azul marino / rojo / blanco / gris — es el único lugar
-> del código que hay que tocar para reemplazarlo por el logo real (ver
-> comentario en ese archivo). El sitio **no** usa el escudo del Colegio
-> Nacional Juan Manuel Frutos en ningún lado.
+> **Sobre el logo:** se usa el logo oficial de la Asociación Exa Frutos /
+> Liga AEFPY (`public/logo-exa-frutos.png`), consumido por el componente
+> compartido `src/components/Logo.tsx` en header, footer, login, dashboard y
+> favicon. El sitio **no** usa el escudo del Colegio Nacional Juan Manuel
+> Frutos en ningún lado.
 
 ---
 
@@ -22,7 +21,7 @@ roles y permisos, para cargar todos los datos del torneo.
 |---|---|
 | Framework | Next.js 16 (App Router, Server Actions, TypeScript) |
 | Estilos | Tailwind CSS v4 |
-| Base de datos | SQLite en desarrollo (Prisma ORM) — ver sección 8 para producción |
+| Base de datos | Postgres (Prisma ORM) — Supabase en producción, ver sección 8 |
 | Autenticación | Sesión propia con JWT firmado (`jose`) en cookie `httpOnly`, contraseñas con `bcrypt` |
 | Validación | `zod` en todos los formularios y server actions |
 
@@ -95,15 +94,16 @@ Reglas adicionales aplicadas en el servidor:
 
 ## 4. Instalación y desarrollo local
 
-Requisitos: Node.js 20+.
+Requisitos: Node.js 20+ y una base Postgres accesible (la misma de Supabase
+sirve para desarrollar, o una instancia Postgres propia/local).
 
 ```bash
 npm install
 cp .env.example .env
-# Editá .env y generá tu propio SESSION_SECRET:
+# Editá .env: pegá tu DATABASE_URL de Postgres y generá tu propio SESSION_SECRET:
 openssl rand -base64 48
 
-npm run db:migrate     # crea prisma/dev.db y aplica el esquema
+npm run db:migrate     # aplica el esquema (crea las tablas)
 npm run db:seed        # crea los 3 roles fijos + configuración inicial
 
 npm run create:superadmin   # crea tu primer usuario Superadmin (ver sección 5)
@@ -170,46 +170,50 @@ no hay ningún dato escrito a mano en el HTML.
 
 ---
 
-## 8. Base de datos en producción
+## 8. Despliegue (Render + Supabase)
 
-En desarrollo la app usa **SQLite** (`prisma/dev.db`), un archivo local — no
-requiere instalar ni configurar ningún servidor de base de datos aparte.
+### 8.1 Base de datos: Supabase
 
-Esto **no alcanza para producción** si el hosting es serverless (Vercel,
-Netlify Functions, etc.): esas plataformas ejecutan cada request en una
-función con filesystem efímero, así que un archivo SQLite no persiste entre
-invocaciones. Para producción:
+1. Creá una cuenta en [supabase.com](https://supabase.com) → "New Project".
+2. Cuando esté listo: **Project Settings → Database → Connection string →
+   URI**. Copiá esa cadena (empieza con `postgresql://postgres:...`) — es tu
+   `DATABASE_URL`.
 
-1. Contratá una base Postgres administrada (opciones con capa gratuita:
-   [Neon](https://neon.tech), [Supabase](https://supabase.com),
-   [Railway](https://railway.app)).
-2. En `prisma/schema.prisma` cambiá:
-   ```prisma
-   datasource db {
-     provider = "postgresql"   // antes: "sqlite"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. Seteá `DATABASE_URL` con la cadena de conexión de Postgres en las
-   variables de entorno del hosting.
-4. Corré `npx prisma migrate deploy` contra esa base (una sola vez, o como
-   paso de tu pipeline de deploy).
-5. Corré `npm run create:superadmin` apuntando a esa `DATABASE_URL` para
-   crear el primer usuario en producción.
+### 8.2 Hosting: Render
 
-El resto del código no depende del motor de base de datos — es un cambio de
-configuración, no de arquitectura.
+1. Creá una cuenta en [render.com](https://render.com) y conectá tu GitHub.
+2. "New" → "Web Service" → elegís el repo `torneo-exa-frutos`.
+3. Configuración del servicio:
+   - **Runtime**: Node
+   - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npm run build`
+   - **Start Command**: `npm run start`
+   - **Instance Type**: Free (o el que prefieras)
+4. En "Environment Variables" agregá:
+   - `DATABASE_URL` → la cadena de Supabase del paso anterior
+   - `SESSION_SECRET` → un valor generado con `openssl rand -base64 48`
+   - `NODE_ENV` → `production`
+5. "Create Web Service". El primer deploy aplica las migraciones solo
+   (`prisma migrate deploy` corre en el build).
+6. Una vez desplegado, corré `npm run create:superadmin` **apuntando a esa
+   misma `DATABASE_URL`** (desde tu máquina, con esa variable en tu `.env`
+   local) para crear el primer usuario — Render no expone una terminal
+   interactiva gratis, así que este paso se hace desde afuera, una sola vez.
 
-### Subida de archivos (logos de equipos) en producción
+Render te da una URL pública del tipo `https://torneo-exa-frutos.onrender.com`
+apenas termine el deploy.
 
-El logo de cada equipo se guarda en el filesystem local
-(`public/uploads/teams`, ver `src/lib/upload.ts`). Igual que con SQLite, esto
-funciona en desarrollo y en hosting tradicional (una VM/Node persistente),
-pero **no persiste en una función serverless**. Para producción serverless,
-reemplazá `saveTeamLogo()` por una subida a un bucket de almacenamiento
-(S3, Cloudflare R2, Vercel Blob, etc.) y guardá la URL pública resultante en
-`Team.logoUrl` — el resto del sitio (tarjetas de equipo, plantel) ya
-consume `logoUrl` tal cual, sin cambios adicionales.
+### Subida de archivos (logos de equipos)
+
+El logo de cada equipo se guarda en el filesystem del servidor
+(`public/uploads/teams`, ver `src/lib/upload.ts`). Render con un Web Service
+mantiene el proceso corriendo entre requests (a diferencia de una función
+serverless), pero el disco **no es persistente entre deploys** en el plan
+free — un logo subido se pierde en el próximo deploy. Para que sea
+permanente, sumá un [Persistent Disk](https://render.com/docs/disks) de
+Render montado en `public/uploads`, o reemplazá `saveTeamLogo()` por una
+subida a un bucket externo (Supabase Storage, S3, Cloudflare R2) y guardá la
+URL pública en `Team.logoUrl` — el resto del sitio ya consume ese campo tal
+cual.
 
 ---
 

@@ -1,18 +1,16 @@
 // Prisma schema — Torneo Exa Frutos
 //
-// Proveedor por defecto: SQLite (archivo local), ideal para desarrollo y para
-// entornos sin un servicio de base de datos externo. Para producción en
-// Vercel/Netlify (funciones serverless con filesystem efímero) hay que migrar
-// a una base persistente (Postgres). Ver README.md, sección "Base de datos en
-// producción" para el paso a paso de la migración (es un cambio de 2 líneas:
-// `provider` + `DATABASE_URL`).
+// Producción: Postgres (Supabase). DATABASE_URL sale de las variables de
+// entorno — nunca hardcodeada acá. Ver README.md, sección "Despliegue" para
+// el paso a paso (Render + Supabase) y cómo desarrollar en local contra la
+// misma base o una instancia Postgres propia.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
