@@ -15,7 +15,7 @@ export default async function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy-950)] px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex justify-center">
-          <Logo size={44} />
+          <Logo size={44} variant="light" />
         </div>
         <div className="card p-6">
           <p className="eyebrow">Panel de administración</p>
