@@ -175,9 +175,16 @@ no hay ningún dato escrito a mano en el HTML.
 ### 8.1 Base de datos: Supabase
 
 1. Creá una cuenta en [supabase.com](https://supabase.com) → "New Project".
-2. Cuando esté listo: **Project Settings → Database → Connection string →
-   URI**. Copiá esa cadena (empieza con `postgresql://postgres:...`) — es tu
-   `DATABASE_URL`.
+2. Cuando esté listo, click en **"Connect"** (arriba) → pestaña **"ORM"** →
+   elegí **Prisma**. Te da dos variables ya armadas — copiá ambas (con tu
+   contraseña puesta en lugar de `[YOUR-PASSWORD]`):
+   - `DATABASE_URL` → pooler en modo transacción (puerto 6543), la usa la
+     app en runtime.
+   - `DIRECT_URL` → pooler en modo sesión (puerto 5432), la usa Prisma sólo
+     para migraciones.
+
+   (La conexión "directa" de Supabase usa IPv6 por defecto y muchas redes no
+   la alcanzan — por eso el proyecto usa el pooler para las dos.)
 
 ### 8.2 Hosting: Render
 
@@ -185,19 +192,24 @@ no hay ningún dato escrito a mano en el HTML.
 2. "New" → "Web Service" → elegís el repo `torneo-exa-frutos`.
 3. Configuración del servicio:
    - **Runtime**: Node
-   - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npm run build`
+   - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
    - **Start Command**: `npm run start`
    - **Instance Type**: Free (o el que prefieras)
-4. En "Environment Variables" agregá:
-   - `DATABASE_URL` → la cadena de Supabase del paso anterior
+4. En "Environment Variables" agregá las tres variables de Supabase del
+   paso anterior (`DATABASE_URL`, `DIRECT_URL`) más:
    - `SESSION_SECRET` → un valor generado con `openssl rand -base64 48`
    - `NODE_ENV` → `production`
-5. "Create Web Service". El primer deploy aplica las migraciones solo
-   (`prisma migrate deploy` corre en el build).
-6. Una vez desplegado, corré `npm run create:superadmin` **apuntando a esa
-   misma `DATABASE_URL`** (desde tu máquina, con esa variable en tu `.env`
-   local) para crear el primer usuario — Render no expone una terminal
-   interactiva gratis, así que este paso se hace desde afuera, una sola vez.
+5. "Create Web Service". Cada deploy aplica las migraciones y vuelve a
+   sembrar los roles/configuración inicial automáticamente (el seed es
+   idempotente, no duplica nada si ya existían).
+6. Una vez desplegado, creá el primer Superadmin corriendo **desde tu propia
+   computadora** (no desde Render, que no da terminal gratis):
+   ```bash
+   git clone https://github.com/LucianoFlorentin87/torneo-exa-frutos.git
+   cd torneo-exa-frutos && npm install
+   # pegá DATABASE_URL y DIRECT_URL (las mismas de Supabase) en un archivo .env
+   npm run create:superadmin
+   ```
 
 Render te da una URL pública del tipo `https://torneo-exa-frutos.onrender.com`
 apenas termine el deploy.

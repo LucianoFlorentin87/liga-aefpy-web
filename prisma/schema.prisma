@@ -1,17 +1,22 @@
 // Prisma schema — Torneo Exa Frutos
 //
-// Producción: Postgres (Supabase). DATABASE_URL sale de las variables de
-// entorno — nunca hardcodeada acá. Ver README.md, sección "Despliegue" para
-// el paso a paso (Render + Supabase) y cómo desarrollar en local contra la
-// misma base o una instancia Postgres propia.
+// Producción: Postgres (Supabase), vía el connection pooler (Supavisor):
+// - DATABASE_URL: pooler en modo transacción (puerto 6543) — usado en runtime
+//   por la app (Next.js hace muchas conexiones cortas, ideal para pooling).
+// - DIRECT_URL: pooler en modo sesión (puerto 5432) — usado sólo por
+//   `prisma migrate` para poder tomar locks de esquema, algo que el modo
+//   transacción no soporta.
+// Ambas salen de variables de entorno, nunca hardcodeadas acá. Ver
+// README.md, sección "Despliegue" para el paso a paso (Render + Supabase).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------
