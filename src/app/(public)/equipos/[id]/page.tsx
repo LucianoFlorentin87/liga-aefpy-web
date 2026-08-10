@@ -1,0 +1,93 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { positionLabel } from "@/lib/format";
+import { EmptyState } from "@/components/EmptyState";
+
+export const dynamic = "force-dynamic";
+
+export default async function EquipoDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
+  const team = await prisma.team.findUnique({
+    where: { id },
+    include: {
+      players: {
+        orderBy: [{ jerseyNumber: "asc" }],
+        include: {
+          goals: { where: { match: { status: "FINALIZADO" } } },
+          cards: { where: { match: { status: "FINALIZADO" } } },
+        },
+      },
+    },
+  });
+
+  if (!team) notFound();
+
+  return (
+    <div>
+      <div className="border-b border-[var(--color-gray-200)] bg-white">
+        <div className="container-page py-8">
+          <Link href="/equipos" className="text-xs font-semibold text-[var(--color-gray-500)] hover:text-[var(--color-navy-900)]">
+            ← Volver a equipos
+          </Link>
+          <div className="mt-3 flex items-center gap-4">
+            {team.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={team.logoUrl}
+                alt={`Escudo de ${team.name}`}
+                className="h-14 w-14 shrink-0 rounded-full border border-[var(--color-gray-200)] object-contain bg-white"
+              />
+            ) : (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--color-navy-100)] text-base font-extrabold text-[var(--color-navy-900)]">
+                {team.shortName.slice(0, 3).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <h1 className="text-xl font-extrabold text-[var(--color-navy-900)] sm:text-2xl">{team.name}</h1>
+              <p className="text-sm text-[var(--color-gray-500)]">{team.players.length} jugadores en plantel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-page py-8">
+        <div className="card p-3 sm:p-5">
+          {team.players.length === 0 ? (
+            <EmptyState title="Sin datos registrados" hint="Todavía no hay jugadores cargados para este equipo." />
+          ) : (
+            <div className="table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Jugador</th>
+                    <th>Posición</th>
+                    <th className="text-center">Goles</th>
+                    <th className="text-center">🟨</th>
+                    <th className="text-center">🟥</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {team.players.map((player) => (
+                    <tr key={player.id}>
+                      <td className="font-bold text-[var(--color-gray-500)]">{player.jerseyNumber}</td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">
+                        {player.firstName} {player.lastName}
+                      </td>
+                      <td>{positionLabel(player.position)}</td>
+                      <td className="text-center font-bold text-[var(--color-red-600)]">{player.goals.length}</td>
+                      <td className="text-center">{player.cards.filter((c) => c.type === "AMARILLA").length}</td>
+                      <td className="text-center">{player.cards.filter((c) => c.type === "ROJA").length}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
