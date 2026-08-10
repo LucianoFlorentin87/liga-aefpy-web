@@ -1,4 +1,4 @@
-// Prisma schema — Torneo Exa Frutos
+// Prisma schema — Liga AEFPY
 //
 // Producción: Postgres (Supabase), vía el connection pooler (Supavisor):
 // - DATABASE_URL: pooler en modo transacción (puerto 6543) — usado en runtime
@@ -249,7 +249,7 @@ model Sanction {
 
 model TournamentSettings {
   id                String   @id @default("settings")
-  tournamentName    String   @default("Torneo Exa Frutos")
+  tournamentName    String   @default("Liga AEFPY")
   standingsCriteria String   @default("PTS,DG,GF")
   rulesContent      String   @default("")
   updatedAt         DateTime @updatedAt

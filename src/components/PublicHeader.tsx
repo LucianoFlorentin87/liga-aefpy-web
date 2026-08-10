@@ -5,10 +5,10 @@ import { MobileMenuButton } from "@/components/MobileMenuButton";
 
 export function PublicHeader() {
   return (
-    <header className="relative border-b border-[var(--color-gray-200)] bg-white/95 backdrop-blur">
+    <header className="relative border-b border-white/10 bg-[var(--color-navy-950)]">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center">
-          <Logo size={38} />
+          <Logo size={38} variant="light" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
@@ -16,7 +16,7 @@ export function PublicHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-[0.83rem] font-semibold text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-navy-900)]"
+              className="rounded-lg px-3 py-2 text-[0.83rem] font-semibold text-white/75 hover:bg-white/10 hover:text-white"
             >
               {item.label}
             </Link>
@@ -24,7 +24,10 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link href="/admin" className="hidden md:inline-flex btn btn-ghost !px-3 !py-1.5 text-[0.78rem]">
+          <Link
+            href="/admin"
+            className="hidden md:inline-flex items-center rounded-full border border-[var(--color-red-500)]/50 px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-[var(--color-red-500)] hover:bg-[var(--color-red-500)]/10"
+          >
             Administración
           </Link>
           <MobileMenuButton />

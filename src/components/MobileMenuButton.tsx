@@ -14,7 +14,7 @@ export function MobileMenuButton() {
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-gray-300)] text-[var(--color-navy-900)]"
+        className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 text-white"
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

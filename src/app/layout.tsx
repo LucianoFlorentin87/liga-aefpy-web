@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,18 +7,23 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Torneo Exa Frutos",
-    template: "%s · Torneo Exa Frutos",
+    default: "Liga AEFPY",
+    template: "%s · Liga AEFPY",
   },
   description:
-    "Torneo de Fútbol de Exalumnos del Colegio Nacional Juan Manuel Frutos — organizado por la Asociación de Exalumnos Exa Frutos.",
+    "Liga AEFPY — Asociación de Efootball Paraguay. Fixture, resultados, posiciones, goleadores y disciplina del torneo.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${inter.variable} h-full antialiased`}>
+    <html lang="es" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

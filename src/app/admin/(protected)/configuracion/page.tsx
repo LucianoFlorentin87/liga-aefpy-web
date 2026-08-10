@@ -21,7 +21,7 @@ export default async function ConfiguracionPage() {
       </div>
       <div className="card p-5">
         <SettingsForm
-          tournamentName={settings?.tournamentName ?? "Torneo Exa Frutos"}
+          tournamentName={settings?.tournamentName ?? "Liga AEFPY"}
           standingsCriteria={settings?.standingsCriteria ?? "PTS,DG,GF"}
         />
       </div>

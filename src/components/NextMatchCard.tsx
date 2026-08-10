@@ -12,7 +12,7 @@ type NextMatch = {
 export function NextMatchCard({ match }: { match: NextMatch }) {
   if (!match) {
     return (
-      <div className="card bg-[var(--color-navy-900)] p-6 text-center text-white">
+      <div className="rounded-xl border border-white/15 bg-white/5 p-6 text-center text-white backdrop-blur-sm">
         <p className="eyebrow !text-red-300">Próximo partido</p>
         <p className="mt-2 text-lg font-bold">Próximamente</p>
         <p className="mt-1 text-sm text-white/70">Todavía no hay un próximo partido programado.</p>
@@ -21,7 +21,7 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
   }
 
   return (
-    <div className="card overflow-hidden bg-[var(--color-navy-900)] text-white">
+    <div className="overflow-hidden rounded-xl border border-white/15 bg-white/5 text-white backdrop-blur-sm">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
         <span className="eyebrow !text-red-300">Próximo partido</span>
         <span className="badge badge-navy !bg-white/10 !text-white">Jornada {match.matchday}</span>

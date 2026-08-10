@@ -30,21 +30,22 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-[var(--color-gray-200)] bg-white">
-        <div className="container-page grid gap-8 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-14">
+      <section className="bg-[var(--color-navy-950)]">
+        <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
-            <p className="eyebrow">Asociación de Exalumnos Exa Frutos</p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--color-navy-900)] sm:text-4xl">
-              TORNEO EXA FRUTOS
+            <p className="eyebrow">Asociación de Efootball Paraguay</p>
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl italic tracking-tight text-white sm:text-5xl">
+              Liga AEFPY <span className="text-[var(--color-red-500)]">2026</span>
             </h1>
-            <p className="mt-2 text-base font-medium text-[var(--color-gray-600)]">
-              {settings?.tournamentName && settings.tournamentName !== "Torneo Exa Frutos"
+            <p className="mt-2 text-base font-medium text-white/70">
+              {settings?.tournamentName &&
+              !["Torneo Exa Frutos", "Liga AEFPY"].includes(settings.tournamentName)
                 ? settings.tournamentName
-                : "Torneo de Fútbol de Exalumnos"}
+                : "Torneo de Fútbol"}
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {QUICK_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="btn btn-outline">
+                <Link key={link.href} href={link.href} className="btn border border-white/20 !bg-white/5 !text-white hover:!bg-white/10">
                   {link.label}
                 </Link>
               ))}

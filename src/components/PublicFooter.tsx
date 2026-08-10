@@ -9,8 +9,7 @@ export function PublicFooter() {
         <div>
           <Logo size={34} />
           <p className="mt-3 max-w-xs text-[0.8rem] leading-relaxed text-[var(--color-gray-500)]">
-            Torneo de Fútbol de Exalumnos del Colegio Nacional Juan Manuel Frutos, organizado por
-            la Asociación de Exalumnos Exa Frutos.
+            Torneo oficial organizado por la Liga AEFPY (Asociación de Efootball Paraguay).
           </p>
         </div>
 
@@ -24,7 +23,7 @@ export function PublicFooter() {
       </div>
       <div className="border-t border-[var(--color-gray-100)] py-4">
         <p className="container-page text-center text-[0.72rem] text-[var(--color-gray-500)]">
-          © {new Date().getFullYear()} Asociación de Exalumnos Exa Frutos — Torneo Exa Frutos
+          © {new Date().getFullYear()} Liga AEFPY — Asociación de Efootball Paraguay
         </p>
       </div>
     </footer>

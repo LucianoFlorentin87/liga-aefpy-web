@@ -37,6 +37,7 @@
   --color-red-500: var(--color-red-500);
   --color-red-100: var(--color-red-100);
   --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
 body {

@@ -29,7 +29,7 @@ async function prompt(question: string, envValue?: string): Promise<string> {
 }
 
 async function main() {
-  console.log("== Crear Superadmin — Torneo Exa Frutos ==\n");
+  console.log("== Crear Superadmin — Liga AEFPY ==\n");
 
   const firstName = await prompt("Nombre: ", process.env.SUPERADMIN_FIRST_NAME);
   const lastName = await prompt("Apellido: ", process.env.SUPERADMIN_LAST_NAME);
