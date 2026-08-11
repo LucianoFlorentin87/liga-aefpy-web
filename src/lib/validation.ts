@@ -79,6 +79,12 @@ export const matchSchema = z
     path: ["awayTeamId"],
   });
 
+export const generateFixtureSchema = z.object({
+  startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
+  matchTime: z.string().min(1, "La hora sugerida es obligatoria"),
+  venue: z.string().trim().min(1, "La cancha/modalidad es obligatoria"),
+});
+
 export const goalSchema = z.object({
   matchId: z.string().min(1),
   playerId: z.string().min(1, "Seleccioná el jugador"),

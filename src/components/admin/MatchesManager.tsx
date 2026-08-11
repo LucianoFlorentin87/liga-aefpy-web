@@ -6,6 +6,7 @@ import type { MatchStatus } from "@prisma/client";
 import { matchStatusLabel, formatDateShort } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { createMatchAction, updateMatchAction, deleteMatchAction, type FormState } from "@/app/admin/(protected)/partidos/actions";
+import { GenerateFixtureForm } from "@/components/admin/GenerateFixtureForm";
 
 type MatchRow = {
   id: string;
@@ -124,15 +125,22 @@ function MatchForm({
 }
 
 export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams: TeamOption[] }) {
-  const [panel, setPanel] = useState<{ mode: "create" | "edit"; match?: MatchRow } | null>(null);
+  const [panel, setPanel] = useState<{ mode: "create" | "edit" | "generate"; match?: MatchRow } | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Partidos</h1>
-        <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })} disabled={teams.length < 2}>
-          + Nuevo partido
-        </button>
+        <div className="flex gap-2">
+          {matches.length === 0 && (
+            <button className="btn btn-navy" onClick={() => setPanel({ mode: "generate" })} disabled={teams.length < 2}>
+              Generar fixture automáticamente
+            </button>
+          )}
+          <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })} disabled={teams.length < 2}>
+            + Nuevo partido
+          </button>
+        </div>
       </div>
 
       {teams.length < 2 && (
@@ -141,7 +149,17 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
         </p>
       )}
 
-      {panel && (
+      {panel?.mode === "generate" && (
+        <div className="card p-5">
+          <h2 className="section-title mb-1">Generar fixture automáticamente</h2>
+          <p className="mb-4 text-sm text-[var(--color-gray-500)]">
+            Todos contra todos, ida y vuelta (Art. 1 del reglamento) — una jornada nueva por semana.
+          </p>
+          <GenerateFixtureForm teamCount={teams.length} onDone={() => setPanel(null)} />
+        </div>
+      )}
+
+      {(panel?.mode === "create" || panel?.mode === "edit") && (
         <div className="card p-5">
           <h2 className="section-title mb-4">{panel.mode === "create" ? "Crear partido" : "Editar partido"}</h2>
           <MatchForm mode={panel.mode} match={panel.match} teams={teams} onDone={() => setPanel(null)} />
