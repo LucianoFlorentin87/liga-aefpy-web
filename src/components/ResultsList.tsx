@@ -3,6 +3,7 @@ import type { Match, MatchGoal, Team } from "@prisma/client";
 import { formatDateShort } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { TeamCrest } from "@/components/TeamCrest";
 
 type MatchWithData = Match & { homeTeam: Team; awayTeam: Team; goals: MatchGoal[] };
 
@@ -23,13 +24,15 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
               className="flex flex-col gap-2 px-1 py-3.5 hover:bg-[var(--color-gray-50)] sm:flex-row sm:items-center sm:justify-between sm:px-2"
             >
               <div className="flex items-center justify-between gap-3 sm:justify-start sm:gap-4">
-                <span className="w-32 truncate text-right text-sm font-semibold text-[var(--color-navy-900)] sm:w-40">
+                <span className="flex w-32 items-center justify-end gap-1.5 truncate text-right text-sm font-semibold text-[var(--color-navy-900)] sm:w-40">
                   {match.homeTeam.name}
+                  <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={20} />
                 </span>
                 <span className="rounded-md bg-[var(--color-gray-100)] px-2.5 py-1 text-sm font-extrabold text-[var(--color-navy-900)]">
                   {homeGoals} - {awayGoals}
                 </span>
-                <span className="w-32 truncate text-sm font-semibold text-[var(--color-navy-900)] sm:w-40">
+                <span className="flex w-32 items-center gap-1.5 truncate text-sm font-semibold text-[var(--color-navy-900)] sm:w-40">
+                  <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={20} />
                   {match.awayTeam.name}
                 </span>
               </div>

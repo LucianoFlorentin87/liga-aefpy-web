@@ -1,12 +1,13 @@
 import { formatDate } from "@/lib/format";
+import { TeamCrest } from "@/components/TeamCrest";
 
 type NextMatch = {
   matchday: number;
   date: Date;
   time: string;
   venue: string;
-  homeTeam: { name: string };
-  awayTeam: { name: string };
+  homeTeam: { name: string; shortName: string; logoUrl: string | null };
+  awayTeam: { name: string; shortName: string; logoUrl: string | null };
 } | null;
 
 export function NextMatchCard({ match }: { match: NextMatch }) {
@@ -27,9 +28,15 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
         <span className="badge badge-navy !bg-white/10 !text-white">Jornada {match.matchday}</span>
       </div>
       <div className="grid grid-cols-3 items-center gap-3 px-5 py-6 text-center">
-        <div className="text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</div>
+        <div className="flex flex-col items-center gap-2">
+          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} />
+          <span className="text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
+        </div>
         <div className="text-sm font-semibold text-white/70">vs</div>
-        <div className="text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</div>
+        <div className="flex flex-col items-center gap-2">
+          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} />
+          <span className="text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
+        </div>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 px-5 py-3 text-xs text-white/80">
         <span className="capitalize">{formatDate(match.date)}</span>

@@ -1,5 +1,6 @@
 import type { StandingsRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
+import { TeamCrest } from "@/components/TeamCrest";
 
 export function StandingsTable({ rows, limit }: { rows: StandingsRow[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
@@ -29,7 +30,12 @@ export function StandingsTable({ rows, limit }: { rows: StandingsRow[]; limit?: 
           {data.map((row, index) => (
             <tr key={row.teamId}>
               <td className="font-semibold text-[var(--color-gray-500)]">{index + 1}</td>
-              <td className="font-semibold text-[var(--color-navy-900)]">{row.teamName}</td>
+              <td className="font-semibold text-[var(--color-navy-900)]">
+                <span className="flex items-center gap-2">
+                  <TeamCrest name={row.teamName} shortName={row.teamShortName} logoUrl={row.logoUrl} size={20} />
+                  {row.teamName}
+                </span>
+              </td>
               <td className="text-center">{row.pj}</td>
               <td className="text-center">{row.pg}</td>
               <td className="text-center">{row.pe}</td>

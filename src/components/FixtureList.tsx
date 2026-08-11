@@ -2,6 +2,7 @@ import type { Match, Team } from "@prisma/client";
 import { formatDate } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { TeamCrest } from "@/components/TeamCrest";
 
 type MatchWithTeams = Match & { homeTeam: Team; awayTeam: Team };
 
@@ -31,8 +32,10 @@ export function FixtureList({ matches }: { matches: MatchWithTeams[] }) {
                 <li key={match.id} className="flex flex-col gap-2 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <span className="w-14 shrink-0 text-sm font-semibold text-[var(--color-navy-900)]">{match.time}</span>
-                    <span className="text-sm font-medium text-[var(--color-gray-900)]">
+                    <span className="flex items-center gap-2 text-sm font-medium text-[var(--color-gray-900)]">
+                      <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} />
                       {match.homeTeam.name} <span className="text-[var(--color-gray-400)]">vs</span> {match.awayTeam.name}
+                      <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} />
                     </span>
                   </div>
                   <div className="flex items-center gap-3 pl-[3.75rem] text-xs text-[var(--color-gray-500)] sm:pl-0">
