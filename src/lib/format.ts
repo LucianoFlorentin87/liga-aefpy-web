@@ -43,6 +43,7 @@ const ROLE_LABEL: Record<string, string> = {
   SUPERADMIN: "Superadmin",
   ADMINISTRADOR: "Administrador",
   CARGA_DATOS: "Carga de datos",
+  DELEGADO: "Delegado de equipo",
 };
 export function roleLabel(role: string): string {
   return ROLE_LABEL[role] ?? role;

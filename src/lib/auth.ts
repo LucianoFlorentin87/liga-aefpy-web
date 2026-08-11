@@ -1,9 +1,10 @@
 import "server-only";
-import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import type { RoleKey } from "@prisma/client";
 import { prisma } from "@/lib/db";
+
+export { hashPassword, verifyPassword } from "@/lib/password";
 
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "exafrutos_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 8; // 8 horas
@@ -25,14 +26,6 @@ export type SessionPayload = {
   lastName: string;
   role: RoleKey;
 };
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
 
 export async function createSession(payload: SessionPayload) {
   const token = await new SignJWT({ ...payload })

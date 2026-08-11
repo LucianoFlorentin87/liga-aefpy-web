@@ -49,5 +49,5 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await logActivity(`${user.firstName} ${user.lastName} inició sesión.`, user.id);
 
-  redirect("/admin/dashboard");
+  redirect(user.role.key === "DELEGADO" ? "/admin/mi-equipo" : "/admin/dashboard");
 }

@@ -27,6 +27,7 @@ enum RoleKey {
   SUPERADMIN
   ADMINISTRADOR
   CARGA_DATOS
+  DELEGADO
 }
 
 model Role {
@@ -54,6 +55,10 @@ model User {
   mustChangePassword Boolean @default(true)
   role          Role       @relation(fields: [roleId], references: [id])
   roleId        Int
+  // Sólo se usa (y es obligatorio) para el rol DELEGADO: el equipo al que
+  // queda restringido su acceso (plantel, logo, datos de cancha).
+  team          Team?      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId        String?
   status        UserStatus @default(ACTIVO)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -79,6 +84,9 @@ model Team {
   logoUrl       String?
   delegateName  String?
   delegatePhone String?
+  // Cancha/estadio informativo del equipo (distinto de la cancha de cada
+  // partido puntual, que puede variar). Lo puede editar el propio delegado.
+  homeVenue     String?
   status        TeamStatus @default(ACTIVO)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -91,6 +99,7 @@ model Team {
   sanctions     Sanction[]
   participations MatchParticipation[]
   pointAdjustments PointAdjustment[]
+  delegateUsers User[]
 
   @@map("teams")
 }
@@ -159,6 +168,7 @@ model Match {
   cards          MatchCard[]
   participations MatchParticipation[]
   pointAdjustments PointAdjustment[]
+  predictions    Prediction[]
 
   @@index([matchday])
   @@map("matches")
@@ -293,4 +303,46 @@ model ActivityLog {
   createdAt DateTime @default(now())
 
   @@map("activity_log")
+}
+
+// ---------------------------------------------------------------------------
+// Cuentas públicas (hinchas) y predicciones de partidos
+// ---------------------------------------------------------------------------
+// Sistema de cuentas totalmente separado del panel administrativo: cualquier
+// visitante puede registrarse en el sitio público para votar quién cree que
+// gana cada partido, antes de que se juegue. No tiene ningún permiso sobre
+// el panel de administración.
+
+model FanUser {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  predictions Prediction[]
+
+  @@map("fan_users")
+}
+
+enum PredictionChoice {
+  LOCAL
+  EMPATE
+  VISITANTE
+}
+
+model Prediction {
+  id        String            @id @default(cuid())
+  user      FanUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  match     Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   String
+  choice    PredictionChoice
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([userId, matchId])
+  @@index([matchId])
+  @@map("predictions")
 }

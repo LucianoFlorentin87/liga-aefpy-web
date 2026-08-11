@@ -44,3 +44,11 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     ],
   },
 ];
+
+/** Menú reducido para el rol DELEGADO: sólo ve el panel de su propio equipo. */
+export const DELEGADO_NAV: AdminNavGroup[] = [
+  {
+    title: "",
+    items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }],
+  },
+];

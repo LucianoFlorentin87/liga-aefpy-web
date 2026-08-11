@@ -5,10 +5,10 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Ingresá tu contraseña"),
 });
 
-const roleEnum = z.enum(["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"]);
+const roleEnum = z.enum(["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS", "DELEGADO"]);
 const statusEnum = z.enum(["ACTIVO", "INACTIVO"]);
 
-export const createUserSchema = z.object({
+const baseUserSchema = z.object({
   firstName: z.string().trim().min(1, "El nombre es obligatorio"),
   lastName: z.string().trim().min(1, "El apellido es obligatorio"),
   email: z.string().trim().email("Correo inválido"),
@@ -17,14 +17,25 @@ export const createUserSchema = z.object({
     .trim()
     .min(3, "El usuario debe tener al menos 3 caracteres")
     .regex(/^[a-zA-Z0-9._-]+$/, "Sólo letras, números, puntos, guiones y guión bajo"),
-  password: z.string().min(8, "La contraseña temporal debe tener al menos 8 caracteres"),
   role: roleEnum,
   status: statusEnum,
+  // Sólo obligatorio cuando role === "DELEGADO" (se valida con .refine abajo).
+  teamId: z.string().nullish(),
 });
 
-export const updateUserSchema = createUserSchema
-  .omit({ password: true })
-  .extend({ id: z.string().min(1) });
+export const createUserSchema = baseUserSchema
+  .extend({ password: z.string().min(8, "La contraseña temporal debe tener al menos 8 caracteres") })
+  .refine((data) => data.role !== "DELEGADO" || !!data.teamId, {
+    message: "Seleccioná el equipo para el delegado",
+    path: ["teamId"],
+  });
+
+export const updateUserSchema = baseUserSchema
+  .extend({ id: z.string().min(1) })
+  .refine((data) => data.role !== "DELEGADO" || !!data.teamId, {
+    message: "Seleccioná el equipo para el delegado",
+    path: ["teamId"],
+  });
 
 export const resetPasswordSchema = z.object({
   id: z.string().min(1),
@@ -40,7 +51,15 @@ export const teamSchema = z.object({
     .max(6, "Máximo 6 caracteres"),
   delegateName: z.string().trim().optional().or(z.literal("")),
   delegatePhone: z.string().trim().optional().or(z.literal("")),
+  homeVenue: z.string().trim().optional().or(z.literal("")),
   status: statusEnum,
+});
+
+/** Datos que puede editar el propio delegado sobre su equipo (sin nombre ni estado). */
+export const myTeamSchema = z.object({
+  delegateName: z.string().trim().optional().or(z.literal("")),
+  delegatePhone: z.string().trim().optional().or(z.literal("")),
+  homeVenue: z.string().trim().optional().or(z.literal("")),
 });
 
 const positionEnum = z.enum(["ARQUERO", "DEFENSOR", "MEDIOCAMPISTA", "DELANTERO"]);
@@ -132,4 +151,33 @@ export const settingsSchema = z.object({
     .trim()
     .min(1)
     .regex(/^(PTS|DG|GF|PG)(,(PTS|DG|GF|PG))*$/, "Criterio inválido"),
+});
+
+// ---------------------------------------------------------------------------
+// Cuentas públicas (hinchas) y predicciones
+// ---------------------------------------------------------------------------
+
+export const fanRegisterSchema = z
+  .object({
+    firstName: z.string().trim().min(1, "El nombre es obligatorio"),
+    lastName: z.string().trim().min(1, "El apellido es obligatorio"),
+    email: z.string().trim().email("Correo inválido"),
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string().min(1, "Confirmá tu contraseña"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+export const fanLoginSchema = z.object({
+  email: z.string().trim().email("Correo inválido"),
+  password: z.string().min(1, "Ingresá tu contraseña"),
+});
+
+const predictionChoiceEnum = z.enum(["LOCAL", "EMPATE", "VISITANTE"]);
+
+export const predictionSchema = z.object({
+  matchId: z.string().min(1),
+  choice: predictionChoiceEnum,
 });

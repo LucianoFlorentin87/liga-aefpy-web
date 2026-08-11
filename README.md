@@ -1,17 +1,16 @@
-# Torneo Exa Frutos
+# Liga AEFPY
 
-Sitio web completo del **Torneo de Fútbol de Exalumnos del Colegio Nacional Juan
-Manuel Frutos**, organizado por la **Asociación de Exalumnos Exa Frutos**.
+Sitio web completo de la **Liga AEFPY (Asociación de Efootball Paraguay)**.
 
 Incluye sitio público (fixture, resultados, posiciones, goleadores, disciplina,
-equipos, reglamento) y un panel de administración privado con autenticación,
-roles y permisos, para cargar todos los datos del torneo.
+equipos, reglamento), cuentas públicas para que los hinchas voten quién creen
+que gana cada partido, un perfil de autogestión para el delegado de cada
+equipo, y un panel de administración privado con autenticación, roles y
+permisos, para cargar todos los datos del torneo.
 
-> **Sobre el logo:** se usa el logo oficial de la Asociación Exa Frutos /
-> Liga AEFPY (`public/logo-exa-frutos.png`), consumido por el componente
-> compartido `src/components/Logo.tsx` en header, footer, login, dashboard y
-> favicon. El sitio **no** usa el escudo del Colegio Nacional Juan Manuel
-> Frutos en ningún lado.
+> **Sobre el logo:** se usa el logo oficial de la Liga AEFPY
+> (`public/logo-exa-frutos.png`), consumido por el componente compartido
+> `src/components/Logo.tsx` en header, footer, login, dashboard y favicon.
 
 ---
 
@@ -37,21 +36,26 @@ botones).
 ```
 prisma/
   schema.prisma        Modelo de datos (usuarios, roles, equipos, jugadores,
-                        partidos, goles, tarjetas, sanciones, configuración)
-  seed.ts               Crea los 3 roles fijos + configuración inicial del torneo
+                        partidos, goles, tarjetas, sanciones, configuración,
+                        cuentas de hinchas y predicciones)
+  seed.ts               Crea los 4 roles fijos + configuración inicial del torneo
 scripts/
   create-superadmin.ts  CLI para crear el primer Superadmin (sin password hardcodeada)
 src/
   app/
     (public)/            Sitio público: /, /fixture, /resultados, /posiciones,
-                          /goleadores, /disciplina, /equipos, /reglamento
+                          /goleadores, /disciplina, /equipos, /reglamento,
+                          /cuenta/login, /cuenta/registro (cuentas de hinchas)
     admin/
       login/              /admin/login (no requiere sesión)
       (protected)/        Todo lo demás bajo /admin/**, protegido por sesión + rol
-    proxy.ts              Middleware: bloquea /admin/** sin cookie de sesión válida
+                          (incluye /admin/mi-equipo, exclusivo del DELEGADO)
+    proxy.ts              Middleware: bloquea /admin/** sin cookie de sesión
+                          válida, y confina al DELEGADO a su propio panel
   components/             UI del sitio público y del panel admin
   lib/
-    auth.ts               Hash/verificación de contraseñas, sesión JWT
+    auth.ts               Hash/verificación de contraseñas, sesión JWT (staff admin)
+    fan-auth.ts            Sesión JWT independiente para cuentas públicas de hinchas
     permissions.ts         Matriz de permisos por rol + guards de servidor
     stats.ts               Cálculo de posiciones, goleadores y disciplina
     validation.ts           Esquemas zod
@@ -59,7 +63,8 @@ src/
 
 ### Rutas públicas
 `/`, `/fixture`, `/resultados`, `/resultados/[id]`, `/posiciones`,
-`/goleadores`, `/disciplina`, `/equipos`, `/equipos/[id]`, `/reglamento`.
+`/goleadores`, `/disciplina`, `/equipos`, `/equipos/[id]`, `/reglamento`,
+`/cuenta/login`, `/cuenta/registro`.
 
 ### Rutas del panel
 `/admin/login`, `/admin/dashboard`, `/admin/usuarios`, `/admin/equipos`,
@@ -68,7 +73,8 @@ src/
 resultado/goles/tarjetas/convocados), `/admin/resultados`,
 `/admin/goleadores`, `/admin/disciplina`, `/admin/sanciones`,
 `/admin/ajustes-puntos`, `/admin/reglamento`, `/admin/configuracion`,
-`/admin/cuenta` (cambiar mi contraseña).
+`/admin/cuenta` (cambiar mi contraseña), `/admin/mi-equipo` (sólo para el
+rol DELEGADO — ver sección 3).
 
 ### Reglamento oficial (Liga AEFPY)
 
@@ -91,21 +97,60 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
   oficial, que se muestra embebido en `/reglamento` (con link para abrirlo
   aparte). Si no hay PDF, se usa el texto cargado como respaldo.
 
+### Predicciones de los hinchas
+
+Cualquier visitante puede crear una cuenta pública en `/cuenta/registro`
+(nombre, apellido, correo y contraseña — completamente separada de las
+cuentas del panel admin: cookie, JWT y tabla propias, `fan_users`) y, ya
+logueado, votar en `/fixture` quién cree que gana cada partido programado
+(`Gana local` / `Empate` / `Gana visitante`). El voto:
+
+- sólo está disponible para partidos en estado `PROGRAMADO` o
+  `REPROGRAMADO` (se oculta una vez que el partido se juega),
+- es una predicción del hincha, **nunca** el resultado oficial del partido
+  (eso lo sigue cargando el staff en `/admin/partidos/[id]`),
+- se puede cambiar en cualquier momento antes del partido (upsert por
+  usuario + partido), y el widget muestra el porcentaje de votos de cada
+  opción en tiempo real.
+
+### Delegado de equipo
+
+El rol `DELEGADO` es una cuenta del panel (creada por un SUPERADMIN en
+`/admin/usuarios`, con un equipo asignado) pensada para que cada equipo
+autogestione su propia información sin tocar nada del resto de la liga:
+
+- Al loguearse entra directo a `/admin/mi-equipo` — no ve el resto del
+  menú del panel (`src/lib/admin-nav.ts`), y si intenta entrar a cualquier
+  otra URL de `/admin/**` por la barra de direcciones, `src/proxy.ts` lo
+  redirige de vuelta.
+- Ahí puede editar el delegado/contacto, el teléfono, la cancha (`Team.homeVenue`)
+  y el logo de **su propio equipo**, y cargar/editar/activar/desactivar
+  **sus propios jugadores** — todo server-side scoped al `teamId` guardado
+  en su usuario (`requireDelegate()` en `src/lib/permissions.ts`), nunca a
+  un `teamId` que venga del formulario.
+- **No puede** cargar resultados, goles ni tarjetas de ningún partido — esa
+  parte del panel (`/admin/partidos`, `/admin/resultados`, etc.) sigue
+  siendo exclusiva de SUPERADMIN/ADMINISTRADOR/CARGA_DATOS.
+
 ---
 
 ## 3. Roles y permisos
 
-| Recurso | SUPERADMIN | ADMINISTRADOR | CARGA_DATOS |
-|---|:---:|:---:|:---:|
-| Usuarios | ✅ | ❌ | ❌ |
-| Equipos / Jugadores / Partidos (programación) | ✅ | ✅ | ❌ |
-| Resultados / Goles / Tarjetas (partidos ya cargados) | ✅ | ✅ | ✅ |
-| Sanciones / Reglamento / Configuración | ✅ | ✅ | ❌ |
+| Recurso | SUPERADMIN | ADMINISTRADOR | CARGA_DATOS | DELEGADO |
+|---|:---:|:---:|:---:|:---:|
+| Usuarios | ✅ | ❌ | ❌ | ❌ |
+| Equipos / Jugadores / Partidos (programación) | ✅ | ✅ | ❌ | ❌ |
+| Resultados / Goles / Tarjetas (partidos ya cargados) | ✅ | ✅ | ✅ | ❌ |
+| Sanciones / Reglamento / Configuración | ✅ | ✅ | ❌ | ❌ |
+| Mi equipo (`/admin/mi-equipo`: sólo el equipo propio) | ❌ | ❌ | ❌ | ✅ |
 
 La matriz vive en un solo lugar (`src/lib/permissions.ts`) y se usa tanto
 para armar el menú lateral como para autorizar cada server action — el
 mismo chequeo corre siempre en el servidor, así que entrar a una URL de
 forma directa sin permiso redirige igual, con o sin JavaScript.
+`/admin/mi-equipo` no forma parte de esa matriz por recurso (no es un
+recurso administrativo genérico: es el equipo propio del usuario) — tiene
+su propio guard, `requireDelegate()`.
 
 Reglas adicionales aplicadas en el servidor:
 - Sólo un SUPERADMIN puede asignar el rol SUPERADMIN.
@@ -126,7 +171,7 @@ cp .env.example .env
 openssl rand -base64 48
 
 npm run db:migrate     # aplica el esquema (crea las tablas)
-npm run db:seed        # crea los 3 roles fijos + configuración inicial
+npm run db:seed        # crea los 4 roles fijos + configuración inicial
 
 npm run create:superadmin   # crea tu primer usuario Superadmin (ver sección 5)
 
@@ -158,10 +203,12 @@ Con eso ya podés entrar en `/admin/login`.
 ## 6. Crear más usuarios
 
 Una vez logueado como Superadmin, andá a **Configuración → Usuarios**
-(`/admin/usuarios`) y creá cuentas con rol `ADMINISTRADOR` o `CARGA_DATOS`.
-Cada usuario nuevo se crea con una contraseña temporal; el sistema marca la
-cuenta para que la cambie en `/admin/cuenta` (esa pantalla la tiene
-disponible cualquier usuario logueado, para su propia cuenta).
+(`/admin/usuarios`) y creá cuentas con rol `ADMINISTRADOR`, `CARGA_DATOS` o
+`DELEGADO`. Al elegir `DELEGADO` el formulario pide además el equipo al que
+queda asociado ese usuario (ver sección 3). Cada usuario nuevo se crea con
+una contraseña temporal; el sistema marca la cuenta para que la cambie en
+`/admin/cuenta` (esa pantalla la tiene disponible cualquier usuario
+logueado, para su propia cuenta).
 
 ## 7. Cargar equipos, jugadores y partidos
 

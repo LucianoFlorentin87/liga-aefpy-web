@@ -58,3 +58,17 @@ export async function requirePermission(resource: PermissionResource) {
   }
   return { session, user };
 }
+
+/**
+ * Ruta exclusiva del delegado de equipo (/admin/mi-equipo): no forma parte
+ * de la matriz PERMISSIONS porque no es un recurso administrativo genérico,
+ * sino el propio equipo del usuario. El teamId siempre se resuelve desde la
+ * base de datos (user.teamId), nunca desde datos enviados por el cliente.
+ */
+export async function requireDelegate() {
+  const { session, user } = await requireAuth();
+  if (session.role !== "DELEGADO" || !user.teamId) {
+    redirect("/admin/dashboard");
+  }
+  return { session, user, teamId: user.teamId };
+}

@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const ROLES: { key: "SUPERADMIN" | "ADMINISTRADOR" | "CARGA_DATOS"; name: string; description: string }[] = [
+const ROLES: { key: "SUPERADMIN" | "ADMINISTRADOR" | "CARGA_DATOS" | "DELEGADO"; name: string; description: string }[] = [
   {
     key: "SUPERADMIN",
     name: "Superadmin",
@@ -18,6 +18,11 @@ const ROLES: { key: "SUPERADMIN" | "ADMINISTRADOR" | "CARGA_DATOS"; name: string
     key: "CARGA_DATOS",
     name: "Carga de datos",
     description: "Sólo puede cargar resultados, goles y tarjetas de partidos existentes.",
+  },
+  {
+    key: "DELEGADO",
+    name: "Delegado de equipo",
+    description: "Gestiona el perfil, el logo, los jugadores y la cancha de su propio equipo únicamente.",
   },
 ];
 

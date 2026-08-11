@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Ingresar al panel" };
 
 export default async function AdminLoginPage() {
   const session = await getSession();
-  if (session) redirect("/admin/dashboard");
+  if (session) redirect(session.role === "DELEGADO" ? "/admin/mi-equipo" : "/admin/dashboard");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy-950)] px-4 py-10">

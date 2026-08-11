@@ -27,6 +27,7 @@ export async function createUserAction(_prevState: FormState, formData: FormData
     password: formData.get("password"),
     role: formData.get("role"),
     status: formData.get("status"),
+    teamId: formData.get("teamId"),
   });
 
   if (!parsed.success) {
@@ -45,6 +46,13 @@ export async function createUserAction(_prevState: FormState, formData: FormData
     return { error: "Ya existe un usuario con ese correo o usuario." };
   }
 
+  let teamId: string | null = null;
+  if (parsed.data.role === "DELEGADO") {
+    const team = await prisma.team.findUnique({ where: { id: parsed.data.teamId! } });
+    if (!team) return { error: "El equipo seleccionado no existe." };
+    teamId = team.id;
+  }
+
   const role = await getRoleByKey(parsed.data.role);
   const passwordHash = await hashPassword(parsed.data.password);
 
@@ -58,6 +66,7 @@ export async function createUserAction(_prevState: FormState, formData: FormData
       roleId: role.id,
       status: parsed.data.status,
       mustChangePassword: true,
+      teamId,
     },
   });
 
@@ -77,6 +86,7 @@ export async function updateUserAction(_prevState: FormState, formData: FormData
     username: formData.get("username"),
     role: formData.get("role"),
     status: formData.get("status"),
+    teamId: formData.get("teamId"),
   });
 
   if (!parsed.success) {
@@ -85,6 +95,13 @@ export async function updateUserAction(_prevState: FormState, formData: FormData
 
   const target = await prisma.user.findUnique({ where: { id: parsed.data.id }, include: { role: true } });
   if (!target) return { error: "El usuario no existe." };
+
+  let teamId: string | null = null;
+  if (parsed.data.role === "DELEGADO") {
+    const team = await prisma.team.findUnique({ where: { id: parsed.data.teamId! } });
+    if (!team) return { error: "El equipo seleccionado no existe." };
+    teamId = team.id;
+  }
 
   if (!canAssignRole(session.role, parsed.data.role)) {
     return { error: "No tenés permiso para asignar ese rol." };
@@ -122,6 +139,7 @@ export async function updateUserAction(_prevState: FormState, formData: FormData
       username,
       roleId: role.id,
       status: parsed.data.status,
+      teamId,
     },
   });
 

@@ -3,10 +3,21 @@ import { formatDate } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
+import { PredictionWidget, type PredictionTally } from "@/components/PredictionWidget";
 
 type MatchWithTeams = Match & { homeTeam: Team; awayTeam: Team };
 
-export function FixtureList({ matches }: { matches: MatchWithTeams[] }) {
+const VOTABLE_STATUSES = new Set(["PROGRAMADO", "REPROGRAMADO"]);
+
+export function FixtureList({
+  matches,
+  fanLoggedIn = false,
+  predictionsByMatch = {},
+}: {
+  matches: MatchWithTeams[];
+  fanLoggedIn?: boolean;
+  predictionsByMatch?: Record<string, PredictionTally>;
+}) {
   if (matches.length === 0) {
     return <EmptyState title="Sin datos registrados" hint="Todavía no hay partidos cargados en el fixture." />;
   }
@@ -38,10 +49,24 @@ export function FixtureList({ matches }: { matches: MatchWithTeams[] }) {
                       <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} />
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 pl-[3.75rem] text-xs text-[var(--color-gray-500)] sm:pl-0">
-                    <span className="capitalize">{formatDate(match.date)}</span>
-                    <span>{match.venue}</span>
-                    <MatchStatusBadge status={match.status} />
+                  <div className="flex flex-col gap-1 pl-[3.75rem] sm:pl-0">
+                    <div className="flex items-center gap-3 text-xs text-[var(--color-gray-500)]">
+                      <span className="capitalize">{formatDate(match.date)}</span>
+                      <span>{match.venue}</span>
+                      <MatchStatusBadge status={match.status} />
+                    </div>
+                    {VOTABLE_STATUSES.has(match.status) && (
+                      <PredictionWidget
+                        matchId={match.id}
+                        fanLoggedIn={fanLoggedIn}
+                        tally={
+                          predictionsByMatch[match.id] ?? {
+                            counts: { LOCAL: 0, EMPATE: 0, VISITANTE: 0 },
+                            ownChoice: null,
+                          }
+                        }
+                      />
+                    )}
                   </div>
                 </li>
               ))}

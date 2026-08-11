@@ -34,7 +34,20 @@ export async function proxy(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, secretKey);
+    const { payload } = await jwtVerify(token, secretKey);
+
+    // El delegado de equipo sólo puede ver su propio panel (/admin/mi-equipo)
+    // y su cuenta (/admin/cuenta): cualquier otra ruta admin lo redirige de
+    // vuelta. Esta es la barrera de borde; la definitiva vive en
+    // src/lib/permissions.ts (requireDelegate), que revalida contra la BD.
+    const DELEGADO_ALLOWED_PREFIXES = ["/admin/mi-equipo", "/admin/cuenta"];
+    if (
+      payload.role === "DELEGADO" &&
+      !DELEGADO_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))
+    ) {
+      return NextResponse.redirect(new URL("/admin/mi-equipo", request.url));
+    }
+
     return NextResponse.next();
   } catch {
     const loginUrl = new URL("/admin/login", request.url);

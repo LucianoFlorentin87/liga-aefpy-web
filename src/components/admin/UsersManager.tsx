@@ -21,23 +21,29 @@ type UserRow = {
   username: string;
   status: UserStatus;
   role: { key: RoleKey };
+  team: { id: string; name: string } | null;
   lastLoginAt: Date | null;
 };
 
-const ROLES: RoleKey[] = ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"];
+type TeamOption = { id: string; name: string };
+
+const ROLES: RoleKey[] = ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS", "DELEGADO"];
 const emptyState: FormState = {};
 
 function UserForm({
   mode,
   user,
+  teams,
   onDone,
 }: {
   mode: "create" | "edit";
   user?: UserRow;
+  teams: TeamOption[];
   onDone: () => void;
 }) {
   const action = mode === "create" ? createUserAction : updateUserAction;
   const [state, formAction, pending] = useActionState(action, emptyState);
+  const [role, setRole] = useState<RoleKey>(user?.role.key ?? "CARGA_DATOS");
 
   useEffect(() => {
     if (state.success) onDone();
@@ -70,7 +76,13 @@ function UserForm({
       )}
       <div>
         <label className="field-label">Rol</label>
-        <select name="role" required defaultValue={user?.role.key ?? "CARGA_DATOS"} className="input">
+        <select
+          name="role"
+          required
+          value={role}
+          onChange={(e) => setRole(e.target.value as RoleKey)}
+          className="input"
+        >
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {roleLabel(r)}
@@ -78,6 +90,21 @@ function UserForm({
           ))}
         </select>
       </div>
+      {role === "DELEGADO" && (
+        <div>
+          <label className="field-label">Equipo</label>
+          <select name="teamId" required defaultValue={user?.team?.id} className="input">
+            <option value="" disabled>
+              Seleccionar…
+            </option>
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div>
         <label className="field-label">Estado</label>
         <select name="status" required defaultValue={user?.status ?? "ACTIVO"} className="input">
@@ -127,7 +154,7 @@ function ResetPasswordForm({ user, onDone }: { user: UserRow; onDone: () => void
   );
 }
 
-export function UsersManager({ users, actorId }: { users: UserRow[]; actorId: string }) {
+export function UsersManager({ users, actorId, teams }: { users: UserRow[]; actorId: string; teams: TeamOption[] }) {
   const [panel, setPanel] = useState<{ mode: "create" | "edit" | "reset"; user?: UserRow } | null>(null);
 
   return (
@@ -149,7 +176,7 @@ export function UsersManager({ users, actorId }: { users: UserRow[]; actorId: st
           {panel.mode === "reset" ? (
             <ResetPasswordForm user={panel.user!} onDone={() => setPanel(null)} />
           ) : (
-            <UserForm mode={panel.mode} user={panel.user} onDone={() => setPanel(null)} />
+            <UserForm mode={panel.mode} user={panel.user} teams={teams} onDone={() => setPanel(null)} />
           )}
         </div>
       )}
@@ -168,6 +195,7 @@ export function UsersManager({ users, actorId }: { users: UserRow[]; actorId: st
                   <th>Usuario</th>
                   <th>Correo</th>
                   <th>Rol</th>
+                  <th>Equipo</th>
                   <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
@@ -182,6 +210,7 @@ export function UsersManager({ users, actorId }: { users: UserRow[]; actorId: st
                     <td>{u.username}</td>
                     <td>{u.email}</td>
                     <td>{roleLabel(u.role.key)}</td>
+                    <td>{u.team?.name ?? "—"}</td>
                     <td>
                       <ActiveStatusBadge status={u.status} />
                     </td>
