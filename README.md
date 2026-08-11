@@ -217,8 +217,9 @@ no hay ningún dato escrito a mano en el HTML.
    - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
    - **Start Command**: `npm run start`
    - **Instance Type**: Free (o el que prefieras)
-4. En "Environment Variables" agregá las tres variables de Supabase del
-   paso anterior (`DATABASE_URL`, `DIRECT_URL`) más:
+4. En "Environment Variables" agregá las variables de Supabase de los
+   pasos anteriores (`DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`,
+   `SUPABASE_SECRET_KEY` — ver sección "Subida de archivos" más abajo) más:
    - `SESSION_SECRET` → un valor generado con `openssl rand -base64 48`
    - `NODE_ENV` → `production`
 5. "Create Web Service". Cada deploy aplica las migraciones y vuelve a
@@ -238,17 +239,28 @@ apenas termine el deploy.
 
 ### Subida de archivos (logos de equipos y PDF del reglamento)
 
-El logo de cada equipo (`public/uploads/teams`) y el PDF del reglamento
-(`public/uploads/reglamento`) se guardan en el filesystem del servidor (ver
-`src/lib/upload.ts`). Render con un Web Service mantiene el proceso
-corriendo entre requests (a diferencia de una función serverless), pero el
-disco **no es persistente entre deploys** en el plan free — un archivo
-subido se pierde en el próximo deploy. Para que sea permanente, sumá un
+El logo de cada equipo y el PDF del reglamento se suben a un bucket público
+de **Supabase Storage** llamado `uploads` (ver `src/lib/supabase-admin.ts` y
+`src/lib/upload.ts`) — no al filesystem del servidor. Esto es necesario
+porque en el plan free de Render el disco **no es persistente**: se pierde
+en cada deploy y cada vez que la instancia se "duerme" por inactividad y
+vuelve a levantar.
+
+Para que la subida de archivos funcione:
+
+1. En Supabase: **Storage → New bucket** → nombre `uploads` → activar
+   **Public bucket**.
+2. **Project Settings → API Keys** → copiar la clave **`secret`** (o
+   `service_role` en proyectos más viejos) — nunca la `anon`/`publishable`,
+   esa es la que sí se expone al navegador.
+3. Variables de entorno (local y en Render): `SUPABASE_URL` (la URL del
+   proyecto, `https://<project-ref>.supabase.co`) y `SUPABASE_SECRET_KEY`
+   (la clave del paso anterior).
+
+Si preferís no depender de Supabase Storage, la alternativa es un
 [Persistent Disk](https://render.com/docs/disks) de Render montado en
-`public/uploads`, o reemplazá `saveTeamLogo()`/`saveRulesPdf()` por una
-subida a un bucket externo (Supabase Storage, S3, Cloudflare R2) y guardá la
-URL pública en `Team.logoUrl` / `TournamentSettings.rulesPdfUrl` — el resto
-del sitio ya consume esos campos tal cual.
+`public/uploads`, adaptando `uploadToStorage()` para escribir a disco de
+nuevo — pero no es necesario, Supabase Storage entra en la capa gratuita.
 
 ---
 
