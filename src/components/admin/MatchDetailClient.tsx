@@ -126,6 +126,9 @@ function CardForm({ matchId, teams }: { matchId: string; teams: TeamInfo[] }) {
         {pending ? "Guardando…" : "+ Tarjeta"}
       </button>
       {state.error && <p className="field-error col-span-2 sm:col-span-6">{state.error}</p>}
+      {state.success && (
+        <p className="col-span-2 text-sm font-medium text-[#197a44] sm:col-span-6">{state.success}</p>
+      )}
     </form>
   );
 }
@@ -138,6 +141,7 @@ export function MatchDetailClient({
   cards,
   participations,
   canLoadResults,
+  suspendedPlayerIds,
 }: {
   matchId: string;
   status: MatchStatus;
@@ -146,7 +150,9 @@ export function MatchDetailClient({
   cards: CardRow[];
   participations: ParticipationRow[];
   canLoadResults: boolean;
+  suspendedPlayerIds: string[];
 }) {
+  const suspendedSet = useMemo(() => new Set(suspendedPlayerIds), [suspendedPlayerIds]);
   const participationByPlayer = useMemo(() => new Map(participations.map((p) => [p.playerId, p])), [participations]);
 
   if (!canLoadResults) return null;
@@ -188,8 +194,11 @@ export function MatchDetailClient({
                     const participation = participationByPlayer.get(p.id);
                     return (
                       <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-gray-50)] px-3 py-1.5 text-sm">
-                        <span>
+                        <span className="flex items-center gap-2">
                           #{p.jerseyNumber} {p.firstName} {p.lastName}
+                          {suspendedSet.has(p.id) && (
+                            <span className="badge badge-red">Suspendido</span>
+                          )}
                         </span>
                         <div className="flex items-center gap-2">
                           <form action={setParticipationAction} className="flex items-center gap-1.5">

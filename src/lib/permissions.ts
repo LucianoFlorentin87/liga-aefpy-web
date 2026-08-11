@@ -17,6 +17,7 @@ export const PERMISSIONS = {
   goles: ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"],
   tarjetas: ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"],
   sanciones: ["SUPERADMIN", "ADMINISTRADOR"],
+  ajustesPuntos: ["SUPERADMIN", "ADMINISTRADOR"],
   reglamento: ["SUPERADMIN", "ADMINISTRADOR"],
   configuracion: ["SUPERADMIN", "ADMINISTRADOR"],
 } as const satisfies Record<string, RoleKey[]>;

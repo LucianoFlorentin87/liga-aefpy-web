@@ -30,6 +30,15 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
 
   const teams = await prisma.team.findMany({ where: { status: "ACTIVO" }, orderBy: { name: "asc" } });
 
+  const activeSanctions = await prisma.sanction.findMany({
+    where: {
+      status: "ACTIVA",
+      playerId: { in: [...match.homeTeam.players, ...match.awayTeam.players].map((p) => p.id) },
+    },
+    select: { playerId: true },
+  });
+  const suspendedPlayerIds = new Set(activeSanctions.map((s) => s.playerId));
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -60,6 +69,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
         cards={match.cards}
         participations={match.participations}
         canLoadResults={canLoadResults}
+        suspendedPlayerIds={[...suspendedPlayerIds]}
       />
     </div>
   );

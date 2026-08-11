@@ -115,7 +115,14 @@ export const sanctionSchema = z.object({
 });
 
 export const rulesSchema = z.object({
-  rulesContent: z.string().trim().min(1, "El reglamento no puede estar vacío"),
+  rulesContent: z.string().trim().optional().or(z.literal("")),
+});
+
+export const pointAdjustmentSchema = z.object({
+  teamId: z.string().min(1, "Seleccioná el equipo"),
+  points: z.coerce.number().int().refine((v) => v !== 0, "El ajuste no puede ser 0"),
+  reason: z.string().trim().min(1, "El motivo es obligatorio"),
+  matchId: z.string().nullish(),
 });
 
 export const settingsSchema = z.object({

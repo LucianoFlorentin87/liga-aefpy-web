@@ -32,6 +32,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { href: "/admin/goleadores", label: "Goleadores" },
       { href: "/admin/disciplina", label: "Disciplina" },
       { href: "/admin/sanciones", label: "Sanciones", resource: "sanciones" },
+      { href: "/admin/ajustes-puntos", label: "Ajustes de puntos", resource: "ajustesPuntos" },
     ],
   },
   {

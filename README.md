@@ -63,11 +63,33 @@ src/
 
 ### Rutas del panel
 `/admin/login`, `/admin/dashboard`, `/admin/usuarios`, `/admin/equipos`,
-`/admin/jugadores`, `/admin/jugadores/[id]` (estadísticas), `/admin/partidos`,
-`/admin/partidos/[id]` (carga de resultado/goles/tarjetas/convocados),
-`/admin/resultados`, `/admin/goleadores`, `/admin/disciplina`,
-`/admin/sanciones`, `/admin/reglamento`, `/admin/configuracion`,
+`/admin/jugadores`, `/admin/jugadores/[id]` (estadísticas), `/admin/partidos`
+(incluye "Generar fixture automáticamente"), `/admin/partidos/[id]` (carga de
+resultado/goles/tarjetas/convocados), `/admin/resultados`,
+`/admin/goleadores`, `/admin/disciplina`, `/admin/sanciones`,
+`/admin/ajustes-puntos`, `/admin/reglamento`, `/admin/configuracion`,
 `/admin/cuenta` (cambiar mi contraseña).
+
+### Reglamento oficial (Liga AEFPY)
+
+El comportamiento de varias funciones sigue el reglamento oficial de la liga
+(`Artículo 1`, `8`, `9` y `11`):
+
+- **Fixture**: "Generar fixture automáticamente" en `/admin/partidos` arma
+  todos-contra-todos ida y vuelta (método del círculo), una jornada nueva por
+  semana. Sólo funciona si todavía no hay partidos cargados.
+- **Suspensiones automáticas** (Art. 8): al cargar una tarjeta roja, o la
+  3ª tarjeta amarilla acumulada de un mismo jugador, se crea sola una sanción
+  de 1 partido en `/admin/sanciones`. La convocatoria de un partido muestra
+  un aviso "Suspendido" si el jugador tiene una sanción activa (Art. 8.3) —
+  es un aviso, no bloquea la carga, la decisión final queda en el admin.
+- **Ajustes de puntos** (Art. 9 y 11): `/admin/ajustes-puntos` permite
+  sumar o restar puntos manualmente a un equipo (ej. -1 por abandono de
+  partido o por la "Regla Milán-Cherembo"). El ajuste se refleja
+  automáticamente en la tabla de posiciones pública.
+- **Reglamento en PDF**: desde `/admin/reglamento` se puede subir el PDF
+  oficial, que se muestra embebido en `/reglamento` (con link para abrirlo
+  aparte). Si no hay PDF, se usa el texto cargado como respaldo.
 
 ---
 
@@ -214,18 +236,19 @@ no hay ningún dato escrito a mano en el HTML.
 Render te da una URL pública del tipo `https://torneo-exa-frutos.onrender.com`
 apenas termine el deploy.
 
-### Subida de archivos (logos de equipos)
+### Subida de archivos (logos de equipos y PDF del reglamento)
 
-El logo de cada equipo se guarda en el filesystem del servidor
-(`public/uploads/teams`, ver `src/lib/upload.ts`). Render con un Web Service
-mantiene el proceso corriendo entre requests (a diferencia de una función
-serverless), pero el disco **no es persistente entre deploys** en el plan
-free — un logo subido se pierde en el próximo deploy. Para que sea
-permanente, sumá un [Persistent Disk](https://render.com/docs/disks) de
-Render montado en `public/uploads`, o reemplazá `saveTeamLogo()` por una
+El logo de cada equipo (`public/uploads/teams`) y el PDF del reglamento
+(`public/uploads/reglamento`) se guardan en el filesystem del servidor (ver
+`src/lib/upload.ts`). Render con un Web Service mantiene el proceso
+corriendo entre requests (a diferencia de una función serverless), pero el
+disco **no es persistente entre deploys** en el plan free — un archivo
+subido se pierde en el próximo deploy. Para que sea permanente, sumá un
+[Persistent Disk](https://render.com/docs/disks) de Render montado en
+`public/uploads`, o reemplazá `saveTeamLogo()`/`saveRulesPdf()` por una
 subida a un bucket externo (Supabase Storage, S3, Cloudflare R2) y guardá la
-URL pública en `Team.logoUrl` — el resto del sitio ya consume ese campo tal
-cual.
+URL pública en `Team.logoUrl` / `TournamentSettings.rulesPdfUrl` — el resto
+del sitio ya consume esos campos tal cual.
 
 ---
 

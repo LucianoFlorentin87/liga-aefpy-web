@@ -17,9 +17,7 @@ export default async function AdminReglamentoPage() {
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Reglamento</h1>
         <p className="text-sm text-[var(--color-gray-500)]">Se publica automáticamente en /reglamento.</p>
       </div>
-      <div className="card p-5">
-        <RulesEditor initialContent={settings?.rulesContent ?? ""} />
-      </div>
+      <RulesEditor initialContent={settings?.rulesContent ?? ""} rulesPdfUrl={settings?.rulesPdfUrl ?? null} />
     </div>
   );
 }

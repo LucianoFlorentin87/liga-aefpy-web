@@ -14,6 +14,8 @@ export type StandingsRow = {
   gc: number;
   dg: number;
   pts: number;
+  /** Puntos sumados/restados manualmente (Art. 9/11 del reglamento), ya incluidos en `pts`. */
+  pointAdjustment: number;
 };
 
 const DEFAULT_CRITERIA = ["PTS", "DG", "GF"];
@@ -42,10 +44,13 @@ export async function computeStandings(): Promise<StandingsRow[]> {
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 
-  const finishedMatches = await prisma.match.findMany({
-    where: { status: "FINALIZADO" },
-    include: { goals: true },
-  });
+  const [finishedMatches, pointAdjustments] = await Promise.all([
+    prisma.match.findMany({
+      where: { status: "FINALIZADO" },
+      include: { goals: true },
+    }),
+    prisma.pointAdjustment.findMany(),
+  ]);
 
   const rows = new Map<string, StandingsRow>();
   for (const team of teams) {
@@ -62,6 +67,7 @@ export async function computeStandings(): Promise<StandingsRow[]> {
       gc: 0,
       dg: 0,
       pts: 0,
+      pointAdjustment: 0,
     });
   }
 
@@ -94,6 +100,13 @@ export async function computeStandings(): Promise<StandingsRow[]> {
       home.pts += 1;
       away.pts += 1;
     }
+  }
+
+  for (const adjustment of pointAdjustments) {
+    const row = rows.get(adjustment.teamId);
+    if (!row) continue;
+    row.pointAdjustment += adjustment.points;
+    row.pts += adjustment.points;
   }
 
   for (const row of rows.values()) {

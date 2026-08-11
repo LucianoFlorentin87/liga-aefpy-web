@@ -35,6 +35,73 @@ async function assertPlayerOnTeamInMatch(matchId: string, playerId: string, team
   return match;
 }
 
+/**
+ * Régimen disciplinario automático (Art. 8 del reglamento):
+ * - Tarjeta roja: 1 partido de suspensión automático.
+ * - 3 tarjetas amarillas acumuladas (mismo jugador): 1 partido de
+ *   suspensión automático, y esas 3 amarillas quedan "consumidas" para no
+ *   volver a contarlas en una futura acumulación.
+ * Devuelve un mensaje para mostrar en el formulario si se generó una
+ * sanción, o null si no correspondía.
+ */
+async function maybeAutoSuspend(params: {
+  playerId: string;
+  teamId: string;
+  cardType: "AMARILLA" | "ROJA";
+  actorId: string;
+  playerName: string;
+}): Promise<string | null> {
+  const { playerId, teamId, cardType, actorId, playerName } = params;
+  const today = new Date();
+
+  if (cardType === "ROJA") {
+    await prisma.sanction.create({
+      data: {
+        playerId,
+        teamId,
+        reason: "Tarjeta roja (Art. 8.1 del reglamento) — suspensión automática",
+        matchesCount: 1,
+        startDate: today,
+        status: "ACTIVA",
+      },
+    });
+    await logActivity(`Suspensión automática (1 partido) para ${playerName} por tarjeta roja.`, actorId);
+    return "Tarjeta roja registrada. Se generó una suspensión automática de 1 partido (Art. 8.1).";
+  }
+
+  const unconsumedYellows = await prisma.matchCard.findMany({
+    where: { playerId, type: "AMARILLA", countedForSuspension: false },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (unconsumedYellows.length >= 3) {
+    const cardsToConsume = unconsumedYellows.slice(0, 3);
+    await prisma.$transaction([
+      prisma.matchCard.updateMany({
+        where: { id: { in: cardsToConsume.map((c) => c.id) } },
+        data: { countedForSuspension: true },
+      }),
+      prisma.sanction.create({
+        data: {
+          playerId,
+          teamId,
+          reason: "Acumulación de 3 tarjetas amarillas (Art. 8.2 del reglamento) — suspensión automática",
+          matchesCount: 1,
+          startDate: today,
+          status: "ACTIVA",
+        },
+      }),
+    ]);
+    await logActivity(
+      `Suspensión automática (1 partido) para ${playerName} por acumulación de 3 tarjetas amarillas.`,
+      actorId,
+    );
+    return "Tarjeta amarilla registrada. El jugador acumuló 3 amarillas: se generó una suspensión automática de 1 partido (Art. 8.2).";
+  }
+
+  return null;
+}
+
 export async function setParticipationAction(formData: FormData): Promise<void> {
   await requirePermission("resultados");
   const matchId = String(formData.get("matchId"));
@@ -140,9 +207,19 @@ export async function addCardAction(_prevState: FormState, formData: FormData): 
     `${actor.firstName} ${actor.lastName} registró tarjeta ${parsed.data.type === "AMARILLA" ? "amarilla" : "roja"} a ${player?.firstName} ${player?.lastName}.`,
     actor.id,
   );
+
+  const autoSuspensionMessage = await maybeAutoSuspend({
+    playerId: parsed.data.playerId,
+    teamId: parsed.data.teamId,
+    cardType: parsed.data.type,
+    actorId: actor.id,
+    playerName: player ? `${player.firstName} ${player.lastName}` : "El jugador",
+  });
+
   revalidatePath(`/admin/partidos/${parsed.data.matchId}`);
+  revalidatePath("/admin/sanciones");
   revalidatePublic();
-  return { success: "Tarjeta registrada." };
+  return { success: autoSuspensionMessage ?? "Tarjeta registrada." };
 }
 
 export async function deleteCardAction(formData: FormData): Promise<void> {
