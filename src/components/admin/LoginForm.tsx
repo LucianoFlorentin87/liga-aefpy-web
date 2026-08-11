@@ -12,7 +12,7 @@ export function LoginForm() {
     <form action={formAction} className="flex flex-col gap-4">
       <div>
         <label className="field-label" htmlFor="identifier">
-          Usuario o correo
+          Usuario
         </label>
         <input id="identifier" name="identifier" type="text" autoComplete="username" required className="input" />
       </div>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  identifier: z.string().min(1, "Ingresá tu usuario o correo"),
+  identifier: z.string().min(1, "Ingresá tu usuario"),
   password: z.string().min(1, "Ingresá tu contraseña"),
 });
 

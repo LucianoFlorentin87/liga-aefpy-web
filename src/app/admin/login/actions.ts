@@ -15,13 +15,13 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   });
 
   if (!parsed.success) {
-    return { error: "Ingresá tu usuario/correo y tu contraseña." };
+    return { error: "Ingresá tu usuario y tu contraseña." };
   }
 
-  const identifier = parsed.data.identifier.trim().toLowerCase();
+  const username = parsed.data.identifier.trim().toLowerCase();
 
   const user = await prisma.user.findFirst({
-    where: { OR: [{ username: identifier }, { email: identifier }] },
+    where: { username },
     include: { role: true },
   });
 
