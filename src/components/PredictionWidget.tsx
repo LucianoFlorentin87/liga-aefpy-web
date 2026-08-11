@@ -19,11 +19,11 @@ const CHOICES: { value: PredictionChoice; label: string }[] = [
 
 export function PredictionWidget({
   matchId,
-  fanLoggedIn,
+  canVote,
   tally,
 }: {
   matchId: string;
-  fanLoggedIn: boolean;
+  canVote: boolean;
   tally: PredictionTally;
 }) {
   const [pending, startTransition] = useTransition();
@@ -54,7 +54,7 @@ export function PredictionWidget({
     });
   }
 
-  if (!fanLoggedIn) {
+  if (!canVote) {
     return (
       <div className="mt-2 rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-xs text-[var(--color-gray-500)]">
         <Link href="/cuenta/login" className="font-semibold text-[var(--color-red-600)] hover:underline">

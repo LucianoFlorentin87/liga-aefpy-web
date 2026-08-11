@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { getFanSession } from "@/lib/fan-auth";
+import { getVoterIdentity } from "@/lib/voter";
 import { predictionSchema } from "@/lib/validation";
 
 export type CastPredictionResult = { error?: string; success?: boolean };
@@ -10,8 +10,8 @@ export type CastPredictionResult = { error?: string; success?: boolean };
 const VOTABLE_STATUSES = new Set(["PROGRAMADO", "REPROGRAMADO"]);
 
 export async function castPredictionAction(matchId: string, choice: string): Promise<CastPredictionResult> {
-  const fan = await getFanSession();
-  if (!fan) return { error: "Necesitás una cuenta para votar." };
+  const voter = await getVoterIdentity();
+  if (!voter) return { error: "Necesitás una cuenta para votar." };
 
   const parsed = predictionSchema.safeParse({ matchId, choice });
   if (!parsed.success) return { error: "Datos inválidos." };
@@ -22,11 +22,19 @@ export async function castPredictionAction(matchId: string, choice: string): Pro
     return { error: "Ya no se puede votar en este partido." };
   }
 
-  await prisma.prediction.upsert({
-    where: { userId_matchId: { userId: fan.sub, matchId: parsed.data.matchId } },
-    update: { choice: parsed.data.choice },
-    create: { userId: fan.sub, matchId: parsed.data.matchId, choice: parsed.data.choice },
-  });
+  if (voter.kind === "fan") {
+    await prisma.prediction.upsert({
+      where: { fanUserId_matchId: { fanUserId: voter.id, matchId: parsed.data.matchId } },
+      update: { choice: parsed.data.choice },
+      create: { fanUserId: voter.id, matchId: parsed.data.matchId, choice: parsed.data.choice },
+    });
+  } else {
+    await prisma.prediction.upsert({
+      where: { staffUserId_matchId: { staffUserId: voter.id, matchId: parsed.data.matchId } },
+      update: { choice: parsed.data.choice },
+      create: { staffUserId: voter.id, matchId: parsed.data.matchId, choice: parsed.data.choice },
+    });
+  }
 
   revalidatePath("/fixture");
   return { success: true };

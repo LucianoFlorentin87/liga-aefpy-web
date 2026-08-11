@@ -113,6 +113,14 @@ logueado, votar en `/fixture` quién cree que gana cada partido programado
   usuario + partido), y el widget muestra el porcentaje de votos de cada
   opción en tiempo real.
 
+Un usuario con rol `DELEGADO` **también** puede votar, usando su misma
+cuenta del panel (`/admin/login`) — no necesita crear además una cuenta de
+hincha. `src/lib/voter.ts` centraliza esa identidad ("¿quién puede votar
+ahora?": una `FanUser` o un `User` con rol DELEGADO) y `Prediction` guarda
+el voto contra `fanUserId` o `staffUserId` según corresponda (nunca ambos).
+Ningún otro rol de staff (SUPERADMIN, ADMINISTRADOR, CARGA_DATOS) vota con
+su cuenta de staff.
+
 ### Delegado de equipo
 
 El rol `DELEGADO` es una cuenta del panel (creada por un SUPERADMIN en

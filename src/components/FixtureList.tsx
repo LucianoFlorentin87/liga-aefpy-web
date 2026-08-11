@@ -11,11 +11,11 @@ const VOTABLE_STATUSES = new Set(["PROGRAMADO", "REPROGRAMADO"]);
 
 export function FixtureList({
   matches,
-  fanLoggedIn = false,
+  canVote = false,
   predictionsByMatch = {},
 }: {
   matches: MatchWithTeams[];
-  fanLoggedIn?: boolean;
+  canVote?: boolean;
   predictionsByMatch?: Record<string, PredictionTally>;
 }) {
   if (matches.length === 0) {
@@ -58,7 +58,7 @@ export function FixtureList({
                     {VOTABLE_STATUSES.has(match.status) && (
                       <PredictionWidget
                         matchId={match.id}
-                        fanLoggedIn={fanLoggedIn}
+                        canVote={canVote}
                         tally={
                           predictionsByMatch[match.id] ?? {
                             counts: { LOCAL: 0, EMPATE: 0, VISITANTE: 0 },

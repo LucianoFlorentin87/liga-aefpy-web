@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/PageHeader";
 import { FixtureList } from "@/components/FixtureList";
-import { getFanSession } from "@/lib/fan-auth";
+import { getVoterIdentity } from "@/lib/voter";
 import type { PredictionTally, PredictionChoice } from "@/components/PredictionWidget";
 
 export const metadata: Metadata = { title: "Fixture" };
 export const dynamic = "force-dynamic";
 
 export default async function FixturePage() {
-  const [matches, fan] = await Promise.all([
+  const [matches, voter] = await Promise.all([
     prisma.match.findMany({
       orderBy: [{ matchday: "asc" }, { date: "asc" }, { time: "asc" }],
       include: { homeTeam: true, awayTeam: true },
     }),
-    getFanSession(),
+    getVoterIdentity(),
   ]);
 
   const matchIds = matches
@@ -25,7 +25,7 @@ export default async function FixturePage() {
   if (matchIds.length > 0) {
     const allPredictions = await prisma.prediction.findMany({
       where: { matchId: { in: matchIds } },
-      select: { matchId: true, choice: true, userId: true },
+      select: { matchId: true, choice: true, fanUserId: true, staffUserId: true },
     });
     for (const matchId of matchIds) {
       predictionsByMatch[matchId] = { counts: { LOCAL: 0, EMPATE: 0, VISITANTE: 0 }, ownChoice: null };
@@ -34,7 +34,9 @@ export default async function FixturePage() {
       const tally = predictionsByMatch[p.matchId];
       const choice = p.choice as PredictionChoice;
       tally.counts[choice] += 1;
-      if (fan && p.userId === fan.sub) tally.ownChoice = choice;
+      const isOwnVote =
+        voter && ((voter.kind === "fan" && p.fanUserId === voter.id) || (voter.kind === "staff" && p.staffUserId === voter.id));
+      if (isOwnVote) tally.ownChoice = choice;
     }
   }
 
@@ -42,7 +44,7 @@ export default async function FixturePage() {
     <div>
       <PageHeader title="Fixture" subtitle="Todos los partidos del torneo, agrupados por jornada." />
       <div className="container-page py-8">
-        <FixtureList matches={matches} fanLoggedIn={!!fan} predictionsByMatch={predictionsByMatch} />
+        <FixtureList matches={matches} canVote={!!voter} predictionsByMatch={predictionsByMatch} />
       </div>
     </div>
   );

@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { MobileMenuButton } from "@/components/MobileMenuButton";
-import { getFanSession } from "@/lib/fan-auth";
+import { getVoterIdentity } from "@/lib/voter";
 import { logoutFanAction } from "@/app/(public)/cuenta/actions";
+import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
 
 export async function PublicHeader() {
-  const fan = await getFanSession();
+  const voter = await getVoterIdentity();
 
   return (
     <header className="relative border-b border-white/10 bg-[var(--color-navy-950)]">
@@ -28,12 +29,13 @@ export async function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {fan ? (
+          {voter ? (
             <div className="hidden xl:flex items-center gap-2">
               <span className="text-[0.78rem] font-semibold text-white/80">
-                Hola, {fan.firstName}
+                Hola, {voter.firstName}
+                {voter.kind === "staff" && " (Delegado)"}
               </span>
-              <form action={logoutFanAction}>
+              <form action={voter.kind === "fan" ? logoutFanAction : logoutStaffAction}>
                 <button
                   type="submit"
                   className="inline-flex items-center rounded-full border border-white/20 px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-white/75 hover:bg-white/10 hover:text-white"
@@ -64,7 +66,7 @@ export async function PublicHeader() {
           >
             Administración
           </Link>
-          <MobileMenuButton fan={fan} />
+          <MobileMenuButton voter={voter} />
         </div>
       </div>
     </header>

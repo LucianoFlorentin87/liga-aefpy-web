@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { logoutFanAction } from "@/app/(public)/cuenta/actions";
-import type { FanSessionPayload } from "@/lib/fan-auth";
+import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
+import type { VoterIdentity } from "@/lib/voter";
 
-export function MobileMenuButton({ fan }: { fan: FanSessionPayload | null }) {
+export function MobileMenuButton({ voter }: { voter: VoterIdentity | null }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -44,12 +45,13 @@ export function MobileMenuButton({ fan }: { fan: FanSessionPayload | null }) {
             ))}
 
             <div className="mt-1 flex flex-col border-t border-[var(--color-gray-100)] pt-1">
-              {fan ? (
+              {voter ? (
                 <>
                   <span className="px-2 py-2 text-[0.85rem] font-semibold text-[var(--color-gray-500)]">
-                    Hola, {fan.firstName}
+                    Hola, {voter.firstName}
+                    {voter.kind === "staff" && " (Delegado)"}
                   </span>
-                  <form action={logoutFanAction}>
+                  <form action={voter.kind === "fan" ? logoutFanAction : logoutStaffAction}>
                     <button
                       type="submit"
                       onClick={() => setOpen(false)}

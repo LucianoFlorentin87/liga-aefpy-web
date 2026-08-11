@@ -64,6 +64,9 @@ model User {
   updatedAt     DateTime   @updatedAt
   lastLoginAt   DateTime?
   activityLogs  ActivityLog[]
+  // Sólo la usan los DELEGADO: pueden votar en las predicciones públicas
+  // con su misma cuenta de staff, sin necesitar además una cuenta de hincha.
+  predictions   Prediction[]
 
   @@map("users")
 }
@@ -332,17 +335,24 @@ enum PredictionChoice {
   VISITANTE
 }
 
+// Una predicción pertenece a un hincha (fanUser) O a un usuario de staff con
+// rol DELEGADO (staffUser) — nunca a ambos. Se modela con dos relaciones
+// opcionales en vez de una sola columna genérica para conservar la
+// integridad referencial (FK real) hacia cada tabla de cuentas.
 model Prediction {
-  id        String            @id @default(cuid())
-  user      FanUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  match     Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  matchId   String
-  choice    PredictionChoice
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  id          String            @id @default(cuid())
+  fanUser     FanUser?          @relation(fields: [fanUserId], references: [id], onDelete: Cascade)
+  fanUserId   String?
+  staffUser   User?             @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
+  staffUserId String?
+  match       Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId     String
+  choice      PredictionChoice
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  @@unique([userId, matchId])
+  @@unique([fanUserId, matchId])
+  @@unique([staffUserId, matchId])
   @@index([matchId])
   @@map("predictions")
 }
