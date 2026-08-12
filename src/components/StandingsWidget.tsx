@@ -8,12 +8,12 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; lim
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between bg-[var(--color-navy-900)] px-4 py-3">
+      <div className="flex items-center justify-between bg-gradient-to-r from-[var(--color-navy-700)] to-[var(--color-navy-950)] px-4 py-3">
         <h2 className="text-sm font-extrabold uppercase tracking-wide text-white">Tabla de posiciones</h2>
         <Link
           href="/posiciones"
           aria-label="Ver tabla completa"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-navy-900)] shadow hover:bg-[var(--color-gray-100)]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
