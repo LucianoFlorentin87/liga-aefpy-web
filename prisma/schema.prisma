@@ -297,8 +297,15 @@ model PointAdjustment {
 // ---------------------------------------------------------------------------
 
 model TournamentSettings {
-  id                String   @id @default("settings")
-  tournamentName    String   @default("Liga AEFPY")
+  id String @id @default("settings")
+
+  // Textos editables del sitio público (hero, logo/wordmark, pie de página) —
+  // se muestran en /admin/configuracion. Nunca hardcodeados en los componentes.
+  orgName           String @default("Liga AEFPY")
+  orgTagline        String @default("Asociación de Efootball Paraguay")
+  heroSubtitle      String @default("Torneo de Fútbol")
+  footerDescription String @default("Torneo oficial organizado por la Liga AEFPY (Asociación de Efootball Paraguay).")
+
   standingsCriteria String   @default("PTS,DG,GF")
   rulesContent      String   @default("")
   rulesPdfUrl       String?

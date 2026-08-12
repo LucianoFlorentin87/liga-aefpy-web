@@ -13,7 +13,19 @@ const ALL_CRITERIA = ["PTS", "DG", "GF", "PG"];
 
 const emptyState: FormState = {};
 
-export function SettingsForm({ tournamentName, standingsCriteria }: { tournamentName: string; standingsCriteria: string }) {
+export function SettingsForm({
+  orgName,
+  orgTagline,
+  heroSubtitle,
+  footerDescription,
+  standingsCriteria,
+}: {
+  orgName: string;
+  orgTagline: string;
+  heroSubtitle: string;
+  footerDescription: string;
+  standingsCriteria: string;
+}) {
   const [state, formAction, pending] = useActionState(updateSettingsAction, emptyState);
   const initial = standingsCriteria.split(",").filter(Boolean);
   const [criteria, setCriteria] = useState<[string, string, string]>([
@@ -31,8 +43,41 @@ export function SettingsForm({ tournamentName, standingsCriteria }: { tournament
   return (
     <form action={formAction} className="flex flex-col gap-5 max-w-lg">
       <div>
-        <label className="field-label">Nombre del torneo</label>
-        <input name="tournamentName" required defaultValue={tournamentName} className="input" />
+        <p className="field-label mb-2">Textos del sitio</p>
+        <div className="flex flex-col gap-3 rounded-lg border border-[var(--color-gray-200)] p-3">
+          <div>
+            <label className="field-label">Nombre de la organización</label>
+            <input name="orgName" required maxLength={60} defaultValue={orgName} className="input" />
+            <p className="mt-1 text-xs text-[var(--color-gray-500)]">
+              Wordmark del logo y título del inicio (ej. &ldquo;Liga AEFPY&rdquo;).
+            </p>
+          </div>
+          <div>
+            <label className="field-label">Bajada / tagline</label>
+            <input name="orgTagline" required maxLength={80} defaultValue={orgTagline} className="input" />
+            <p className="mt-1 text-xs text-[var(--color-gray-500)]">
+              Debajo del logo y arriba del título del inicio (ej. &ldquo;Asociación de Efootball Paraguay&rdquo;).
+            </p>
+          </div>
+          <div>
+            <label className="field-label">Subtítulo del inicio</label>
+            <input name="heroSubtitle" required maxLength={80} defaultValue={heroSubtitle} className="input" />
+            <p className="mt-1 text-xs text-[var(--color-gray-500)]">
+              Línea debajo del título grande del inicio (ej. &ldquo;Torneo de Fútbol&rdquo;).
+            </p>
+          </div>
+          <div>
+            <label className="field-label">Descripción del pie de página</label>
+            <textarea
+              name="footerDescription"
+              required
+              maxLength={300}
+              defaultValue={footerDescription}
+              rows={2}
+              className="input"
+            />
+          </div>
+        </div>
       </div>
 
       <div>

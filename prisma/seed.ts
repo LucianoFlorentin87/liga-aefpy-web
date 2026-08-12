@@ -40,7 +40,6 @@ async function main() {
     update: {},
     create: {
       id: "settings",
-      tournamentName: "Liga AEFPY",
       standingsCriteria: "PTS,DG,GF",
       rulesContent: "",
     },

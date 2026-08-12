@@ -3,9 +3,13 @@ import { can } from "@/lib/permissions";
 import { ADMIN_NAV, DELEGADO_NAV } from "@/lib/admin-nav";
 import { roleLabel } from "@/lib/format";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { prisma } from "@/lib/db";
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
-  const { session } = await requireAuth();
+  const [{ session }, settings] = await Promise.all([
+    requireAuth(),
+    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+  ]);
 
   const navGroups =
     session.role === "DELEGADO"
@@ -20,6 +24,8 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
       navGroups={navGroups}
       userLabel={`${session.firstName} ${session.lastName}`}
       roleLabel={roleLabel(session.role)}
+      orgName={settings?.orgName ?? "Liga AEFPY"}
+      orgTagline={settings?.orgTagline ?? "Asociación de Efootball Paraguay"}
     >
       {children}
     </AdminShell>

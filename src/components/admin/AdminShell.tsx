@@ -48,11 +48,15 @@ export function AdminShell({
   navGroups,
   userLabel,
   roleLabel,
+  orgName,
+  orgTagline,
   children,
 }: {
   navGroups: AdminNavGroup[];
   userLabel: string;
   roleLabel: string;
+  orgName: string;
+  orgTagline: string;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -71,7 +75,7 @@ export function AdminShell({
               <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
             </svg>
           </button>
-          <Logo size={32} />
+          <Logo size={32} name={orgName} tagline={orgTagline} />
           <span className="hidden text-sm font-semibold text-[var(--color-gray-500)] sm:inline">
             Panel de Administración
           </span>

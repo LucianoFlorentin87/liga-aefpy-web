@@ -76,6 +76,26 @@ resultado/goles/tarjetas/convocados), `/admin/resultados`,
 `/admin/configuracion`, `/admin/cuenta` (cambiar mi contraseña),
 `/admin/mi-equipo` (sólo para el rol DELEGADO — ver sección 3).
 
+### Textos del sitio editables
+
+Nada de "Liga AEFPY" / "Asociación de Efootball Paraguay" está hardcodeado
+en los componentes — todo sale de `TournamentSettings`
+(`prisma/schema.prisma`) y se edita desde `/admin/configuracion`
+(SUPERADMIN/ADMINISTRADOR):
+
+- **`orgName`**: wordmark del logo (header, footer, login, panel) y
+  título grande del inicio.
+- **`orgTagline`**: bajada debajo del logo en el footer/login, línea roja
+  arriba del título del inicio, y segunda mitad del copyright del footer.
+- **`heroSubtitle`**: línea chica debajo del título grande del inicio.
+- **`footerDescription`**: párrafo debajo del logo en el footer.
+
+`src/components/Logo.tsx` recibe `name`/`tagline` como props (nunca los
+tiene hardcodeados) — cada lugar que lo renderiza (`PublicHeader`,
+`PublicFooter`, `AdminShell`, `admin/login`) hace su propia consulta a
+`TournamentSettings` y se los pasa, porque `AdminShell` es un client
+component y no puede leer la base de datos directamente.
+
 ### Reglamento oficial (Liga AEFPY)
 
 El comportamiento de varias funciones sigue el reglamento oficial de la liga

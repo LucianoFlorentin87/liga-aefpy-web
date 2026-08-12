@@ -16,12 +16,18 @@ export default async function ConfiguracionPage() {
       <div>
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Configuración del torneo</h1>
         <p className="text-sm text-[var(--color-gray-500)]">
-          Estos valores se aplican en todo el sitio público (nombre del torneo, orden de la tabla de posiciones).
+          Estos valores se aplican en todo el sitio (textos del logo, del inicio, del pie de página, y orden de la
+          tabla de posiciones).
         </p>
       </div>
       <div className="card p-5">
         <SettingsForm
-          tournamentName={settings?.tournamentName ?? "Liga AEFPY"}
+          orgName={settings?.orgName ?? "Liga AEFPY"}
+          orgTagline={settings?.orgTagline ?? "Asociación de Efootball Paraguay"}
+          heroSubtitle={settings?.heroSubtitle ?? "Torneo de Fútbol"}
+          footerDescription={
+            settings?.footerDescription ?? "Torneo oficial organizado por la Liga AEFPY (Asociación de Efootball Paraguay)."
+          }
           standingsCriteria={settings?.standingsCriteria ?? "PTS,DG,GF"}
         />
       </div>

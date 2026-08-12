@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { MobileMenuButton } from "@/components/MobileMenuButton";
@@ -7,13 +8,16 @@ import { logoutFanAction } from "@/app/(public)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
 
 export async function PublicHeader() {
-  const voter = await getVoterIdentity();
+  const [voter, settings] = await Promise.all([
+    getVoterIdentity(),
+    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+  ]);
 
   return (
     <header className="relative border-b border-white/10 bg-[var(--color-navy-950)]">
       <div className="mx-auto flex h-16 max-w-[82rem] items-center justify-between gap-4 px-4">
         <Link href="/" className="flex shrink-0 items-center">
-          <Logo size={38} variant="light" showTagline={false} />
+          <Logo size={38} variant="light" showTagline={false} name={settings?.orgName ?? "Liga AEFPY"} />
         </Link>
 
         <nav className="hidden xl:flex items-center gap-1">

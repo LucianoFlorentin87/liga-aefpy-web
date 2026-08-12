@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
 import { LoginForm } from "@/components/admin/LoginForm";
 
@@ -11,11 +12,18 @@ export default async function AdminLoginPage() {
   const session = await getSession();
   if (session) redirect(session.role === "DELEGADO" ? "/admin/mi-equipo" : "/admin/dashboard");
 
+  const settings = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy-950)] px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex justify-center">
-          <Logo size={44} variant="light" />
+          <Logo
+            size={44}
+            variant="light"
+            name={settings?.orgName ?? "Liga AEFPY"}
+            tagline={settings?.orgTagline ?? "Asociación de Efootball Paraguay"}
+          />
         </div>
         <div className="card p-6">
           <p className="eyebrow">Panel de administración</p>

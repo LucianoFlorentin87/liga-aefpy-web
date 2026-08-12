@@ -180,7 +180,10 @@ export const videoSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  tournamentName: z.string().trim().min(1, "El nombre del torneo es obligatorio"),
+  orgName: z.string().trim().min(1, "El nombre de la organización es obligatorio").max(60, "Máximo 60 caracteres"),
+  orgTagline: z.string().trim().min(1, "La bajada es obligatoria").max(80, "Máximo 80 caracteres"),
+  heroSubtitle: z.string().trim().min(1, "El subtítulo es obligatorio").max(80, "Máximo 80 caracteres"),
+  footerDescription: z.string().trim().min(1, "La descripción del pie de página es obligatoria").max(300, "Máximo 300 caracteres"),
   standingsCriteria: z
     .string()
     .trim()

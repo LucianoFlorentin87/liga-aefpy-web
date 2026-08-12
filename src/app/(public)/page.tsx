@@ -11,15 +11,6 @@ import { formatDateShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-const QUICK_LINKS = [
-  { href: "/fixture", label: "Fixture" },
-  { href: "/resultados", label: "Resultados" },
-  { href: "/posiciones", label: "Posiciones" },
-  { href: "/goleadores", label: "Goleadores" },
-  { href: "/disciplina", label: "Disciplina" },
-  { href: "/equipos", label: "Equipos" },
-];
-
 export default async function HomePage() {
   const [nextMatch, recentResults, standings, scorers, discipline, settings, featuredVideos] = await Promise.all([
     getNextMatch(),
@@ -39,23 +30,11 @@ export default async function HomePage() {
       <section className="bg-[var(--color-navy-950)]">
         <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
-            <p className="eyebrow">Asociación de Efootball Paraguay</p>
+            <p className="eyebrow">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
             <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl italic tracking-tight text-white sm:text-5xl">
-              Liga AEFPY <span className="text-[var(--color-red-500)]">2026</span>
+              {settings?.orgName || "Liga AEFPY"} <span className="text-[var(--color-red-500)]">2026</span>
             </h1>
-            <p className="mt-2 text-base font-medium text-white/70">
-              {settings?.tournamentName &&
-              !["Torneo Exa Frutos", "Liga AEFPY"].includes(settings.tournamentName)
-                ? settings.tournamentName
-                : "Torneo de Fútbol"}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {QUICK_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="btn border border-white/20 !bg-white/5 !text-white hover:!bg-white/10">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+            <p className="mt-2 text-base font-medium text-white/70">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
           </div>
           <NextMatchCard match={nextMatch} />
         </div>

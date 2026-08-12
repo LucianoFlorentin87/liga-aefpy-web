@@ -12,7 +12,10 @@ export async function updateSettingsAction(_prevState: FormState, formData: Form
   const { user: actor } = await requirePermission("configuracion");
 
   const parsed = settingsSchema.safeParse({
-    tournamentName: formData.get("tournamentName"),
+    orgName: formData.get("orgName"),
+    orgTagline: formData.get("orgTagline"),
+    heroSubtitle: formData.get("heroSubtitle"),
+    footerDescription: formData.get("footerDescription"),
     standingsCriteria: formData.get("standingsCriteria"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -25,7 +28,8 @@ export async function updateSettingsAction(_prevState: FormState, formData: Form
 
   await logActivity(`${actor.firstName} ${actor.lastName} actualizó la configuración del torneo.`, actor.id);
   revalidatePath("/admin/configuracion");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   revalidatePath("/posiciones");
   return { success: "Configuración guardada." };
 }
