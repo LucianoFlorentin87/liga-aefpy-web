@@ -20,14 +20,15 @@ const QUICK_LINKS = [
 ];
 
 export default async function HomePage() {
-  const [nextMatch, recentResults, standings, scorers, discipline, settings, videos] = await Promise.all([
+  const [nextMatch, recentResults, standings, scorers, discipline, settings, primaryVideo, videos] = await Promise.all([
     getNextMatch(),
     getRecentResults(5),
     computeStandings(),
     computeScorers(),
     computeDiscipline(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
-    prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.video.findFirst({ where: { isPrimary: true } }),
+    prisma.video.findMany({ where: { featured: true, isPrimary: false }, orderBy: { createdAt: "desc" }, take: 6 }),
   ]);
 
   return (
@@ -56,6 +57,22 @@ export default async function HomePage() {
           <NextMatchCard match={nextMatch} />
         </div>
       </section>
+
+      {primaryVideo && (
+        <section className="container-page pt-10">
+          <div className="card p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="section-title">{primaryVideo.title}</h2>
+              <Link href="/videos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
+                Ver todos
+              </Link>
+            </div>
+            <div className="mx-auto max-w-3xl">
+              <VideoPlayer url={primaryVideo.url} title={primaryVideo.title} />
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="container-page grid gap-6 py-10 lg:grid-cols-2">
         <div className="card p-5">

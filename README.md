@@ -101,13 +101,23 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
 
 Desde `/admin/videos` (SUPERADMIN/ADMINISTRADOR) se carga un título y un
 link — no se sube ningún archivo de video. Todos se publican en `/videos`,
-pero el inicio **no** los muestra automáticamente: sólo aparecen ahí (entre
-"Últimos resultados/Tabla de posiciones" y "Máximos goleadores/Resumen de
-disciplina") los que se marcan a mano como **"Destacado"** — con el
-checkbox del formulario o el botón rápido "Destacar"/"Quitar de
-destacados" en la lista (`Video.featured`). El componente
-`src/components/VideoPlayer.tsx` reconoce la plataforma a partir de la URL
-(`src/lib/video.ts`):
+pero el inicio **no** los muestra automáticamente: hay dos marcadores
+manuales, independientes entre sí (checkboxes del formulario, o los
+botones rápidos en la lista):
+
+- **`Video.isPrimary`** ("Video principal"): un video grande, arriba de
+  todo en el inicio, antes de "Últimos resultados/Tabla de posiciones" —
+  pensado para destacar el partido más relevante del momento. Sólo puede
+  haber uno a la vez: marcar uno nuevo desmarca automáticamente al
+  anterior (`clearOtherPrimaryVideos()` en
+  `src/app/admin/(protected)/videos/actions.ts`).
+- **`Video.featured`** ("Destacado"): una franja más chica (hasta 6
+  videos, en 3 columnas) entre "Tabla de posiciones" y "Máximos
+  goleadores" — el video principal nunca se repite ahí aunque también
+  esté marcado como destacado.
+
+El componente `src/components/VideoPlayer.tsx` reconoce la plataforma a
+partir de la URL (`src/lib/video.ts`):
 
 - **YouTube**: se embebe directo (`watch?v=`, `youtu.be/`, `/live/`, `/shorts/`).
 - **Twitch**: se embebe un canal en vivo (`twitch.tv/canal`) o un VOD
