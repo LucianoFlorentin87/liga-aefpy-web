@@ -43,7 +43,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="bg-[var(--color-navy-950)]">
+      <section className="bg-gradient-to-br from-[var(--color-navy-800)] via-[var(--color-navy-900)] to-[var(--color-navy-950)]">
         <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
             <p className="eyebrow">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
@@ -69,7 +69,7 @@ export default async function HomePage() {
       )}
 
       {primaryVideo && (
-        <section className="bg-[var(--color-red-600)]">
+        <section className="bg-gradient-to-br from-[var(--color-red-500)] via-[var(--color-red-600)] to-[var(--color-red-700)]">
           <div className="container-page grid gap-8 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-14">
             <div className="relative">
               <div

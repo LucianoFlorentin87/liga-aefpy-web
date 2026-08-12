@@ -8,7 +8,7 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; lim
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between bg-gradient-to-r from-[var(--color-navy-700)] to-[var(--color-navy-950)] px-4 py-3">
+      <div className="flex items-center justify-between bg-gradient-to-br from-[var(--color-navy-700)] via-[var(--color-navy-800)] to-[var(--color-navy-950)] px-4 py-3">
         <h2 className="text-sm font-extrabold uppercase tracking-wide text-white">Tabla de posiciones</h2>
         <Link
           href="/posiciones"
