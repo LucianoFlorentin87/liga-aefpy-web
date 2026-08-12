@@ -159,6 +159,17 @@ el hash), así que copiá la lista antes de cerrar la terminal para
 repartirla. Es seguro correrlo de nuevo más adelante: a los equipos que ya
 tienen un delegado no los toca.
 
+### Exportar equipos y delegados a Excel
+
+Desde `/admin/usuarios` (sólo SUPERADMIN), el botón **"Descargar Excel
+(equipos y delegados)"** genera y descarga un `.xlsx` con todos los
+equipos: nombre, abreviatura, delegado/teléfono/cancha cargados en
+`/admin/equipos`, y — si el equipo tiene una cuenta DELEGADO asignada — su
+usuario, correo, si la cuenta está activa y su último ingreso. Las
+contraseñas **nunca** se incluyen (se guardan encriptadas, no se pueden
+recuperar); el archivo lo aclara al pie. Lo genera
+`src/app/admin/(protected)/usuarios/export/route.ts` con `exceljs`.
+
 ---
 
 ## 3. Roles y permisos

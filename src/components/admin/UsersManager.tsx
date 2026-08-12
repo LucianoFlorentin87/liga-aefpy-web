@@ -159,11 +159,16 @@ export function UsersManager({ users, actorId, teams }: { users: UserRow[]; acto
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Usuarios</h1>
-        <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })}>
-          + Nuevo usuario
-        </button>
+        <div className="flex gap-2">
+          <a href="/admin/usuarios/export" className="btn btn-outline">
+            Descargar Excel (equipos y delegados)
+          </a>
+          <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })}>
+            + Nuevo usuario
+          </button>
+        </div>
       </div>
 
       {panel && (
