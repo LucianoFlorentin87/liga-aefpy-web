@@ -42,24 +42,54 @@ export const resetPasswordSchema = z.object({
   password: z.string().min(8, "La contraseña temporal debe tener al menos 8 caracteres"),
 });
 
-export const teamSchema = z.object({
+// .nullish() (no sólo .optional()) porque formData.get() devuelve null —no
+// undefined— para un campo que no está presente en el formulario (ver el
+// mismo problema ya resuelto antes con pointAdjustmentSchema.matchId): así
+// funciona igual si un formulario (ej. el de admin) no incluye algún campo
+// que sí tiene el otro (ej. el del propio delegado).
+const optionalText = z.string().trim().nullish().or(z.literal(""));
+const optionalUrl = z
+  .string()
+  .trim()
+  .url("Ingresá un link completo (empezando con https://)")
+  .nullish()
+  .or(z.literal(""));
+
+/** Nombre y abreviatura — el propio delegado también puede corregirlos para su equipo. */
+const teamNameFields = {
   name: z.string().trim().min(2, "El nombre es obligatorio"),
   shortName: z
     .string()
     .trim()
     .min(2, "La abreviatura es obligatoria")
     .max(6, "Máximo 6 caracteres"),
-  delegateName: z.string().trim().optional().or(z.literal("")),
-  delegatePhone: z.string().trim().optional().or(z.literal("")),
-  homeVenue: z.string().trim().optional().or(z.literal("")),
+};
+
+/** Datos de contacto, redes/streaming y gamertag — comunes al form de admin y al del propio delegado. */
+const teamContactFields = {
+  delegateName: optionalText,
+  delegatePhone: optionalText,
+  delegateEmail: z.string().trim().email("Correo inválido").nullish().or(z.literal("")),
+  homeVenue: optionalText,
+  instagramUrl: optionalUrl,
+  facebookUrl: optionalUrl,
+  youtubeUrl: optionalUrl,
+  twitchUrl: optionalUrl,
+  discordUrl: optionalUrl,
+  tiktokUrl: optionalUrl,
+  gamertag: z.string().trim().max(60, "Máximo 60 caracteres").nullish().or(z.literal("")),
+};
+
+export const teamSchema = z.object({
+  ...teamNameFields,
+  ...teamContactFields,
   status: statusEnum,
 });
 
-/** Datos que puede editar el propio delegado sobre su equipo (sin nombre ni estado). */
+/** Datos que puede editar el propio delegado sobre su equipo (incluye nombre/abreviatura, no el estado). */
 export const myTeamSchema = z.object({
-  delegateName: z.string().trim().optional().or(z.literal("")),
-  delegatePhone: z.string().trim().optional().or(z.literal("")),
-  homeVenue: z.string().trim().optional().or(z.literal("")),
+  ...teamNameFields,
+  ...teamContactFields,
 });
 
 const positionEnum = z.enum(["ARQUERO", "DEFENSOR", "MEDIOCAMPISTA", "DELANTERO"]);

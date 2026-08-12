@@ -131,11 +131,19 @@ autogestione su propia información sin tocar nada del resto de la liga:
   menú del panel (`src/lib/admin-nav.ts`), y si intenta entrar a cualquier
   otra URL de `/admin/**` por la barra de direcciones, `src/proxy.ts` lo
   redirige de vuelta.
-- Ahí puede editar el delegado/contacto, el teléfono, la cancha (`Team.homeVenue`)
-  y el logo de **su propio equipo**, y cargar/editar/activar/desactivar
-  **sus propios jugadores** — todo server-side scoped al `teamId` guardado
-  en su usuario (`requireDelegate()` en `src/lib/permissions.ts`), nunca a
-  un `teamId` que venga del formulario.
+- Ahí puede editar el **nombre y la abreviatura** de su equipo, el
+  delegado/contacto, teléfono, correo, cancha (`Team.homeVenue`), gamertag
+  / ID de plataforma (PSN, Xbox Live, EA ID), redes/streaming (Instagram,
+  Facebook, YouTube, Twitch, Discord, TikTok) y el logo de **su propio
+  equipo**, y cargar/editar/activar/desactivar **sus propios jugadores** —
+  todo server-side scoped al `teamId` guardado en su usuario
+  (`requireDelegate()` en `src/lib/permissions.ts`), nunca a un `teamId`
+  que venga del formulario. El SUPERADMIN/ADMINISTRADOR puede editar los
+  mismos campos de contacto/redes desde `/admin/equipos` para cualquier
+  equipo. Las redes/streaming se muestran como links en la ficha pública
+  del equipo (`/equipos/[id]`, componente `src/components/SocialLinks.tsx`);
+  el correo del delegado es sólo un dato de contacto por ahora, no habilita
+  todavía un "olvidé mi contraseña" automático.
 - **No puede** cargar resultados, goles ni tarjetas de ningún partido — esa
   parte del panel (`/admin/partidos`, `/admin/resultados`, etc.) sigue
   siendo exclusiva de SUPERADMIN/ADMINISTRADOR/CARGA_DATOS.

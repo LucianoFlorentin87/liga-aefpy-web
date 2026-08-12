@@ -9,16 +9,57 @@ import { saveTeamLogo } from "@/lib/upload";
 
 export type FormState = { error?: string; success?: string };
 
-export async function createTeamAction(_prevState: FormState, formData: FormData): Promise<FormState> {
-  const { user: actor } = await requirePermission("equipos");
-
-  const parsed = teamSchema.safeParse({
+function readTeamFormData(formData: FormData) {
+  return {
     name: formData.get("name"),
     shortName: formData.get("shortName"),
     delegateName: formData.get("delegateName"),
     delegatePhone: formData.get("delegatePhone"),
+    delegateEmail: formData.get("delegateEmail"),
+    homeVenue: formData.get("homeVenue"),
+    instagramUrl: formData.get("instagramUrl"),
+    facebookUrl: formData.get("facebookUrl"),
+    youtubeUrl: formData.get("youtubeUrl"),
+    twitchUrl: formData.get("twitchUrl"),
+    discordUrl: formData.get("discordUrl"),
+    tiktokUrl: formData.get("tiktokUrl"),
+    gamertag: formData.get("gamertag"),
     status: formData.get("status"),
-  });
+  };
+}
+
+function teamContactData(parsed: {
+  delegateName?: string | null;
+  delegatePhone?: string | null;
+  delegateEmail?: string | null;
+  homeVenue?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  youtubeUrl?: string | null;
+  twitchUrl?: string | null;
+  discordUrl?: string | null;
+  tiktokUrl?: string | null;
+  gamertag?: string | null;
+}) {
+  return {
+    delegateName: parsed.delegateName || null,
+    delegatePhone: parsed.delegatePhone || null,
+    delegateEmail: parsed.delegateEmail || null,
+    homeVenue: parsed.homeVenue || null,
+    instagramUrl: parsed.instagramUrl || null,
+    facebookUrl: parsed.facebookUrl || null,
+    youtubeUrl: parsed.youtubeUrl || null,
+    twitchUrl: parsed.twitchUrl || null,
+    discordUrl: parsed.discordUrl || null,
+    tiktokUrl: parsed.tiktokUrl || null,
+    gamertag: parsed.gamertag || null,
+  };
+}
+
+export async function createTeamAction(_prevState: FormState, formData: FormData): Promise<FormState> {
+  const { user: actor } = await requirePermission("equipos");
+
+  const parsed = teamSchema.safeParse(readTeamFormData(formData));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
@@ -30,9 +71,8 @@ export async function createTeamAction(_prevState: FormState, formData: FormData
     data: {
       name: parsed.data.name,
       shortName: parsed.data.shortName,
-      delegateName: parsed.data.delegateName || null,
-      delegatePhone: parsed.data.delegatePhone || null,
       status: parsed.data.status,
+      ...teamContactData(parsed.data),
     },
   });
 
@@ -54,13 +94,7 @@ export async function updateTeamAction(_prevState: FormState, formData: FormData
   const { user: actor } = await requirePermission("equipos");
   const id = String(formData.get("id"));
 
-  const parsed = teamSchema.safeParse({
-    name: formData.get("name"),
-    shortName: formData.get("shortName"),
-    delegateName: formData.get("delegateName"),
-    delegatePhone: formData.get("delegatePhone"),
-    status: formData.get("status"),
-  });
+  const parsed = teamSchema.safeParse(readTeamFormData(formData));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
@@ -84,10 +118,9 @@ export async function updateTeamAction(_prevState: FormState, formData: FormData
     data: {
       name: parsed.data.name,
       shortName: parsed.data.shortName,
-      delegateName: parsed.data.delegateName || null,
-      delegatePhone: parsed.data.delegatePhone || null,
       status: parsed.data.status,
       logoUrl,
+      ...teamContactData(parsed.data),
     },
   });
 

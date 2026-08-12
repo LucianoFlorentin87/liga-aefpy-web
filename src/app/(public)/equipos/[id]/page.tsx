@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { positionLabel } from "@/lib/format";
 import { EmptyState } from "@/components/EmptyState";
+import { SocialLinks } from "@/components/SocialLinks";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,16 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
             <div>
               <h1 className="text-xl font-extrabold text-[var(--color-navy-900)] sm:text-2xl">{team.name}</h1>
               <p className="text-sm text-[var(--color-gray-500)]">{team.players.length} jugadores en plantel</p>
+              {(team.homeVenue || team.gamertag) && (
+                <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-[var(--color-gray-500)]">
+                  {team.homeVenue && <span>🏟️ {team.homeVenue}</span>}
+                  {team.gamertag && <span>🎮 {team.gamertag}</span>}
+                </p>
+              )}
             </div>
+          </div>
+          <div className="mt-4">
+            <SocialLinks team={team} />
           </div>
         </div>
       </div>

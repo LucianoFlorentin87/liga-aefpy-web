@@ -45,10 +45,15 @@ function TeamProfileForm({ team }: { team: Team }) {
             {team.shortName}
           </div>
         )}
-        <div>
-          <p className="text-sm font-bold text-[var(--color-navy-900)]">{team.name}</p>
-          <p className="text-xs text-[var(--color-gray-500)]">El nombre y la abreviatura los administra la liga.</p>
-        </div>
+        <p className="text-xs text-[var(--color-gray-500)]">Logo del equipo — subilo abajo.</p>
+      </div>
+      <div>
+        <label className="field-label">Nombre del equipo</label>
+        <input name="name" required defaultValue={team.name} className="input" />
+      </div>
+      <div>
+        <label className="field-label">Abreviatura</label>
+        <input name="shortName" required maxLength={6} defaultValue={team.shortName} className="input" />
       </div>
       <div>
         <label className="field-label">Delegado / contacto</label>
@@ -59,12 +64,32 @@ function TeamProfileForm({ team }: { team: Team }) {
         <input name="delegatePhone" defaultValue={team.delegatePhone ?? ""} className="input" />
       </div>
       <div>
+        <label className="field-label">Correo del delegado</label>
+        <input name="delegateEmail" type="email" defaultValue={team.delegateEmail ?? ""} className="input" />
+      </div>
+      <div>
+        <label className="field-label">Gamertag / ID de plataforma</label>
+        <input name="gamertag" placeholder="PSN, Xbox Live, EA ID…" defaultValue={team.gamertag ?? ""} className="input" />
+      </div>
+      <div>
         <label className="field-label">Cancha / estadio</label>
         <input name="homeVenue" defaultValue={team.homeVenue ?? ""} className="input" />
       </div>
       <div>
         <label className="field-label">Logo (opcional, PNG/JPG/WEBP/SVG, máx. 2MB)</label>
         <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="input" />
+      </div>
+
+      <div className="sm:col-span-2">
+        <p className="field-label mb-2">Redes y streaming (opcional, link completo)</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <input name="instagramUrl" placeholder="Instagram" defaultValue={team.instagramUrl ?? ""} className="input" />
+          <input name="facebookUrl" placeholder="Facebook" defaultValue={team.facebookUrl ?? ""} className="input" />
+          <input name="youtubeUrl" placeholder="YouTube" defaultValue={team.youtubeUrl ?? ""} className="input" />
+          <input name="twitchUrl" placeholder="Twitch" defaultValue={team.twitchUrl ?? ""} className="input" />
+          <input name="discordUrl" placeholder="Discord" defaultValue={team.discordUrl ?? ""} className="input" />
+          <input name="tiktokUrl" placeholder="TikTok" defaultValue={team.tiktokUrl ?? ""} className="input" />
+        </div>
       </div>
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}

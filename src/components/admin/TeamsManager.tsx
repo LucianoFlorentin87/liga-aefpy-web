@@ -18,6 +18,15 @@ type TeamRow = {
   logoUrl: string | null;
   delegateName: string | null;
   delegatePhone: string | null;
+  delegateEmail: string | null;
+  homeVenue: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
+  twitchUrl: string | null;
+  discordUrl: string | null;
+  tiktokUrl: string | null;
+  gamertag: string | null;
   status: TeamStatus;
   _count: { players: number; homeMatches: number; awayMatches: number };
 };
@@ -52,6 +61,14 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         <input name="delegatePhone" defaultValue={team?.delegatePhone ?? ""} className="input" />
       </div>
       <div>
+        <label className="field-label">Correo del delegado</label>
+        <input name="delegateEmail" type="email" defaultValue={team?.delegateEmail ?? ""} className="input" />
+      </div>
+      <div>
+        <label className="field-label">Gamertag / ID de plataforma</label>
+        <input name="gamertag" placeholder="PSN, Xbox Live, EA ID…" defaultValue={team?.gamertag ?? ""} className="input" />
+      </div>
+      <div>
         <label className="field-label">Logo (opcional, PNG/JPG/WEBP/SVG, máx. 2MB)</label>
         <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="input" />
       </div>
@@ -61,6 +78,18 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
           <option value="ACTIVO">Activo</option>
           <option value="INACTIVO">Inactivo</option>
         </select>
+      </div>
+
+      <div className="sm:col-span-2">
+        <p className="field-label mb-2">Redes y streaming (opcional, link completo)</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <input name="instagramUrl" placeholder="Instagram" defaultValue={team?.instagramUrl ?? ""} className="input" />
+          <input name="facebookUrl" placeholder="Facebook" defaultValue={team?.facebookUrl ?? ""} className="input" />
+          <input name="youtubeUrl" placeholder="YouTube" defaultValue={team?.youtubeUrl ?? ""} className="input" />
+          <input name="twitchUrl" placeholder="Twitch" defaultValue={team?.twitchUrl ?? ""} className="input" />
+          <input name="discordUrl" placeholder="Discord" defaultValue={team?.discordUrl ?? ""} className="input" />
+          <input name="tiktokUrl" placeholder="TikTok" defaultValue={team?.tiktokUrl ?? ""} className="input" />
+        </div>
       </div>
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}

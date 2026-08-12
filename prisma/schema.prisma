@@ -87,9 +87,22 @@ model Team {
   logoUrl       String?
   delegateName  String?
   delegatePhone String?
+  // Correo de contacto del delegado. Es sólo un dato de contacto por ahora:
+  // todavía no hay un flujo de "recuperar contraseña" automático por correo.
+  delegateEmail String?
   // Cancha/estadio informativo del equipo (distinto de la cancha de cada
   // partido puntual, que puede variar). Lo puede editar el propio delegado.
   homeVenue     String?
+  // Redes/streaming y aparecen como links en la ficha pública del equipo.
+  instagramUrl  String?
+  facebookUrl   String?
+  youtubeUrl    String?
+  twitchUrl     String?
+  discordUrl    String?
+  tiktokUrl     String?
+  // Identificador del equipo/delegado en la plataforma donde se juega
+  // (ej. PSN, Xbox Live, EA ID) — para verificar partidos online.
+  gamertag      String?
   status        TeamStatus @default(ACTIVO)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

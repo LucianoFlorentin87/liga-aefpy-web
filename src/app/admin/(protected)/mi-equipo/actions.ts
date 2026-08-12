@@ -18,13 +18,26 @@ export async function updateMyTeamAction(_prevState: FormState, formData: FormDa
   const { user: actor, teamId } = await requireDelegate();
 
   const parsed = myTeamSchema.safeParse({
+    name: formData.get("name"),
+    shortName: formData.get("shortName"),
     delegateName: formData.get("delegateName"),
     delegatePhone: formData.get("delegatePhone"),
+    delegateEmail: formData.get("delegateEmail"),
     homeVenue: formData.get("homeVenue"),
+    instagramUrl: formData.get("instagramUrl"),
+    facebookUrl: formData.get("facebookUrl"),
+    youtubeUrl: formData.get("youtubeUrl"),
+    twitchUrl: formData.get("twitchUrl"),
+    discordUrl: formData.get("discordUrl"),
+    tiktokUrl: formData.get("tiktokUrl"),
+    gamertag: formData.get("gamertag"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
+
+  const duplicate = await prisma.team.findFirst({ where: { name: parsed.data.name, NOT: { id: teamId } } });
+  if (duplicate) return { error: "Ya existe otro equipo con ese nombre." };
 
   let logoUrl: string | undefined;
   try {
@@ -37,9 +50,19 @@ export async function updateMyTeamAction(_prevState: FormState, formData: FormDa
   const team = await prisma.team.update({
     where: { id: teamId },
     data: {
+      name: parsed.data.name,
+      shortName: parsed.data.shortName,
       delegateName: parsed.data.delegateName || null,
       delegatePhone: parsed.data.delegatePhone || null,
+      delegateEmail: parsed.data.delegateEmail || null,
       homeVenue: parsed.data.homeVenue || null,
+      instagramUrl: parsed.data.instagramUrl || null,
+      facebookUrl: parsed.data.facebookUrl || null,
+      youtubeUrl: parsed.data.youtubeUrl || null,
+      twitchUrl: parsed.data.twitchUrl || null,
+      discordUrl: parsed.data.discordUrl || null,
+      tiktokUrl: parsed.data.tiktokUrl || null,
+      gamertag: parsed.data.gamertag || null,
       ...(logoUrl ? { logoUrl } : {}),
     },
   });
