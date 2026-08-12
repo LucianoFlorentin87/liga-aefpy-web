@@ -164,11 +164,22 @@ tienen un delegado no los toca.
 Desde `/admin/usuarios` (sólo SUPERADMIN), el botón **"Descargar Excel
 (equipos y delegados)"** genera y descarga un `.xlsx` con todos los
 equipos: nombre, abreviatura, delegado/teléfono/cancha cargados en
-`/admin/equipos`, y — si el equipo tiene una cuenta DELEGADO asignada — su
-usuario, correo, si la cuenta está activa y su último ingreso. Las
-contraseñas **nunca** se incluyen (se guardan encriptadas, no se pueden
-recuperar); el archivo lo aclara al pie. Lo genera
-`src/app/admin/(protected)/usuarios/export/route.ts` con `exceljs`.
+`/admin/equipos`, y los datos de su cuenta DELEGADO. Por cada equipo:
+
+- Si **ya tiene** una cuenta DELEGADO: usuario y correo reales, si está
+  activa y su último ingreso. La contraseña se muestra como "—" porque se
+  guarda hasheada y no se puede recuperar (para cambiarla, "Restablecer
+  clave" en `/admin/usuarios`).
+- Si **todavía no tiene** cuenta: la fila queda resaltada en amarillo con
+  un usuario y una contraseña **sugeridos** (mismo criterio que `npm run
+  create:delegates`: `delegado.<abreviatura>` + contraseña al azar) — no
+  se crea nada en la base, es sólo una propuesta para cargarla a mano en
+  `/admin/usuarios`, o corriendo `npm run create:delegates` (que crea
+  exactamente esas mismas cuentas sugeridas).
+
+Lo genera `src/app/admin/(protected)/usuarios/export/route.ts` con
+`exceljs`, reutilizando `src/lib/delegate-suggestions.ts` para las
+sugerencias.
 
 ---
 
