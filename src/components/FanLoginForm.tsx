@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginFanAction, type FanFormState } from "@/app/(public)/cuenta/actions";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const emptyState: FanFormState = {};
 
@@ -20,7 +21,7 @@ export function FanLoginForm() {
         <label className="field-label" htmlFor="password">
           Contraseña
         </label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="input" />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </div>
 
       {state.error && (

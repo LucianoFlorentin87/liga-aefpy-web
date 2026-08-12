@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { RoleKey, UserStatus } from "@prisma/client";
 import { roleLabel } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
   createUserAction,
   updateUserAction,
@@ -71,7 +72,7 @@ function UserForm({
       {mode === "create" && (
         <div>
           <label className="field-label">Contraseña temporal</label>
-          <input name="password" type="password" required minLength={8} className="input" />
+          <PasswordInput name="password" autoComplete="new-password" required minLength={8} />
         </div>
       )}
       <div>
@@ -139,7 +140,7 @@ function ResetPasswordForm({ user, onDone }: { user: UserRow; onDone: () => void
       <input type="hidden" name="id" value={user.id} />
       <div>
         <label className="field-label">Nueva contraseña temporal para {user.username}</label>
-        <input name="password" type="password" required minLength={8} className="input" />
+        <PasswordInput name="password" autoComplete="new-password" required minLength={8} />
       </div>
       {state.error && <p className="field-error">{state.error}</p>}
       <div className="flex gap-2">

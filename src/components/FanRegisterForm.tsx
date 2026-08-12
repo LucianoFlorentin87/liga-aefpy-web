@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { registerFanAction, type FanFormState } from "@/app/(public)/cuenta/actions";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const emptyState: FanFormState = {};
 
@@ -34,13 +35,13 @@ export function FanRegisterForm() {
         <label className="field-label" htmlFor="password">
           Contraseña
         </label>
-        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} className="input" />
+        <PasswordInput id="password" name="password" autoComplete="new-password" required minLength={8} />
       </div>
       <div>
         <label className="field-label" htmlFor="confirmPassword">
           Confirmar contraseña
         </label>
-        <input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" required minLength={8} className="input" />
+        <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" required minLength={8} />
       </div>
 
       {state.error && (

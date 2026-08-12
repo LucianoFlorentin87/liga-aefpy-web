@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginAction, type LoginState } from "@/app/admin/login/actions";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const initialState: LoginState = {};
 
@@ -20,7 +21,7 @@ export function LoginForm() {
         <label className="field-label" htmlFor="password">
           Contraseña
         </label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="input" />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </div>
 
       {state.error && (

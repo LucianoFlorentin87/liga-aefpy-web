@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { changeOwnPasswordAction, type ChangePasswordState } from "@/app/admin/(protected)/cuenta/actions";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const initialState: ChangePasswordState = {};
 
@@ -14,19 +15,19 @@ export function ChangePasswordForm() {
         <label className="field-label" htmlFor="currentPassword">
           Contraseña actual
         </label>
-        <input id="currentPassword" name="currentPassword" type="password" required className="input" />
+        <PasswordInput id="currentPassword" name="currentPassword" autoComplete="current-password" required />
       </div>
       <div>
         <label className="field-label" htmlFor="newPassword">
           Nueva contraseña
         </label>
-        <input id="newPassword" name="newPassword" type="password" required minLength={8} className="input" />
+        <PasswordInput id="newPassword" name="newPassword" autoComplete="new-password" required minLength={8} />
       </div>
       <div>
         <label className="field-label" htmlFor="confirmPassword">
           Confirmar nueva contraseña
         </label>
-        <input id="confirmPassword" name="confirmPassword" type="password" required minLength={8} className="input" />
+        <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" required minLength={8} />
       </div>
 
       {state.error && <p className="field-error">{state.error}</p>}
