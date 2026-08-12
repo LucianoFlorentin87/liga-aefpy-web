@@ -1,26 +1,42 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { computeStandings, computeScorers, computeDiscipline, getNextMatch, getRecentResults } from "@/lib/stats";
+import {
+  computeStandings,
+  computeScorers,
+  computeDiscipline,
+  getNextMatch,
+  getRecentResults,
+  getUpcomingMatches,
+} from "@/lib/stats";
 import { NextMatchCard } from "@/components/NextMatchCard";
 import { ResultsList } from "@/components/ResultsList";
-import { StandingsTable } from "@/components/StandingsTable";
+import { StandingsWidget } from "@/components/StandingsWidget";
 import { ScorersTable } from "@/components/ScorersTable";
 import { DisciplineTable } from "@/components/DisciplineTable";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { UpcomingMatchesSlider } from "@/components/UpcomingMatchesSlider";
+import { TeamsCardSlider } from "@/components/TeamsCardSlider";
 import { formatDateShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [nextMatch, recentResults, standings, scorers, discipline, settings, featuredVideos] = await Promise.all([
-    getNextMatch(),
-    getRecentResults(5),
-    computeStandings(),
-    computeScorers(),
-    computeDiscipline(),
-    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
-    prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 7 }),
-  ]);
+  const [nextMatch, upcomingMatches, recentResults, standings, scorers, discipline, settings, featuredVideos, teams] =
+    await Promise.all([
+      getNextMatch(),
+      getUpcomingMatches(8),
+      getRecentResults(5),
+      computeStandings(),
+      computeScorers(),
+      computeDiscipline(),
+      prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+      prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 7 }),
+      prisma.team.findMany({
+        where: { status: "ACTIVO" },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, shortName: true, logoUrl: true },
+      }),
+    ]);
   // El destacado más reciente se ve grande arriba de todo; el resto (si hay
   // más de uno) va en la franja más chica, más abajo.
   const [primaryVideo, ...videos] = featuredVideos;
@@ -39,6 +55,18 @@ export default async function HomePage() {
           <NextMatchCard match={nextMatch} />
         </div>
       </section>
+
+      {upcomingMatches.length > 0 && (
+        <section className="container-page py-8">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="section-title">Próximos partidos</h2>
+            <Link href="/fixture" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
+              Ver todos
+            </Link>
+          </div>
+          <UpcomingMatchesSlider matches={upcomingMatches} />
+        </section>
+      )}
 
       {primaryVideo && (
         <section className="bg-[var(--color-red-600)]">
@@ -89,15 +117,7 @@ export default async function HomePage() {
           <ResultsList matches={recentResults} />
         </div>
 
-        <div className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Tabla de posiciones</h2>
-            <Link href="/posiciones" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver completa
-            </Link>
-          </div>
-          <StandingsTable rows={standings} limit={5} />
-        </div>
+        <StandingsWidget rows={standings} limit={6} />
 
         {videos.length > 0 && (
           <div className="card p-5 lg:col-span-2">
@@ -138,6 +158,18 @@ export default async function HomePage() {
           <DisciplineTable rows={discipline} limit={5} />
         </div>
       </section>
+
+      {teams.length > 0 && (
+        <section className="container-page pb-10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="section-title">Equipos</h2>
+            <Link href="/equipos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
+              Ver todos
+            </Link>
+          </div>
+          <TeamsCardSlider teams={teams} />
+        </section>
+      )}
     </div>
   );
 }

@@ -9,6 +9,19 @@ export function formatDate(date: Date | string): string {
   }).format(d);
 }
 
+/** "SÁB, 22 AGO" — para tarjetas compactas (slider de próximos partidos). */
+export function formatDateBadge(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const parts = new Intl.DateTimeFormat("es-PY", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("weekday")}, ${get("day")} ${get("month")}`.replace(/\./g, "").toUpperCase();
+}
+
 export function formatDateShort(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("es-PY", {

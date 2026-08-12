@@ -117,6 +117,26 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
   oficial, que se muestra embebido en `/reglamento` (con link para abrirlo
   aparte). Si no hay PDF, se usa el texto cargado como respaldo.
 
+### Secciones del inicio inspiradas en LaLiga/Serie A
+
+Tres widgets del inicio replican formatos de sitios de ligas reales,
+adaptados a la paleta navy/rojo del sitio (nunca se copian sus colores
+literales):
+
+- **`UpcomingMatchesSlider`** ("Próximos partidos"): franja horizontal
+  scrolleable de tarjetas (fecha corta, "Jornada N", escudos+equipos,
+  hora) para los próximos partidos programados (`getUpcomingMatches()` en
+  `src/lib/stats.ts`). Botón de flecha a la derecha hace scroll suave;
+  en mobile se scrollea con el dedo directamente.
+- **`StandingsWidget`** ("Tabla de posiciones" del inicio): versión
+  compacta de la tabla completa — barra de título en navy con un botón
+  circular que linkea a `/posiciones`, y sólo columnas Pos/Club/Pts/PJ/DG
+  (la tabla completa con todas las columnas sigue en `StandingsTable`,
+  usada en `/posiciones`).
+- **`TeamsCardSlider`** ("Equipos" del inicio): tarjetas con escudo +
+  nombre corto, mismo patrón de slider con flecha, cada una linkea a
+  `/equipos/[id]`.
+
 ### Visor de videos
 
 Desde `/admin/videos` (SUPERADMIN/ADMINISTRADOR) se carga un título y un

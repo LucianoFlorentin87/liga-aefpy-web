@@ -246,6 +246,15 @@ export async function getNextMatch() {
   });
 }
 
+export async function getUpcomingMatches(limit = 8) {
+  return prisma.match.findMany({
+    where: { status: { in: ["PROGRAMADO", "REPROGRAMADO"] } },
+    orderBy: [{ date: "asc" }, { time: "asc" }],
+    take: limit,
+    include: { homeTeam: true, awayTeam: true },
+  });
+}
+
 export async function getRecentResults(limit = 5) {
   return prisma.match.findMany({
     where: { status: "FINALIZADO" },
