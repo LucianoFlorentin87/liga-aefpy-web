@@ -63,8 +63,8 @@ src/
 
 ### Rutas públicas
 `/`, `/fixture`, `/resultados`, `/resultados/[id]`, `/posiciones`,
-`/goleadores`, `/disciplina`, `/equipos`, `/equipos/[id]`, `/reglamento`,
-`/cuenta/login`, `/cuenta/registro`.
+`/goleadores`, `/disciplina`, `/equipos`, `/equipos/[id]`, `/videos`,
+`/reglamento`, `/cuenta/login`, `/cuenta/registro`.
 
 ### Rutas del panel
 `/admin/login`, `/admin/dashboard`, `/admin/usuarios`, `/admin/equipos`,
@@ -72,9 +72,9 @@ src/
 (incluye "Generar fixture automáticamente"), `/admin/partidos/[id]` (carga de
 resultado/goles/tarjetas/convocados), `/admin/resultados`,
 `/admin/goleadores`, `/admin/disciplina`, `/admin/sanciones`,
-`/admin/ajustes-puntos`, `/admin/reglamento`, `/admin/configuracion`,
-`/admin/cuenta` (cambiar mi contraseña), `/admin/mi-equipo` (sólo para el
-rol DELEGADO — ver sección 3).
+`/admin/ajustes-puntos`, `/admin/reglamento`, `/admin/videos`,
+`/admin/configuracion`, `/admin/cuenta` (cambiar mi contraseña),
+`/admin/mi-equipo` (sólo para el rol DELEGADO — ver sección 3).
 
 ### Reglamento oficial (Liga AEFPY)
 
@@ -96,6 +96,25 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
 - **Reglamento en PDF**: desde `/admin/reglamento` se puede subir el PDF
   oficial, que se muestra embebido en `/reglamento` (con link para abrirlo
   aparte). Si no hay PDF, se usa el texto cargado como respaldo.
+
+### Visor de videos
+
+Desde `/admin/videos` (SUPERADMIN/ADMINISTRADOR) se carga un título y un
+link — no se sube ningún archivo de video. Se publican automáticamente en
+`/videos` y como adelanto (los 3 más recientes) en el inicio, entre "Últimos
+resultados/Tabla de posiciones" y "Máximos goleadores/Resumen de
+disciplina". El componente `src/components/VideoPlayer.tsx` reconoce la
+plataforma a partir de la URL (`src/lib/video.ts`):
+
+- **YouTube**: se embebe directo (`watch?v=`, `youtu.be/`, `/live/`, `/shorts/`).
+- **Twitch**: se embebe un canal en vivo (`twitch.tv/canal`) o un VOD
+  (`twitch.tv/videos/123`). El embed de Twitch exige declarar el dominio
+  exacto donde corre la página (`parent=`), que sólo se conoce en el
+  navegador — se resuelve con `useSyncExternalStore` (nunca `window` del
+  lado del servidor).
+- **Cualquier otra plataforma** (o un link que no se pudo reconocer): se
+  muestra como un botón "Ver video" que abre el link original en una
+  pestaña nueva, sin intentar embeberlo.
 
 ### Predicciones de los hinchas
 
@@ -198,7 +217,7 @@ sugerencias.
 | Usuarios | ✅ | ❌ | ❌ | ❌ |
 | Equipos / Jugadores / Partidos (programación) | ✅ | ✅ | ❌ | ❌ |
 | Resultados / Goles / Tarjetas (partidos ya cargados) | ✅ | ✅ | ✅ | ❌ |
-| Sanciones / Reglamento / Configuración | ✅ | ✅ | ❌ | ❌ |
+| Sanciones / Reglamento / Videos / Configuración | ✅ | ✅ | ❌ | ❌ |
 | Mi equipo (`/admin/mi-equipo`: sólo el equipo propio) | ❌ | ❌ | ❌ | ✅ |
 
 La matriz vive en un solo lugar (`src/lib/permissions.ts`) y se usa tanto

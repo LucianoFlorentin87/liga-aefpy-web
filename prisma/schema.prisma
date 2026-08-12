@@ -369,3 +369,17 @@ model Prediction {
   @@index([matchId])
   @@map("predictions")
 }
+
+// Videos destacados (goles, resúmenes, transmisiones en vivo) enlazados
+// desde YouTube, Twitch u otra plataforma — la liga sólo carga el link y el
+// título, nunca sube archivos de video. El "visor" (embed) se resuelve en
+// tiempo de render a partir de la URL, ver src/lib/video.ts.
+model Video {
+  id        String   @id @default(cuid())
+  title     String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("videos")
+}

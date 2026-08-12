@@ -21,7 +21,7 @@ export async function PublicHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-[0.83rem] font-semibold text-white/75 hover:bg-white/10 hover:text-white"
+              className="rounded-lg px-2.5 py-2 text-[0.8rem] font-semibold text-white/75 hover:bg-white/10 hover:text-white"
             >
               {item.label}
             </Link>

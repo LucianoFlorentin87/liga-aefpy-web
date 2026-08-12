@@ -40,6 +40,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { href: "/admin/usuarios", label: "Usuarios", resource: "usuarios" },
       { href: "/admin/reglamento", label: "Reglamento", resource: "reglamento" },
+      { href: "/admin/videos", label: "Videos", resource: "videos" },
       { href: "/admin/configuracion", label: "Configuración del torneo", resource: "configuracion" },
     ],
   },

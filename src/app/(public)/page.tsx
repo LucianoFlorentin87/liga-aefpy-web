@@ -6,6 +6,7 @@ import { ResultsList } from "@/components/ResultsList";
 import { StandingsTable } from "@/components/StandingsTable";
 import { ScorersTable } from "@/components/ScorersTable";
 import { DisciplineTable } from "@/components/DisciplineTable";
+import { VideoPlayer } from "@/components/VideoPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +20,14 @@ const QUICK_LINKS = [
 ];
 
 export default async function HomePage() {
-  const [nextMatch, recentResults, standings, scorers, discipline, settings] = await Promise.all([
+  const [nextMatch, recentResults, standings, scorers, discipline, settings, videos] = await Promise.all([
     getNextMatch(),
     getRecentResults(5),
     computeStandings(),
     computeScorers(),
     computeDiscipline(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+    prisma.video.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
   ]);
 
   return (
@@ -75,6 +77,25 @@ export default async function HomePage() {
           </div>
           <StandingsTable rows={standings} limit={5} />
         </div>
+
+        {videos.length > 0 && (
+          <div className="card p-5 lg:col-span-2">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="section-title">Videos</h2>
+              <Link href="/videos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
+                Ver todos
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {videos.map((video) => (
+                <div key={video.id} className="flex flex-col gap-2">
+                  <VideoPlayer url={video.url} title={video.title} />
+                  <p className="text-sm font-semibold text-[var(--color-navy-900)]">{video.title}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="card p-5">
           <div className="mb-3 flex items-center justify-between">

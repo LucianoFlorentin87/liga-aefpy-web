@@ -6,5 +6,6 @@ export const PUBLIC_NAV_ITEMS = [
   { href: "/goleadores", label: "Goleadores" },
   { href: "/disciplina", label: "Disciplina" },
   { href: "/equipos", label: "Equipos" },
+  { href: "/videos", label: "Videos" },
   { href: "/reglamento", label: "Reglamento" },
 ] as const;

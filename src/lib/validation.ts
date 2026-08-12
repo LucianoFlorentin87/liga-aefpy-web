@@ -174,6 +174,11 @@ export const pointAdjustmentSchema = z.object({
   matchId: z.string().nullish(),
 });
 
+export const videoSchema = z.object({
+  title: z.string().trim().min(2, "El título es obligatorio").max(120, "Máximo 120 caracteres"),
+  url: z.string().trim().url("Ingresá un link completo (empezando con https://)"),
+});
+
 export const settingsSchema = z.object({
   tournamentName: z.string().trim().min(1, "El nombre del torneo es obligatorio"),
   standingsCriteria: z

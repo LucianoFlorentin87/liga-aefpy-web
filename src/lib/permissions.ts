@@ -20,6 +20,7 @@ export const PERMISSIONS = {
   ajustesPuntos: ["SUPERADMIN", "ADMINISTRADOR"],
   reglamento: ["SUPERADMIN", "ADMINISTRADOR"],
   configuracion: ["SUPERADMIN", "ADMINISTRADOR"],
+  videos: ["SUPERADMIN", "ADMINISTRADOR"],
 } as const satisfies Record<string, RoleKey[]>;
 
 export type PermissionResource = keyof typeof PERMISSIONS;
