@@ -139,6 +139,25 @@ autogestione su propia información sin tocar nada del resto de la liga:
 - **No puede** cargar resultados, goles ni tarjetas de ningún partido — esa
   parte del panel (`/admin/partidos`, `/admin/resultados`, etc.) sigue
   siendo exclusiva de SUPERADMIN/ADMINISTRADOR/CARGA_DATOS.
+- Con esa misma cuenta también puede votar las predicciones en `/fixture`
+  (ver "Predicciones de los hinchas" más arriba) — no necesita además una
+  cuenta de hincha aparte.
+
+Para crear de una sola vez un usuario Delegado por cada equipo activo que
+todavía no tenga uno (en vez de ir uno por uno en `/admin/usuarios`), corré
+desde tu computadora, con `DATABASE_URL`/`DIRECT_URL` de producción en el
+`.env`:
+
+```bash
+npm run create:delegates
+```
+
+Genera un usuario (`delegado.<abreviatura-del-equipo>`) y una contraseña
+temporal al azar por cada equipo sin delegado, y los imprime en la consola
+**una sola vez** — no quedan guardados en texto plano en ningún lado (sólo
+el hash), así que copiá la lista antes de cerrar la terminal para
+repartirla. Es seguro correrlo de nuevo más adelante: a los equipos que ya
+tienen un delegado no los toca.
 
 ---
 
@@ -350,4 +369,5 @@ npm run db:deploy          # aplicar migraciones existentes (producción)
 npm run db:seed            # crear roles fijos + configuración inicial
 npm run db:studio          # explorador visual de la base (Prisma Studio)
 npm run create:superadmin  # crear un usuario Superadmin
+npm run create:delegates   # crear un usuario Delegado por cada equipo sin uno
 ```
