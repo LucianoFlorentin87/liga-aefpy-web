@@ -13,7 +13,7 @@ export async function TeamLogosBar() {
 
   return (
     <div className="border-b border-[var(--color-gray-200)] bg-white">
-      <div className="mx-auto flex max-w-[82rem] items-center gap-5 overflow-x-auto px-4 py-2.5">
+      <div className="mx-auto flex max-w-[82rem] items-center justify-evenly gap-5 overflow-x-auto px-4 py-2.5">
         {teams.map((team) => (
           <Link key={team.id} href={`/equipos/${team.id}`} title={team.name} className="shrink-0">
             <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={28} />
