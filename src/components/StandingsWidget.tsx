@@ -1,26 +1,13 @@
-import Link from "next/link";
 import type { StandingsRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
+import { WidgetCard } from "@/components/WidgetCard";
 
 export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   return (
-    <div className="card overflow-hidden">
-      <div className="flex items-center justify-between bg-gradient-to-br from-[var(--color-navy-700)] via-[var(--color-navy-800)] to-[var(--color-navy-950)] px-4 py-3">
-        <h2 className="text-sm font-extrabold uppercase tracking-wide text-white">Tabla de posiciones</h2>
-        <Link
-          href="/posiciones"
-          aria-label="Ver tabla completa"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-navy-900)] shadow hover:bg-[var(--color-gray-100)]"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      </div>
-
+    <WidgetCard title="Tabla de posiciones" href="/posiciones" ariaLabel="Ver tabla completa" bodyClassName="">
       {data.length === 0 ? (
         <div className="p-5">
           <EmptyState title="Sin datos registrados" hint="Todavía no hay partidos finalizados para calcular la tabla." />
@@ -56,6 +43,6 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; lim
           </tbody>
         </table>
       )}
-    </div>
+    </WidgetCard>
   );
 }

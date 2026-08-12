@@ -16,6 +16,7 @@ import { DisciplineTable } from "@/components/DisciplineTable";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { UpcomingMatchesSlider } from "@/components/UpcomingMatchesSlider";
 import { TeamsCardSlider } from "@/components/TeamsCardSlider";
+import { WidgetCard } from "@/components/WidgetCard";
 import { formatDateShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -58,13 +59,9 @@ export default async function HomePage() {
 
       {upcomingMatches.length > 0 && (
         <section className="container-page py-8">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Próximos partidos</h2>
-            <Link href="/fixture" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver todos
-            </Link>
-          </div>
-          <UpcomingMatchesSlider matches={upcomingMatches} />
+          <WidgetCard title="Próximos partidos" href="/fixture" ariaLabel="Ver todos los partidos">
+            <UpcomingMatchesSlider matches={upcomingMatches} />
+          </WidgetCard>
         </section>
       )}
 
@@ -107,26 +104,14 @@ export default async function HomePage() {
       )}
 
       <section className="container-page grid gap-6 py-10 lg:grid-cols-2">
-        <div className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Últimos resultados</h2>
-            <Link href="/resultados" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver todos
-            </Link>
-          </div>
+        <WidgetCard title="Últimos resultados" href="/resultados" ariaLabel="Ver todos los resultados">
           <ResultsList matches={recentResults} />
-        </div>
+        </WidgetCard>
 
         <StandingsWidget rows={standings} limit={6} />
 
         {videos.length > 0 && (
-          <div className="card p-5 lg:col-span-2">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="section-title">Videos</h2>
-              <Link href="/videos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-                Ver todos
-              </Link>
-            </div>
+          <WidgetCard title="Videos" href="/videos" ariaLabel="Ver todos los videos" className="lg:col-span-2">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {videos.map((video) => (
                 <div key={video.id} className="flex flex-col gap-2">
@@ -135,39 +120,23 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </WidgetCard>
         )}
 
-        <div className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Máximos goleadores</h2>
-            <Link href="/goleadores" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver todos
-            </Link>
-          </div>
+        <WidgetCard title="Máximos goleadores" href="/goleadores" ariaLabel="Ver todos los goleadores">
           <ScorersTable rows={scorers} limit={5} />
-        </div>
+        </WidgetCard>
 
-        <div className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Resumen de disciplina</h2>
-            <Link href="/disciplina" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver todo
-            </Link>
-          </div>
+        <WidgetCard title="Resumen de disciplina" href="/disciplina" ariaLabel="Ver todo el resumen de disciplina">
           <DisciplineTable rows={discipline} limit={5} />
-        </div>
+        </WidgetCard>
       </section>
 
       {teams.length > 0 && (
         <section className="container-page pb-10">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="section-title">Equipos</h2>
-            <Link href="/equipos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-              Ver todos
-            </Link>
-          </div>
-          <TeamsCardSlider teams={teams} />
+          <WidgetCard title="Equipos" href="/equipos" ariaLabel="Ver todos los equipos">
+            <TeamsCardSlider teams={teams} />
+          </WidgetCard>
         </section>
       )}
     </div>
