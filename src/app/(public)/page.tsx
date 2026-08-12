@@ -7,6 +7,7 @@ import { StandingsTable } from "@/components/StandingsTable";
 import { ScorersTable } from "@/components/ScorersTable";
 import { DisciplineTable } from "@/components/DisciplineTable";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { formatDateShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -61,16 +62,38 @@ export default async function HomePage() {
       </section>
 
       {primaryVideo && (
-        <section className="container-page pt-10">
-          <div className="card p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="section-title">{primaryVideo.title}</h2>
-              <Link href="/videos" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
-                Ver todos
-              </Link>
+        <section className="bg-[var(--color-red-600)]">
+          <div className="container-page grid gap-8 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-14">
+            <div className="relative">
+              <div
+                className="overflow-hidden rounded-lg"
+                style={{ clipPath: "polygon(0 28px, 28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%)" }}
+              >
+                <VideoPlayer url={primaryVideo.url} title={primaryVideo.title} />
+              </div>
+              <div
+                className="pointer-events-none absolute -top-3 -left-3 h-8 w-8 bg-white"
+                style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+              />
+              <div
+                className="pointer-events-none absolute -bottom-3 -right-3 h-8 w-8 bg-white"
+                style={{ clipPath: "polygon(100% 0, 100% 100%, 0 100%)" }}
+              />
             </div>
-            <div className="mx-auto max-w-3xl">
-              <VideoPlayer url={primaryVideo.url} title={primaryVideo.title} />
+            <div>
+              <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--color-red-700)]">
+                Video destacado
+              </span>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/70">
+                {formatDateShort(primaryVideo.createdAt)}
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{primaryVideo.title}</h2>
+              <Link
+                href="/videos"
+                className="mt-5 inline-flex items-center rounded-full border border-white/30 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-white/10"
+              >
+                Ver todos los videos
+              </Link>
             </div>
           </div>
         </section>

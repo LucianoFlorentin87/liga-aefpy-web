@@ -117,6 +117,18 @@ No hay un segundo marcador para elegir "cuál es el grande": ni bien
 destacás un video nuevo, automáticamente pasa a ser el que se ve grande, y
 el que estaba antes baja a la franja chica.
 
+El video destacado se muestra sobre un bloque rojo a todo el ancho, con
+las esquinas del video cortadas en diagonal (`clip-path` inline en
+`src/app/(public)/page.tsx`) — estética tomada de LaLiga.com.
+
+### Franja de escudos
+
+`src/components/TeamLogosBar.tsx` (montado en `src/app/(public)/layout.tsx`,
+arriba del header) muestra los escudos de todos los equipos activos en una
+fila blanca horizontal —scrolleable si no entran— arriba de todo en cada
+página pública, cada uno linkeando a `/equipos/[id]`. También inspirado en
+la franja de clubes de LaLiga.com.
+
 El componente `src/components/VideoPlayer.tsx` reconoce la plataforma a
 partir de la URL (`src/lib/video.ts`):
 
