@@ -20,16 +20,18 @@ const QUICK_LINKS = [
 ];
 
 export default async function HomePage() {
-  const [nextMatch, recentResults, standings, scorers, discipline, settings, primaryVideo, videos] = await Promise.all([
+  const [nextMatch, recentResults, standings, scorers, discipline, settings, featuredVideos] = await Promise.all([
     getNextMatch(),
     getRecentResults(5),
     computeStandings(),
     computeScorers(),
     computeDiscipline(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
-    prisma.video.findFirst({ where: { isPrimary: true } }),
-    prisma.video.findMany({ where: { featured: true, isPrimary: false }, orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 7 }),
   ]);
+  // El destacado más reciente se ve grande arriba de todo; el resto (si hay
+  // más de uno) va en la franja más chica, más abajo.
+  const [primaryVideo, ...videos] = featuredVideos;
 
   return (
     <div>

@@ -101,20 +101,21 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
 
 Desde `/admin/videos` (SUPERADMIN/ADMINISTRADOR) se carga un título y un
 link — no se sube ningún archivo de video. Todos se publican en `/videos`,
-pero el inicio **no** los muestra automáticamente: hay dos marcadores
-manuales, independientes entre sí (checkboxes del formulario, o los
-botones rápidos en la lista):
+pero el inicio **no** los muestra automáticamente: sólo los marcados a
+mano como **"Destacado"** (checkbox del formulario, o el botón rápido
+"Destacar"/"Quitar de destacados" en la lista — `Video.featured`), y con
+un único criterio simple:
 
-- **`Video.isPrimary`** ("Video principal"): un video grande, arriba de
-  todo en el inicio, antes de "Últimos resultados/Tabla de posiciones" —
-  pensado para destacar el partido más relevante del momento. Sólo puede
-  haber uno a la vez: marcar uno nuevo desmarca automáticamente al
-  anterior (`clearOtherPrimaryVideos()` en
-  `src/app/admin/(protected)/videos/actions.ts`).
-- **`Video.featured`** ("Destacado"): una franja más chica (hasta 6
-  videos, en 3 columnas) entre "Tabla de posiciones" y "Máximos
-  goleadores" — el video principal nunca se repite ahí aunque también
-  esté marcado como destacado.
+- El destacado **más reciente** se ve **grande**, arriba de todo en el
+  inicio, antes de "Últimos resultados/Tabla de posiciones" — pensado
+  para el partido más relevante del momento.
+- El **resto** de los destacados (si hay más de uno) van en una franja
+  más chica, más abajo, entre "Tabla de posiciones" y "Máximos
+  goleadores" (hasta 6, en 3 columnas).
+
+No hay un segundo marcador para elegir "cuál es el grande": ni bien
+destacás un video nuevo, automáticamente pasa a ser el que se ve grande, y
+el que estaba antes baja a la franja chica.
 
 El componente `src/components/VideoPlayer.tsx` reconoce la plataforma a
 partir de la URL (`src/lib/video.ts`):

@@ -380,11 +380,9 @@ model Video {
   url       String
   // Elegido a mano desde /admin/videos para aparecer en el inicio — el
   // inicio nunca muestra los últimos automáticamente, sólo los destacados.
+  // El primero de la lista (más reciente) se muestra grande arriba de
+  // todo; el resto, en una franja más chica más abajo — ver HomePage.
   featured  Boolean  @default(false)
-  // A lo sumo un video con isPrimary=true a la vez (se aplica en las server
-  // actions, no hay constraint de base): es el video grande que se muestra
-  // arriba de todo en el inicio, antes de resultados/posiciones.
-  isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
