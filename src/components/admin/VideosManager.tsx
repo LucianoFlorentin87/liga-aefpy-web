@@ -4,7 +4,13 @@ import { useActionState, useEffect, useState } from "react";
 import type { Video } from "@prisma/client";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { detectVideoPlatform, VIDEO_PLATFORM_LABEL } from "@/lib/video";
-import { createVideoAction, updateVideoAction, deleteVideoAction, type FormState } from "@/app/admin/(protected)/videos/actions";
+import {
+  createVideoAction,
+  updateVideoAction,
+  deleteVideoAction,
+  toggleVideoFeaturedAction,
+  type FormState,
+} from "@/app/admin/(protected)/videos/actions";
 
 const emptyState: FormState = {};
 
@@ -26,6 +32,12 @@ function VideoForm({ mode, video, onDone }: { mode: "create" | "edit"; video?: V
       <div>
         <label className="field-label">Link (YouTube, Twitch, etc.)</label>
         <input name="url" required placeholder="https://…" defaultValue={video?.url} className="input" />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-gray-700)]">
+          <input type="checkbox" name="featured" defaultChecked={video?.featured ?? false} className="h-4 w-4" />
+          Destacado (aparece en el inicio)
+        </label>
       </div>
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}
@@ -50,7 +62,9 @@ export function VideosManager({ videos }: { videos: Video[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Videos</h1>
-          <p className="text-sm text-[var(--color-gray-500)]">Se publican automáticamente en /videos y en el inicio.</p>
+          <p className="text-sm text-[var(--color-gray-500)]">
+            Se publican en /videos. Sólo los marcados como &ldquo;Destacado&rdquo; aparecen en el inicio.
+          </p>
         </div>
         <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })}>
           + Nuevo video
@@ -75,14 +89,27 @@ export function VideosManager({ videos }: { videos: Video[] }) {
           {videos.map((v) => (
             <div key={v.id} className="card flex flex-col gap-3 p-4">
               <VideoPlayer url={v.url} title={v.title} />
-              <div>
-                <p className="font-semibold text-[var(--color-navy-900)]">{v.title}</p>
-                <p className="text-xs text-[var(--color-gray-500)]">{VIDEO_PLATFORM_LABEL[detectVideoPlatform(v.url)]}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-[var(--color-navy-900)]">{v.title}</p>
+                  <p className="text-xs text-[var(--color-gray-500)]">{VIDEO_PLATFORM_LABEL[detectVideoPlatform(v.url)]}</p>
+                </div>
+                {v.featured && (
+                  <span className="shrink-0 rounded-full bg-[var(--color-red-100)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-red-700)]">
+                    Destacado
+                  </span>
+                )}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 <button className="btn btn-ghost !px-2 !py-1 text-xs" onClick={() => setPanel({ mode: "edit", video: v })}>
                   Editar
                 </button>
+                <form action={toggleVideoFeaturedAction}>
+                  <input type="hidden" name="id" value={v.id} />
+                  <button className="btn btn-ghost !px-2 !py-1 text-xs">
+                    {v.featured ? "Quitar de destacados" : "Destacar"}
+                  </button>
+                </form>
                 <form
                   action={deleteVideoAction}
                   onSubmit={(e) => {

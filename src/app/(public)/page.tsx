@@ -27,7 +27,7 @@ export default async function HomePage() {
     computeScorers(),
     computeDiscipline(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
-    prisma.video.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
+    prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 6 }),
   ]);
 
   return (

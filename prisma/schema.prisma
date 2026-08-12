@@ -378,6 +378,9 @@ model Video {
   id        String   @id @default(cuid())
   title     String
   url       String
+  // Elegido a mano desde /admin/videos para aparecer en el inicio — el
+  // inicio nunca muestra los últimos automáticamente, sólo los destacados.
+  featured  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -100,11 +100,14 @@ El comportamiento de varias funciones sigue el reglamento oficial de la liga
 ### Visor de videos
 
 Desde `/admin/videos` (SUPERADMIN/ADMINISTRADOR) se carga un título y un
-link — no se sube ningún archivo de video. Se publican automáticamente en
-`/videos` y como adelanto (los 3 más recientes) en el inicio, entre "Últimos
-resultados/Tabla de posiciones" y "Máximos goleadores/Resumen de
-disciplina". El componente `src/components/VideoPlayer.tsx` reconoce la
-plataforma a partir de la URL (`src/lib/video.ts`):
+link — no se sube ningún archivo de video. Todos se publican en `/videos`,
+pero el inicio **no** los muestra automáticamente: sólo aparecen ahí (entre
+"Últimos resultados/Tabla de posiciones" y "Máximos goleadores/Resumen de
+disciplina") los que se marcan a mano como **"Destacado"** — con el
+checkbox del formulario o el botón rápido "Destacar"/"Quitar de
+destacados" en la lista (`Video.featured`). El componente
+`src/components/VideoPlayer.tsx` reconoce la plataforma a partir de la URL
+(`src/lib/video.ts`):
 
 - **YouTube**: se embebe directo (`watch?v=`, `youtu.be/`, `/live/`, `/shorts/`).
 - **Twitch**: se embebe un canal en vivo (`twitch.tv/canal`) o un VOD

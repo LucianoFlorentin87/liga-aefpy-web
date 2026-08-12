@@ -24,7 +24,9 @@ export async function createVideoAction(_prevState: FormState, formData: FormDat
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const video = await prisma.video.create({ data: parsed.data });
+  const video = await prisma.video.create({
+    data: { ...parsed.data, featured: formData.get("featured") === "on" },
+  });
 
   await logActivity(`${actor.firstName} ${actor.lastName} cargó el video "${video.title}".`, actor.id);
   revalidatePath("/admin/videos");
@@ -47,12 +49,31 @@ export async function updateVideoAction(_prevState: FormState, formData: FormDat
   const target = await prisma.video.findUnique({ where: { id } });
   if (!target) return { error: "El video no existe." };
 
-  await prisma.video.update({ where: { id }, data: parsed.data });
+  await prisma.video.update({
+    where: { id },
+    data: { ...parsed.data, featured: formData.get("featured") === "on" },
+  });
 
   await logActivity(`${actor.firstName} ${actor.lastName} editó el video "${parsed.data.title}".`, actor.id);
   revalidatePath("/admin/videos");
   revalidatePublic();
   return { success: "Video actualizado." };
+}
+
+export async function toggleVideoFeaturedAction(formData: FormData): Promise<void> {
+  const { user: actor } = await requirePermission("videos");
+  const id = String(formData.get("id"));
+
+  const target = await prisma.video.findUnique({ where: { id } });
+  if (!target) return;
+
+  await prisma.video.update({ where: { id }, data: { featured: !target.featured } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} ${!target.featured ? "destacó" : "quitó de destacados"} el video "${target.title}".`,
+    actor.id,
+  );
+  revalidatePath("/admin/videos");
+  revalidatePublic();
 }
 
 export async function deleteVideoAction(formData: FormData): Promise<void> {
