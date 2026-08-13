@@ -469,6 +469,15 @@ nuevo — pero no es necesario, Supabase Storage entra en la capa gratuita.
   se expone al cliente; todo sale de variables de entorno (`.env`, nunca
   commiteado).
 - Los formularios validan con `zod` tanto en cliente como en servidor.
+- **Row Level Security (RLS) habilitado en las 16 tablas de la base**
+  (migración `20260813010000_enable_rls`), sin políticas. La app nunca
+  consulta Postgres por la API REST pública de Supabase (PostgREST) —
+  siempre usa Prisma con el rol dueño de las tablas, que bypassea RLS
+  automáticamente, así que esto no cambia nada del funcionamiento normal.
+  Lo que sí hace es cerrar el acceso público por esa API a cualquiera con
+  la anon key (Supabase la expone por default sobre todas las tablas del
+  schema `public` si RLS está deshabilitado, sin importar si la app la usa
+  o no).
 
 ---
 
