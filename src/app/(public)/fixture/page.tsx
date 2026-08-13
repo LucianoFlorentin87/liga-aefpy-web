@@ -12,7 +12,7 @@ export default async function FixturePage() {
   const [matches, voter] = await Promise.all([
     prisma.match.findMany({
       orderBy: [{ matchday: "asc" }, { date: "asc" }, { time: "asc" }],
-      include: { homeTeam: true, awayTeam: true },
+      include: { homeTeam: true, awayTeam: true, goals: true },
     }),
     getVoterIdentity(),
   ]);
