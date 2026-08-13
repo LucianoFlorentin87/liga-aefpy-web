@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
 import { TeamCrest } from "@/components/TeamCrest";
+import { SliderArrowButton } from "@/components/SliderArrowButton";
 import { formatDateBadge } from "@/lib/format";
+import { useHorizontalScroller } from "@/lib/useHorizontalScroller";
 
 type UpcomingMatch = {
   id: string;
@@ -23,18 +24,18 @@ function TeamRow({ team }: { team: UpcomingMatch["homeTeam"] }) {
 }
 
 export function UpcomingMatchesSlider({ matches }: { matches: UpcomingMatch[] }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
-  function scroll(dir: 1 | -1) {
-    scrollerRef.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
-  }
+  const { ref, canScrollLeft, canScrollRight, onScroll, scroll } = useHorizontalScroller(matches);
+  const showArrows = matches.length > 2;
 
   if (matches.length === 0) return null;
 
   return (
     <div className="flex items-stretch gap-2">
+      {showArrows && <SliderArrowButton dir={-1} onClick={() => scroll(-1)} visible={canScrollLeft} label="Ver partidos anteriores" />}
+
       <div
-        ref={scrollerRef}
+        ref={ref}
+        onScroll={onScroll}
         className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {matches.map((m) => (
@@ -59,18 +60,7 @@ export function UpcomingMatchesSlider({ matches }: { matches: UpcomingMatch[] })
         ))}
       </div>
 
-      {matches.length > 2 && (
-        <button
-          type="button"
-          onClick={() => scroll(1)}
-          aria-label="Ver más partidos"
-          className="hidden h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[var(--color-red-600)] text-white shadow-md hover:bg-[var(--color-red-700)] sm:flex"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      )}
+      {showArrows && <SliderArrowButton dir={1} onClick={() => scroll(1)} visible={canScrollRight} label="Ver más partidos" />}
     </div>
   );
 }

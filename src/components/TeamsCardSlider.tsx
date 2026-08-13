@@ -1,25 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
 import Link from "next/link";
 import { TeamCrest } from "@/components/TeamCrest";
+import { SliderArrowButton } from "@/components/SliderArrowButton";
+import { useHorizontalScroller } from "@/lib/useHorizontalScroller";
 
 type TeamLite = { id: string; name: string; shortName: string; logoUrl: string | null };
 
 export function TeamsCardSlider({ teams }: { teams: TeamLite[] }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
-
-  function scroll(dir: 1 | -1) {
-    scrollerRef.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
-  }
-
-  function handleScroll() {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    setProgress(max > 0 ? el.scrollLeft / max : 0);
-  }
+  const { ref, canScrollLeft, canScrollRight, progress, onScroll, scroll } = useHorizontalScroller(teams);
+  const showArrows = teams.length > 5;
 
   if (teams.length === 0) return null;
 
@@ -28,9 +18,11 @@ export function TeamsCardSlider({ teams }: { teams: TeamLite[] }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-stretch gap-2">
+        {showArrows && <SliderArrowButton dir={-1} onClick={() => scroll(-1)} visible={canScrollLeft} label="Ver equipos anteriores" />}
+
         <div
-          ref={scrollerRef}
-          onScroll={handleScroll}
+          ref={ref}
+          onScroll={onScroll}
           className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {teams.map((team) => (
@@ -48,21 +40,10 @@ export function TeamsCardSlider({ teams }: { teams: TeamLite[] }) {
           ))}
         </div>
 
-        {teams.length > 5 && (
-          <button
-            type="button"
-            onClick={() => scroll(1)}
-            aria-label="Ver más equipos"
-            className="hidden h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[var(--color-red-600)] text-white shadow-md hover:bg-[var(--color-red-700)] sm:flex"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        )}
+        {showArrows && <SliderArrowButton dir={1} onClick={() => scroll(1)} visible={canScrollRight} label="Ver más equipos" />}
       </div>
 
-      {teams.length > 5 && (
+      {showArrows && (
         <div className="h-1 w-24 overflow-hidden rounded-full bg-[var(--color-gray-200)]">
           <div
             className="h-full rounded-full bg-[var(--color-red-500)] transition-[margin]"
