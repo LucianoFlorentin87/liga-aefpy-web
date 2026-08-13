@@ -5,7 +5,15 @@ import Link from "next/link";
 import type { MatchStatus } from "@prisma/client";
 import { matchStatusLabel, formatDateShort } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
-import { createMatchAction, updateMatchAction, deleteMatchAction, type FormState } from "@/app/admin/(protected)/partidos/actions";
+import {
+  createMatchAction,
+  updateMatchAction,
+  deleteMatchAction,
+  deleteMatchesAction,
+  updateMatchesStatusAction,
+  type FormState,
+  type BulkFormState,
+} from "@/app/admin/(protected)/partidos/actions";
 import { GenerateFixtureForm } from "@/components/admin/GenerateFixtureForm";
 
 type MatchRow = {
@@ -124,8 +132,86 @@ function MatchForm({
   );
 }
 
+const emptyBulkState: BulkFormState = {};
+
+function BulkActionsBar({ selectedIds, onDone }: { selectedIds: string[]; onDone: () => void }) {
+  const [status, setStatus] = useState<MatchStatus>("SUSPENDIDO");
+  const [statusState, statusFormAction, statusPending] = useActionState(updateMatchesStatusAction, emptyBulkState);
+  const [deleteState, deleteFormAction, deletePending] = useActionState(deleteMatchesAction, emptyBulkState);
+
+  useEffect(() => {
+    if (statusState.success) onDone();
+  }, [statusState.success, onDone]);
+  useEffect(() => {
+    if (deleteState.success) onDone();
+  }, [deleteState.success, onDone]);
+
+  return (
+    <div className="card flex flex-col gap-2 border-[var(--color-navy-700)] bg-[var(--color-navy-100)] p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-semibold text-[var(--color-navy-900)]">
+          {selectedIds.length} seleccionado{selectedIds.length === 1 ? "" : "s"}
+        </span>
+
+        <form action={statusFormAction} className="flex items-center gap-1.5">
+          {selectedIds.map((id) => (
+            <input key={id} type="hidden" name="ids" value={id} />
+          ))}
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as MatchStatus)}
+            name="status"
+            className="input !w-auto !py-1.5 text-sm"
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {matchStatusLabel(s)}
+              </option>
+            ))}
+          </select>
+          <button type="submit" disabled={statusPending} className="btn btn-outline !px-2.5 !py-1.5 text-xs">
+            {statusPending ? "Aplicando…" : "Cambiar estado"}
+          </button>
+        </form>
+
+        <form
+          action={deleteFormAction}
+          onSubmit={(e) => {
+            if (!confirm(`¿Eliminar ${selectedIds.length} partido(s)? Los que ya tengan goles o tarjetas cargadas se van a saltear.`)) {
+              e.preventDefault();
+            }
+          }}
+        >
+          {selectedIds.map((id) => (
+            <input key={id} type="hidden" name="ids" value={id} />
+          ))}
+          <button type="submit" disabled={deletePending} className="btn btn-danger !px-2.5 !py-1.5 text-xs">
+            {deletePending ? "Eliminando…" : "Eliminar seleccionados"}
+          </button>
+        </form>
+      </div>
+      {statusState.error && <p className="field-error">{statusState.error}</p>}
+      {deleteState.error && <p className="field-error">{deleteState.error}</p>}
+    </div>
+  );
+}
+
 export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams: TeamOption[] }) {
   const [panel, setPanel] = useState<{ mode: "create" | "edit" | "generate"; match?: MatchRow } | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected((prev) => (prev.size === matches.length ? new Set() : new Set(matches.map((m) => m.id))));
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -166,6 +252,10 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
         </div>
       )}
 
+      {selected.size > 0 && (
+        <BulkActionsBar selectedIds={Array.from(selected)} onDone={() => setSelected(new Set())} />
+      )}
+
       <div className="card p-3 sm:p-5">
         {matches.length === 0 ? (
           <p className="empty-state">
@@ -176,6 +266,14 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
             <table className="data-table">
               <thead>
                 <tr>
+                  <th className="w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Seleccionar todos"
+                      checked={selected.size === matches.length}
+                      onChange={toggleAll}
+                    />
+                  </th>
                   <th>Jornada</th>
                   <th>Fecha</th>
                   <th>Partido</th>
@@ -189,6 +287,14 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
                   const hasRelated = m._count.goals > 0 || m._count.cards > 0;
                   return (
                     <tr key={m.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Seleccionar ${m.homeTeam.name} vs ${m.awayTeam.name}`}
+                          checked={selected.has(m.id)}
+                          onChange={() => toggleOne(m.id)}
+                        />
+                      </td>
                       <td>{m.matchday}</td>
                       <td>{formatDateShort(m.date)}</td>
                       <td className="font-semibold text-[var(--color-navy-900)]">

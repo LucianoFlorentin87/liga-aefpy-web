@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { matchSchema } from "@/lib/validation";
+import { matchStatusLabel } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
@@ -126,4 +127,58 @@ export async function deleteMatchAction(formData: FormData): Promise<void> {
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
   revalidatePublic();
+}
+
+export type BulkFormState = { error?: string; success?: string };
+
+export async function deleteMatchesAction(_prevState: BulkFormState, formData: FormData): Promise<BulkFormState> {
+  const { user: actor } = await requirePermission("partidos");
+  const ids = formData.getAll("ids").map(String);
+  if (ids.length === 0) return { error: "No seleccionaste ningún partido." };
+
+  const targets = await prisma.match.findMany({
+    where: { id: { in: ids } },
+    include: { _count: { select: { goals: true, cards: true } } },
+  });
+  const deletable = targets.filter((m) => m._count.goals === 0 && m._count.cards === 0);
+  const skipped = targets.length - deletable.length;
+
+  if (deletable.length > 0) {
+    await prisma.match.deleteMany({ where: { id: { in: deletable.map((m) => m.id) } } });
+    await logActivity(`${actor.firstName} ${actor.lastName} eliminó ${deletable.length} partido(s) en lote.`, actor.id);
+    revalidatePath("/admin/partidos");
+    revalidatePath("/admin/resultados");
+    revalidatePublic();
+  }
+
+  if (skipped > 0) {
+    return {
+      error:
+        deletable.length > 0
+          ? `Se eliminaron ${deletable.length}. ${skipped} no se pudieron eliminar porque ya tienen goles o tarjetas cargadas.`
+          : `Ninguno se pudo eliminar: ${skipped} ya tiene(n) goles o tarjetas cargadas.`,
+    };
+  }
+  return { success: `${deletable.length} partido(s) eliminado(s).` };
+}
+
+const BULK_STATUSES = ["PROGRAMADO", "EN_CURSO", "FINALIZADO", "SUSPENDIDO", "REPROGRAMADO"] as const;
+
+export async function updateMatchesStatusAction(_prevState: BulkFormState, formData: FormData): Promise<BulkFormState> {
+  const { user: actor } = await requirePermission("partidos");
+  const ids = formData.getAll("ids").map(String);
+  const status = String(formData.get("status"));
+
+  if (ids.length === 0) return { error: "No seleccionaste ningún partido." };
+  if (!BULK_STATUSES.includes(status as (typeof BULK_STATUSES)[number])) return { error: "Estado inválido." };
+
+  await prisma.match.updateMany({ where: { id: { in: ids } }, data: { status: status as (typeof BULK_STATUSES)[number] } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} cambió el estado de ${ids.length} partido(s) en lote a "${matchStatusLabel(status)}".`,
+    actor.id,
+  );
+  revalidatePath("/admin/partidos");
+  revalidatePath("/admin/resultados");
+  revalidatePublic();
+  return { success: `Estado actualizado en ${ids.length} partido(s).` };
 }
