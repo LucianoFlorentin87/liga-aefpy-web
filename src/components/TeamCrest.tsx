@@ -5,14 +5,15 @@ export function TeamCrest({
   shortName,
   logoUrl,
   size = 24,
-  variant = "circle",
+  variant = "clean",
 }: {
   name: string;
   shortName: string;
   logoUrl?: string | null;
   size?: number;
-  /** "circle": fondo blanco + borde circular (default, para fondos oscuros o filas densas).
-   *  "clean": el escudo solo, sin círculo ni borde — para tarjetas grandes sobre fondo claro. */
+  /** "clean" (default): el escudo solo, sin círculo ni borde.
+   *  "circle": fondo blanco + borde circular — usar sólo sobre fondos oscuros,
+   *  donde un escudo con fondo transparente puede perderse (ej. NextMatchCard). */
   variant?: "circle" | "clean";
 }) {
   if (logoUrl) {

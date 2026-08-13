@@ -41,14 +41,14 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
           </div>
           <div className="mt-4 grid grid-cols-3 items-center gap-3 text-center">
             <div className="flex flex-col items-center gap-2">
-              <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={36} />
+              <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={36} variant="circle" />
               <span className="text-lg font-extrabold sm:text-2xl">{match.homeTeam.name}</span>
             </div>
             <div className="text-2xl font-extrabold sm:text-3xl">
               {homeGoals.length} - {awayGoals.length}
             </div>
             <div className="flex flex-col items-center gap-2">
-              <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} />
+              <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} variant="circle" />
               <span className="text-lg font-extrabold sm:text-2xl">{match.awayTeam.name}</span>
             </div>
           </div>

@@ -29,12 +29,12 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
       </div>
       <div className="grid grid-cols-3 items-center gap-3 px-5 py-6 text-center">
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} />
+          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} variant="circle" />
           <span className="text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
         </div>
         <div className="text-sm font-semibold text-white/70">vs</div>
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} />
+          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} variant="circle" />
           <span className="text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
         </div>
       </div>
