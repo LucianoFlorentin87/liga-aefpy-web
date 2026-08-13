@@ -5,11 +5,15 @@ export function TeamCrest({
   shortName,
   logoUrl,
   size = 24,
+  variant = "circle",
 }: {
   name: string;
   shortName: string;
   logoUrl?: string | null;
   size?: number;
+  /** "circle": fondo blanco + borde circular (default, para fondos oscuros o filas densas).
+   *  "clean": el escudo solo, sin círculo ni borde — para tarjetas grandes sobre fondo claro. */
+  variant?: "circle" | "clean";
 }) {
   if (logoUrl) {
     return (
@@ -18,7 +22,7 @@ export function TeamCrest({
         alt={name}
         width={size}
         height={size}
-        className="shrink-0 rounded-full border border-[var(--color-gray-200)] bg-white object-contain"
+        className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-white" : ""}`}
         style={{ width: size, height: size }}
       />
     );

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { computeStandings } from "@/lib/stats";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { SocialIcons } from "@/components/SocialIcons";
+import { TeamCrest } from "@/components/TeamCrest";
 
 export const metadata: Metadata = { title: "Equipos" };
 export const dynamic = "force-dynamic";
@@ -19,6 +21,7 @@ export default async function EquiposPage() {
   ]);
 
   const standingsByTeam = new Map(standings.map((row) => [row.teamId, row]));
+  const positionByTeam = new Map(standings.map((row, index) => [row.teamId, index + 1]));
 
   return (
     <div>
@@ -32,41 +35,45 @@ export default async function EquiposPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
               const row = standingsByTeam.get(team.id);
+              const position = positionByTeam.get(team.id);
               return (
-                <Link key={team.id} href={`/equipos/${team.id}`} className="card flex flex-col gap-3 p-5 hover:border-[var(--color-navy-700)]">
-                  <div className="flex items-center gap-3">
-                    {team.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={team.logoUrl}
-                        alt={`Escudo de ${team.name}`}
-                        className="h-11 w-11 shrink-0 rounded-full border border-[var(--color-gray-200)] object-contain bg-white"
-                      />
-                    ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-navy-100)] text-sm font-extrabold text-[var(--color-navy-900)]">
-                        {team.shortName.slice(0, 3).toUpperCase()}
+                <div
+                  key={team.id}
+                  className="flex flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-white to-[var(--color-gray-100)] p-5 shadow-sm transition-colors hover:border-[var(--color-navy-700)]"
+                >
+                  <Link href={`/equipos/${team.id}`} className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={44} variant="clean" />
+                      <div className="min-w-0">
+                        {position && (
+                          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-gray-500)]">
+                            #{position} en la tabla
+                          </p>
+                        )}
+                        <p className="truncate text-base font-extrabold uppercase text-[var(--color-navy-900)]">{team.name}</p>
+                        <p className="text-xs text-[var(--color-gray-500)]">
+                          {team._count.players} jugadores
+                          {team.gamertag && <span className="text-[var(--color-gray-400)]"> · 🎮 {team.gamertag}</span>}
+                        </p>
                       </div>
-                    )}
-                    <div>
-                      <p className="font-bold text-[var(--color-navy-900)]">{team.name}</p>
-                      <p className="text-xs text-[var(--color-gray-500)]">{team._count.players} jugadores</p>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="rounded-lg bg-[var(--color-gray-50)] py-2">
-                      <p className="text-[0.65rem] text-[var(--color-gray-500)]">PJ</p>
-                      <p className="font-bold text-[var(--color-navy-900)]">{row?.pj ?? 0}</p>
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                        <p className="text-[0.65rem] text-[var(--color-gray-500)]">PJ</p>
+                        <p className="font-bold text-[var(--color-navy-900)]">{row?.pj ?? 0}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                        <p className="text-[0.65rem] text-[var(--color-gray-500)]">Pts</p>
+                        <p className="font-bold text-[var(--color-navy-900)]">{row?.pts ?? 0}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                        <p className="text-[0.65rem] text-[var(--color-gray-500)]">GF</p>
+                        <p className="font-bold text-[var(--color-navy-900)]">{row?.gf ?? 0}</p>
+                      </div>
                     </div>
-                    <div className="rounded-lg bg-[var(--color-gray-50)] py-2">
-                      <p className="text-[0.65rem] text-[var(--color-gray-500)]">Pts</p>
-                      <p className="font-bold text-[var(--color-navy-900)]">{row?.pts ?? 0}</p>
-                    </div>
-                    <div className="rounded-lg bg-[var(--color-gray-50)] py-2">
-                      <p className="text-[0.65rem] text-[var(--color-gray-500)]">GF</p>
-                      <p className="font-bold text-[var(--color-navy-900)]">{row?.gf ?? 0}</p>
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                  <SocialIcons team={team} />
+                </div>
               );
             })}
           </div>
