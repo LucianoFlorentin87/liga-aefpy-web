@@ -19,10 +19,7 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--color-navy-950)] px-6 text-center text-white">
       <h1 className="text-xl font-extrabold">Ocurrió un error inesperado</h1>
-      <p className="max-w-md text-sm text-white/70">
-        Algo falló al procesar la página. Probá de nuevo — si el problema persiste, avisale al administrador del
-        sitio.
-      </p>
+      <p className="max-w-md text-sm text-white/70">Algo falló al procesar la página. Probá de nuevo.</p>
       <div className="flex gap-3">
         <button onClick={reset} className="btn btn-primary">
           Reintentar
@@ -31,6 +28,7 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
           Ir al inicio
         </Link>
       </div>
+      {error.digest && <p className="mt-2 text-xs text-white/40">Código: {error.digest}</p>}
     </div>
   );
 }
