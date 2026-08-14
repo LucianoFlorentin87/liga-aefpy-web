@@ -18,11 +18,19 @@ export function TeamCrest({
 }) {
   if (logoUrl) {
     return (
+      // unoptimized: los logos los suben delegados con archivos de origen muy
+      // variado (bajados de wikis, editores distintos, metadata rara). El
+      // optimizador de imágenes de Next en self-hosted (sin `sharp` instalado)
+      // usa un decoder de respaldo que puede tirar una excepción sin capturar
+      // con ciertos PNG — eso rompía la página entera después de subir un
+      // logo válido. A este tamaño (chico, ya servido desde Supabase) no hay
+      // nada que optimizar igual, así que se sirve el archivo tal cual.
       <Image
         src={logoUrl}
         alt={name}
         width={size}
         height={size}
+        unoptimized
         className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-white" : ""}`}
         style={{ width: size, height: size }}
       />
