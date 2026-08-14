@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { positionLabel } from "@/lib/format";
 import { EmptyState } from "@/components/EmptyState";
 import { SocialLinks } from "@/components/SocialLinks";
+import { TeamCrest } from "@/components/TeamCrest";
 
 export const dynamic = "force-dynamic";
 
@@ -33,18 +34,7 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
             ← Volver a equipos
           </Link>
           <div className="mt-3 flex items-center gap-4">
-            {team.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={team.logoUrl}
-                alt={`Escudo de ${team.name}`}
-                className="h-14 w-14 shrink-0 rounded-full border border-[var(--color-gray-200)] object-contain bg-white"
-              />
-            ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--color-navy-100)] text-base font-extrabold text-[var(--color-navy-900)]">
-                {team.shortName.slice(0, 3).toUpperCase()}
-              </div>
-            )}
+            <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={56} />
             <div>
               <h1 className="text-xl font-extrabold text-[var(--color-navy-900)] sm:text-2xl">{team.name}</h1>
               <p className="text-sm text-[var(--color-gray-500)]">{team.players.length} jugadores en plantel</p>

@@ -30,11 +30,11 @@ export function TeamsCardSlider({ teams }: { teams: TeamLite[] }) {
               key={team.id}
               href={`/equipos/${team.id}`}
               title={team.name}
-              className="flex w-32 shrink-0 snap-start flex-col items-center gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-white to-[var(--color-gray-100)] p-4 text-center shadow-sm transition-colors hover:border-[var(--color-red-500)]"
+              className="flex w-36 shrink-0 snap-start flex-col items-center gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-white to-[var(--color-gray-100)] p-4 text-center shadow-sm transition-colors hover:border-[var(--color-red-500)]"
             >
               <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={56} />
-              <span className="text-xs font-extrabold uppercase leading-tight text-[var(--color-navy-900)]">
-                {team.shortName}
+              <span className="line-clamp-2 text-xs font-extrabold uppercase leading-tight text-[var(--color-navy-900)]">
+                {team.name}
               </span>
             </Link>
           ))}
