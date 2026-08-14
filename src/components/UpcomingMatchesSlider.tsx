@@ -3,7 +3,7 @@
 import { TeamCrest } from "@/components/TeamCrest";
 import { SliderArrowButton } from "@/components/SliderArrowButton";
 import { formatDateBadge } from "@/lib/format";
-import { useHorizontalScroller } from "@/lib/useHorizontalScroller";
+import { useHorizontalScroller, edgeFadeMask } from "@/lib/useHorizontalScroller";
 
 type UpcomingMatch = {
   id: string;
@@ -36,6 +36,14 @@ export function UpcomingMatchesSlider({ matches }: { matches: UpcomingMatch[] })
       <div
         ref={ref}
         onScroll={onScroll}
+        style={
+          showArrows
+            ? {
+                maskImage: edgeFadeMask(canScrollLeft, canScrollRight),
+                WebkitMaskImage: edgeFadeMask(canScrollLeft, canScrollRight),
+              }
+            : undefined
+        }
         className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {matches.map((m) => (

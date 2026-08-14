@@ -29,3 +29,20 @@ export function useHorizontalScroller<T>(items: T[]) {
 
   return { ref, canScrollLeft, canScrollRight, progress, onScroll: update, scroll };
 }
+
+/**
+ * Máscara CSS que desvanece el borde del carrusel hacia transparente cuando
+ * hay más contenido para ese lado (según canScrollLeft/Right). Sin esto, la
+ * última tarjeta visible se corta en seco contra el borde del contenedor —
+ * con la máscara se desvanece prolijamente en vez de quedar cortada a la
+ * mitad.
+ */
+export function edgeFadeMask(canScrollLeft: boolean, canScrollRight: boolean, size = 28) {
+  const stops = [
+    canScrollLeft ? "transparent" : "black",
+    ...(canScrollLeft ? [`black ${size}px`] : []),
+    ...(canScrollRight ? [`black calc(100% - ${size}px)`] : []),
+    canScrollRight ? "transparent" : "black",
+  ];
+  return `linear-gradient(to right, ${stops.join(", ")})`;
+}
