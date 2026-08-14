@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { goalSchema, cardSchema } from "@/lib/validation";
+import { playerFullName } from "@/lib/format";
 import type { MatchStatus } from "@prisma/client";
 
 export type FormState = { error?: string; success?: string };
@@ -154,7 +155,7 @@ export async function addGoalAction(_prevState: FormState, formData: FormData): 
     create: { matchId: parsed.data.matchId, playerId: parsed.data.playerId, teamId: parsed.data.teamId },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} registró un gol de ${player?.firstName} ${player?.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} registró un gol de ${player ? playerFullName(player) : "un jugador"}.`, actor.id);
   revalidatePath(`/admin/partidos/${parsed.data.matchId}`);
   revalidatePublic();
   return { success: "Gol registrado." };
@@ -169,7 +170,7 @@ export async function deleteGoalAction(formData: FormData): Promise<void> {
   if (!goal) return;
 
   await prisma.matchGoal.delete({ where: { id } });
-  await logActivity(`${actor.firstName} ${actor.lastName} eliminó un gol de ${goal.player.firstName} ${goal.player.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} eliminó un gol de ${playerFullName(goal.player)}.`, actor.id);
   revalidatePath(`/admin/partidos/${matchId}`);
   revalidatePublic();
 }
@@ -204,7 +205,7 @@ export async function addCardAction(_prevState: FormState, formData: FormData): 
   });
 
   await logActivity(
-    `${actor.firstName} ${actor.lastName} registró tarjeta ${parsed.data.type === "AMARILLA" ? "amarilla" : "roja"} a ${player?.firstName} ${player?.lastName}.`,
+    `${actor.firstName} ${actor.lastName} registró tarjeta ${parsed.data.type === "AMARILLA" ? "amarilla" : "roja"} a ${player ? playerFullName(player) : "un jugador"}.`,
     actor.id,
   );
 
@@ -213,7 +214,7 @@ export async function addCardAction(_prevState: FormState, formData: FormData): 
     teamId: parsed.data.teamId,
     cardType: parsed.data.type,
     actorId: actor.id,
-    playerName: player ? `${player.firstName} ${player.lastName}` : "El jugador",
+    playerName: player ? playerFullName(player) : "El jugador",
   });
 
   revalidatePath(`/admin/partidos/${parsed.data.matchId}`);
@@ -231,7 +232,7 @@ export async function deleteCardAction(formData: FormData): Promise<void> {
   if (!card) return;
 
   await prisma.matchCard.delete({ where: { id } });
-  await logActivity(`${actor.firstName} ${actor.lastName} eliminó una tarjeta de ${card.player.firstName} ${card.player.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} eliminó una tarjeta de ${playerFullName(card.player)}.`, actor.id);
   revalidatePath(`/admin/partidos/${matchId}`);
   revalidatePublic();
 }

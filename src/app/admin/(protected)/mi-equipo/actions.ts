@@ -6,6 +6,7 @@ import { requireDelegate } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { myTeamSchema, playerSchema } from "@/lib/validation";
 import { saveTeamLogo } from "@/lib/upload";
+import { playerFullName } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
@@ -97,7 +98,7 @@ export async function createMyPlayerAction(_prevState: FormState, formData: Form
   const player = await prisma.player.create({
     data: {
       firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
+      lastName: parsed.data.lastName || null,
       jerseyNumber: parsed.data.jerseyNumber,
       position: parsed.data.position,
       teamId,
@@ -106,7 +107,7 @@ export async function createMyPlayerAction(_prevState: FormState, formData: Form
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} cargó el jugador "${player.firstName} ${player.lastName}".`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} cargó el jugador "${playerFullName(player)}".`, actor.id);
   revalidatePath("/admin/mi-equipo");
   revalidatePublic();
   return { success: "Jugador creado." };
@@ -141,7 +142,7 @@ export async function updateMyPlayerAction(_prevState: FormState, formData: Form
     where: { id },
     data: {
       firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
+      lastName: parsed.data.lastName || null,
       jerseyNumber: parsed.data.jerseyNumber,
       position: parsed.data.position,
       birthDate: parsed.data.birthDate ? new Date(parsed.data.birthDate) : null,
@@ -149,7 +150,7 @@ export async function updateMyPlayerAction(_prevState: FormState, formData: Form
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} editó el jugador "${parsed.data.firstName} ${parsed.data.lastName}".`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} editó el jugador "${playerFullName(parsed.data)}".`, actor.id);
   revalidatePath("/admin/mi-equipo");
   revalidatePublic();
   return { success: "Jugador actualizado." };
@@ -165,7 +166,7 @@ export async function toggleMyPlayerStatusAction(formData: FormData): Promise<vo
   const newStatus = target.status === "ACTIVO" ? "INACTIVO" : "ACTIVO";
   await prisma.player.update({ where: { id }, data: { status: newStatus } });
   await logActivity(
-    `${actor.firstName} ${actor.lastName} ${newStatus === "ACTIVO" ? "activó" : "desactivó"} el jugador "${target.firstName} ${target.lastName}".`,
+    `${actor.firstName} ${actor.lastName} ${newStatus === "ACTIVO" ? "activó" : "desactivó"} el jugador "${playerFullName(target)}".`,
     actor.id,
   );
   revalidatePath("/admin/mi-equipo");

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { sanctionSchema } from "@/lib/validation";
+import { playerFullName } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
@@ -36,7 +37,7 @@ export async function createSanctionAction(_prevState: FormState, formData: Form
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} registró una sanción para ${player.firstName} ${player.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} registró una sanción para ${playerFullName(player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
   revalidatePath(`/admin/jugadores/${player.id}`);
   return { success: "Sanción registrada." };
@@ -75,7 +76,7 @@ export async function updateSanctionAction(_prevState: FormState, formData: Form
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} actualizó una sanción de ${player.firstName} ${player.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} actualizó una sanción de ${playerFullName(player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
   revalidatePath(`/admin/jugadores/${player.id}`);
   return { success: "Sanción actualizada." };
@@ -89,7 +90,7 @@ export async function deleteSanctionAction(formData: FormData): Promise<void> {
   if (!target) return;
 
   await prisma.sanction.delete({ where: { id } });
-  await logActivity(`${actor.firstName} ${actor.lastName} eliminó una sanción de ${target.player.firstName} ${target.player.lastName}.`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} eliminó una sanción de ${playerFullName(target.player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
   revalidatePath(`/admin/jugadores/${target.playerId}`);
 }

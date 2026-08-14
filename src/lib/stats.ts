@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import { playerFullName } from "@/lib/format";
 
 export type StandingsRow = {
   teamId: string;
@@ -152,7 +153,7 @@ export async function computeScorers(): Promise<ScorerRow[]> {
     } else {
       byPlayer.set(g.playerId, {
         playerId: g.playerId,
-        playerName: `${g.player.firstName} ${g.player.lastName}`,
+        playerName: playerFullName(g.player),
         teamName: g.player.team.name,
         teamId: g.player.teamId,
         goals: 1,
@@ -213,7 +214,7 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
     if (!row) {
       row = {
         playerId: c.playerId,
-        playerName: `${c.player.firstName} ${c.player.lastName}`,
+        playerName: playerFullName(c.player),
         teamName: c.player.team.name,
         teamId: c.player.teamId,
         matchesPlayed: matchesPlayedByPlayer.get(c.playerId)?.size ?? 0,

@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import type { CardType, MatchStatus, PlayerPosition } from "@prisma/client";
-import { matchStatusLabel } from "@/lib/format";
+import { matchStatusLabel, playerFullName } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -16,17 +16,17 @@ import {
   type FormState,
 } from "@/app/admin/(protected)/partidos/match-actions";
 
-type PlayerOption = { id: string; firstName: string; lastName: string; jerseyNumber: number; position: PlayerPosition };
+type PlayerOption = { id: string; firstName: string; lastName: string | null; jerseyNumber: number; position: PlayerPosition };
 type TeamInfo = { id: string; name: string; players: PlayerOption[] };
 
-type GoalRow = { id: string; minute: number; teamId: string; player: { id: string; firstName: string; lastName: string } };
+type GoalRow = { id: string; minute: number; teamId: string; player: { id: string; firstName: string; lastName: string | null } };
 type CardRow = {
   id: string;
   minute: number;
   teamId: string;
   type: CardType;
   note: string | null;
-  player: { id: string; firstName: string; lastName: string };
+  player: { id: string; firstName: string; lastName: string | null };
 };
 type ParticipationRow = { playerId: string; teamId: string; isStarter: boolean };
 
@@ -70,7 +70,7 @@ function TeamPlayerSelect({
           </option>
           {players.map((p) => (
             <option key={p.id} value={p.id}>
-              #{p.jerseyNumber} {p.firstName} {p.lastName}
+              #{p.jerseyNumber} {playerFullName(p)}
             </option>
           ))}
         </select>
@@ -195,7 +195,7 @@ export function MatchDetailClient({
                     return (
                       <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-gray-50)] px-3 py-1.5 text-sm">
                         <span className="flex items-center gap-2">
-                          #{p.jerseyNumber} {p.firstName} {p.lastName}
+                          #{p.jerseyNumber} {playerFullName(p)}
                           {suspendedSet.has(p.id) && (
                             <span className="badge badge-red">Suspendido</span>
                           )}
@@ -241,7 +241,7 @@ export function MatchDetailClient({
           {goals.map((g) => (
             <li key={g.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
               <span>
-                {g.minute}&apos; · {g.player.firstName} {g.player.lastName}
+                {g.minute}&apos; · {playerFullName(g.player)}
               </span>
               <form action={deleteGoalAction}>
                 <input type="hidden" name="id" value={g.id} />
@@ -263,7 +263,7 @@ export function MatchDetailClient({
           {cards.map((c) => (
             <li key={c.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
               <span>
-                {c.type === "AMARILLA" ? "🟨" : "🟥"} {c.minute}&apos; · {c.player.firstName} {c.player.lastName}
+                {c.type === "AMARILLA" ? "🟨" : "🟥"} {c.minute}&apos; · {playerFullName(c.player)}
                 {c.note ? ` — ${c.note}` : ""}
               </span>
               <form action={deleteCardAction}>

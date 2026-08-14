@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatDate } from "@/lib/format";
+import { formatDate, playerFullName } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -69,9 +69,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             <ul className="flex flex-col gap-2">
               {match.goals.map((goal) => (
                 <li key={goal.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
-                  <span className="font-semibold text-[var(--color-navy-900)]">
-                    {goal.player.firstName} {goal.player.lastName}
-                  </span>
+                  <span className="font-semibold text-[var(--color-navy-900)]">{playerFullName(goal.player)}</span>
                   <span className="text-[var(--color-gray-500)]">
                     {goal.minute}&apos; · {goal.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}
                   </span>
@@ -90,7 +88,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
               {match.cards.map((card) => (
                 <li key={card.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
                   <span className="font-semibold text-[var(--color-navy-900)]">
-                    {card.type === "AMARILLA" ? "🟨" : "🟥"} {card.player.firstName} {card.player.lastName}
+                    {card.type === "AMARILLA" ? "🟨" : "🟥"} {playerFullName(card.player)}
                   </span>
                   <span className="text-[var(--color-gray-500)]">
                     {card.minute}&apos; · {card.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}

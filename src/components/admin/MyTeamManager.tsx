@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import type { Team, PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel } from "@/lib/format";
+import { positionLabel, playerFullName } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
 import {
@@ -17,7 +17,7 @@ import {
 type PlayerRow = {
   id: string;
   firstName: string;
-  lastName: string;
+  lastName: string | null;
   jerseyNumber: number;
   position: PlayerPosition;
   status: PlayerStatus;
@@ -118,8 +118,8 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
         <input name="firstName" required defaultValue={player?.firstName} className="input" />
       </div>
       <div>
-        <label className="field-label">Apellido</label>
-        <input name="lastName" required defaultValue={player?.lastName} className="input" />
+        <label className="field-label">Apellido (opcional)</label>
+        <input name="lastName" defaultValue={player?.lastName ?? ""} className="input" />
       </div>
       <div>
         <label className="field-label">Número de camiseta</label>
@@ -214,9 +214,7 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
                   {players.map((p) => (
                     <tr key={p.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{p.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">
-                        {p.firstName} {p.lastName}
-                      </td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(p)}</td>
                       <td>{positionLabel(p.position)}</td>
                       <td>
                         <ActiveStatusBadge status={p.status} />

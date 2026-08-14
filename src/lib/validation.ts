@@ -96,7 +96,7 @@ const positionEnum = z.enum(["ARQUERO", "DEFENSOR", "MEDIOCAMPISTA", "DELANTERO"
 
 export const playerSchema = z.object({
   firstName: z.string().trim().min(1, "El nombre es obligatorio"),
-  lastName: z.string().trim().min(1, "El apellido es obligatorio"),
+  lastName: z.string().trim().optional().or(z.literal("")),
   jerseyNumber: z.coerce.number().int().min(0).max(99),
   position: positionEnum,
   teamId: z.string().min(1, "Seleccioná un equipo"),

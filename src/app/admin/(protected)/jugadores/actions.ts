@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { playerSchema } from "@/lib/validation";
+import { playerFullName } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
@@ -35,7 +36,7 @@ export async function createPlayerAction(_prevState: FormState, formData: FormDa
   const player = await prisma.player.create({
     data: {
       firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
+      lastName: parsed.data.lastName || null,
       jerseyNumber: parsed.data.jerseyNumber,
       position: parsed.data.position,
       teamId: parsed.data.teamId,
@@ -44,7 +45,7 @@ export async function createPlayerAction(_prevState: FormState, formData: FormDa
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} creó el jugador "${player.firstName} ${player.lastName}".`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} creó el jugador "${playerFullName(player)}".`, actor.id);
   revalidatePath("/admin/jugadores");
   revalidatePath("/equipos");
   return { success: "Jugador creado." };
@@ -82,7 +83,7 @@ export async function updatePlayerAction(_prevState: FormState, formData: FormDa
     where: { id },
     data: {
       firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
+      lastName: parsed.data.lastName || null,
       jerseyNumber: parsed.data.jerseyNumber,
       position: parsed.data.position,
       teamId: parsed.data.teamId,
@@ -91,7 +92,7 @@ export async function updatePlayerAction(_prevState: FormState, formData: FormDa
     },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} editó el jugador "${parsed.data.firstName} ${parsed.data.lastName}".`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} editó el jugador "${playerFullName(parsed.data)}".`, actor.id);
   revalidatePath("/admin/jugadores");
   revalidatePath("/equipos");
   return { success: "Jugador actualizado." };
@@ -107,7 +108,7 @@ export async function togglePlayerStatusAction(formData: FormData): Promise<void
   const newStatus = target.status === "ACTIVO" ? "INACTIVO" : "ACTIVO";
   await prisma.player.update({ where: { id }, data: { status: newStatus } });
   await logActivity(
-    `${actor.firstName} ${actor.lastName} ${newStatus === "ACTIVO" ? "activó" : "desactivó"} el jugador "${target.firstName} ${target.lastName}".`,
+    `${actor.firstName} ${actor.lastName} ${newStatus === "ACTIVO" ? "activó" : "desactivó"} el jugador "${playerFullName(target)}".`,
     actor.id,
   );
   revalidatePath("/admin/jugadores");
@@ -128,6 +129,6 @@ export async function deletePlayerAction(formData: FormData): Promise<void> {
   if (hasRelated) return; // hay que desactivar, no eliminar
 
   await prisma.player.delete({ where: { id } });
-  await logActivity(`${actor.firstName} ${actor.lastName} eliminó el jugador "${target.firstName} ${target.lastName}".`, actor.id);
+  await logActivity(`${actor.firstName} ${actor.lastName} eliminó el jugador "${playerFullName(target)}".`, actor.id);
   revalidatePath("/admin/jugadores");
 }

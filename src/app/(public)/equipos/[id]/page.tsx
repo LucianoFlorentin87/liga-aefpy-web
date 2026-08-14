@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { positionLabel } from "@/lib/format";
+import { positionLabel, playerFullName } from "@/lib/format";
 import { EmptyState } from "@/components/EmptyState";
 import { SocialLinks } from "@/components/SocialLinks";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -73,9 +73,7 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
                   {team.players.map((player) => (
                     <tr key={player.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{player.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">
-                        {player.firstName} {player.lastName}
-                      </td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(player)}</td>
                       <td>{positionLabel(player.position)}</td>
                       <td className="text-center font-bold text-[var(--color-red-600)]">{player.goals.length}</td>
                       <td className="text-center">{player.cards.filter((c) => c.type === "AMARILLA").length}</td>

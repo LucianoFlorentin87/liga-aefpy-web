@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
-import { positionLabel, formatDateShort } from "@/lib/format";
+import { positionLabel, formatDateShort, playerFullName } from "@/lib/format";
 import { StatCard } from "@/components/admin/StatCard";
 import { SanctionStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
@@ -37,9 +37,7 @@ export default async function PlayerStatsPage({ params }: { params: Promise<{ id
         <Link href="/admin/jugadores" className="text-xs font-semibold text-[var(--color-gray-500)] hover:text-[var(--color-navy-900)]">
           ← Volver a jugadores
         </Link>
-        <h1 className="mt-1 text-xl font-extrabold text-[var(--color-navy-900)]">
-          {player.firstName} {player.lastName}
-        </h1>
+        <h1 className="mt-1 text-xl font-extrabold text-[var(--color-navy-900)]">{playerFullName(player)}</h1>
         <p className="text-sm text-[var(--color-gray-500)]">
           {player.team.name} · N° {player.jerseyNumber} · {positionLabel(player.position)}
         </p>

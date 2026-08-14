@@ -135,7 +135,9 @@ enum PlayerStatus {
 model Player {
   id            String         @id @default(cuid())
   firstName     String
-  lastName      String
+  // Opcional: muchos gamertags/jugadores de eFootball se cargan sólo con
+  // nombre (apodo). No forzamos un apellido que puede no existir.
+  lastName      String?
   jerseyNumber  Int
   position      PlayerPosition
   team          Team           @relation(fields: [teamId], references: [id])

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel } from "@/lib/format";
+import { positionLabel, playerFullName } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import {
   createPlayerAction,
@@ -16,7 +16,7 @@ import {
 type PlayerRow = {
   id: string;
   firstName: string;
-  lastName: string;
+  lastName: string | null;
   jerseyNumber: number;
   position: PlayerPosition;
   status: PlayerStatus;
@@ -62,8 +62,8 @@ function PlayerForm({
         <input name="firstName" required defaultValue={player?.firstName} className="input" />
       </div>
       <div>
-        <label className="field-label">Apellido</label>
-        <input name="lastName" required defaultValue={player?.lastName} className="input" />
+        <label className="field-label">Apellido (opcional)</label>
+        <input name="lastName" defaultValue={player?.lastName ?? ""} className="input" />
       </div>
       <div>
         <label className="field-label">Número de camiseta</label>
@@ -181,9 +181,7 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                   return (
                     <tr key={p.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{p.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">
-                        {p.firstName} {p.lastName}
-                      </td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(p)}</td>
                       <td>{p.team.name}</td>
                       <td>{positionLabel(p.position)}</td>
                       <td>
@@ -211,7 +209,7 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                                 alert("Este jugador tiene goles, tarjetas o sanciones asociadas: desactivalo en vez de eliminarlo.");
                                 return;
                               }
-                              if (!confirm(`¿Eliminar a ${p.firstName} ${p.lastName}?`)) e.preventDefault();
+                              if (!confirm(`¿Eliminar a ${playerFullName(p)}?`)) e.preventDefault();
                             }}
                           >
                             <input type="hidden" name="id" value={p.id} />

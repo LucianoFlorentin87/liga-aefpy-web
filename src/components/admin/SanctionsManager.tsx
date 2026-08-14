@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import type { SanctionStatus } from "@prisma/client";
-import { formatDateShort } from "@/lib/format";
+import { formatDateShort, playerFullName } from "@/lib/format";
 import { SanctionStatusBadge } from "@/components/StatusBadge";
 import { createSanctionAction, updateSanctionAction, deleteSanctionAction, type FormState } from "@/app/admin/(protected)/sanciones/actions";
 
@@ -14,11 +14,11 @@ type SanctionRow = {
   endDate: Date | null;
   status: SanctionStatus;
   playerId: string;
-  player: { firstName: string; lastName: string };
+  player: { firstName: string; lastName: string | null };
   team: { name: string };
 };
 
-type PlayerOption = { id: string; firstName: string; lastName: string; team: { name: string } };
+type PlayerOption = { id: string; firstName: string; lastName: string | null; team: { name: string } };
 
 const emptyState: FormState = {};
 
@@ -56,7 +56,7 @@ function SanctionForm({
           </option>
           {players.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName} ({p.team.name})
+              {playerFullName(p)} ({p.team.name})
             </option>
           ))}
         </select>
@@ -140,9 +140,7 @@ export function SanctionsManager({ sanctions, players }: { sanctions: SanctionRo
               <tbody>
                 {sanctions.map((s) => (
                   <tr key={s.id}>
-                    <td className="font-semibold text-[var(--color-navy-900)]">
-                      {s.player.firstName} {s.player.lastName}
-                    </td>
+                    <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(s.player)}</td>
                     <td>{s.team.name}</td>
                     <td>{s.reason}</td>
                     <td className="text-center">{s.matchesCount}</td>

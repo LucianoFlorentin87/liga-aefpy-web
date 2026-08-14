@@ -221,6 +221,14 @@ table.data-table td {
   border-bottom: 1px solid var(--color-gray-100);
   vertical-align: middle;
 }
+/* La regla de arriba (table.data-table th) tiene más especificidad que la
+   utilidad .text-center de Tailwind sola, así que un <th className="text-center">
+   se quedaba alineado a la izquierda igual — esto lo corrige agregando la
+   clase a la selección para que gane. Afecta a todas las tablas que usan
+   data-table (posiciones, goleadores, disciplina, etc.), no sólo una. */
+table.data-table th.text-center {
+  text-align: center;
+}
 table.data-table tbody tr:hover {
   background: var(--color-gray-50);
 }

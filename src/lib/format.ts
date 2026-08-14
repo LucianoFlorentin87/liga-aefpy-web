@@ -72,6 +72,11 @@ export function positionLabel(position: string): string {
   return POSITION_LABEL[position] ?? position;
 }
 
+/** El apellido es opcional (muchos gamertags se cargan sólo con nombre). */
+export function playerFullName(player: { firstName: string; lastName?: string | null }): string {
+  return player.lastName ? `${player.firstName} ${player.lastName}` : player.firstName;
+}
+
 const SANCTION_STATUS_LABEL: Record<string, string> = {
   ACTIVA: "Activa",
   CUMPLIDA: "Cumplida",
