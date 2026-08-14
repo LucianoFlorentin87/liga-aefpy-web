@@ -36,7 +36,7 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                   <span className="truncate">{match.awayTeam.name}</span>
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-gray-500)]">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--color-gray-500)]">
                 <span className="shrink-0 whitespace-nowrap">Jornada {match.matchday}</span>
                 <span className="shrink-0 whitespace-nowrap">{formatDateShort(match.date)}</span>
                 <span className="hidden shrink-0 whitespace-nowrap sm:inline">{match.venue}</span>
