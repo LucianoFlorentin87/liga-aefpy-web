@@ -36,11 +36,13 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                   {match.awayTeam.name}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-[var(--color-gray-500)]">
-                <span>Jornada {match.matchday}</span>
-                <span>{formatDateShort(match.date)}</span>
-                <span className="hidden sm:inline">{match.venue}</span>
-                <MatchStatusBadge status={match.status} />
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-gray-500)]">
+                <span className="shrink-0 whitespace-nowrap">Jornada {match.matchday}</span>
+                <span className="shrink-0 whitespace-nowrap">{formatDateShort(match.date)}</span>
+                <span className="hidden shrink-0 whitespace-nowrap sm:inline">{match.venue}</span>
+                <span className="shrink-0">
+                  <MatchStatusBadge status={match.status} />
+                </span>
               </div>
             </Link>
           </li>
