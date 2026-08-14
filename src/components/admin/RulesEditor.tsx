@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { updateRulesAction, removeRulesPdfAction, type FormState } from "@/app/admin/(protected)/reglamento/actions";
+import { PdfFileInput } from "@/components/admin/PdfFileInput";
 
 const emptyState: FormState = {};
 
@@ -39,10 +40,7 @@ export function RulesEditor({
         )}
 
         <form action={formAction} className="flex flex-col gap-3">
-          <div>
-            <label className="field-label">Subir / reemplazar PDF (máx. 15MB)</label>
-            <input name="rulesPdf" type="file" accept="application/pdf" className="input" />
-          </div>
+          <PdfFileInput />
 
           <div>
             <label className="field-label">

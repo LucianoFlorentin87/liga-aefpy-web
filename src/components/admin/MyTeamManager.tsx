@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Team, PlayerPosition, PlayerStatus } from "@prisma/client";
 import { positionLabel } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { LogoFileInput } from "@/components/admin/LogoFileInput";
 import {
   updateMyTeamAction,
   createMyPlayerAction,
@@ -75,10 +76,7 @@ function TeamProfileForm({ team }: { team: Team }) {
         <label className="field-label">Cancha / estadio</label>
         <input name="homeVenue" defaultValue={team.homeVenue ?? ""} className="input" />
       </div>
-      <div>
-        <label className="field-label">Logo (opcional, PNG/JPG/WEBP/SVG, máx. 2MB)</label>
-        <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="input" />
-      </div>
+      <LogoFileInput />
 
       <div className="sm:col-span-2">
         <p className="field-label mb-2">Redes y streaming (opcional, link completo)</p>

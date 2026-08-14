@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import type { TeamStatus } from "@prisma/client";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { LogoFileInput } from "@/components/admin/LogoFileInput";
 import {
   createTeamAction,
   updateTeamAction,
@@ -68,10 +69,7 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         <label className="field-label">Gamertag / ID de plataforma</label>
         <input name="gamertag" placeholder="PSN, Xbox Live, EA ID…" defaultValue={team?.gamertag ?? ""} className="input" />
       </div>
-      <div>
-        <label className="field-label">Logo (opcional, PNG/JPG/WEBP/SVG, máx. 2MB)</label>
-        <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="input" />
-      </div>
+      <LogoFileInput />
       <div>
         <label className="field-label">Estado</label>
         <select name="status" required defaultValue={team?.status ?? "ACTIVO"} className="input">
