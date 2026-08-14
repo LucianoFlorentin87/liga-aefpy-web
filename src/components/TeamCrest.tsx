@@ -6,6 +6,7 @@ export function TeamCrest({
   logoUrl,
   size = 24,
   variant = "clean",
+  shadow = false,
 }: {
   name: string;
   shortName: string;
@@ -15,6 +16,11 @@ export function TeamCrest({
    *  "circle": fondo blanco + borde circular — usar sólo sobre fondos oscuros,
    *  donde un escudo con fondo transparente puede perderse (ej. NextMatchCard). */
   variant?: "circle" | "clean";
+  /** Sombra proyectada (sigue el contorno del escudo, no un cuadrado) para
+   *  que un escudo "clean" con fondo transparente no se pierda contra un
+   *  fondo blanco liso (ej. TeamLogosBar). No hace falta cuando ya hay
+   *  contraste de por sí (tarjetas con borde, fondos oscuros, variant="circle"). */
+  shadow?: boolean;
 }) {
   if (logoUrl) {
     return (
@@ -31,7 +37,7 @@ export function TeamCrest({
         width={size}
         height={size}
         unoptimized
-        className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-white" : ""}`}
+        className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-white" : ""} ${shadow ? "drop-shadow-[0_1px_3px_rgba(15,23,42,0.35)]" : ""}`}
         style={{ width: size, height: size }}
       />
     );

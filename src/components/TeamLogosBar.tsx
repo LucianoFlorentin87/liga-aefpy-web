@@ -16,7 +16,7 @@ export async function TeamLogosBar() {
       <div className="mx-auto flex max-w-[82rem] items-center justify-evenly gap-5 overflow-x-auto px-4 py-2.5">
         {teams.map((team) => (
           <Link key={team.id} href={`/equipos/${team.id}`} title={team.name} className="shrink-0">
-            <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={28} />
+            <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={28} shadow />
           </Link>
         ))}
       </div>
