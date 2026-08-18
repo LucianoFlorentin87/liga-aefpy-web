@@ -39,16 +39,20 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             </span>
             <MatchStatusBadge status={match.status} />
           </div>
-          <div className="mt-4 grid grid-cols-3 items-center gap-3 text-center">
+          {/* items-start (no items-center): si el nombre de un equipo pasa a
+              dos líneas y el otro no, items-center desalinearía los escudos
+              verticalmente — ver NextMatchCard. El marcador se centra en una
+              caja de la misma altura que el escudo (h-9 = size 36). */}
+          <div className="mt-4 grid grid-cols-3 items-start gap-3 text-center">
             <div className="flex flex-col items-center gap-2">
-              <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={36} variant="circle" />
+              <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={36} />
               <span className="text-lg font-extrabold sm:text-2xl">{match.homeTeam.name}</span>
             </div>
-            <div className="text-2xl font-extrabold sm:text-3xl">
+            <div className="flex h-9 items-center justify-center text-2xl font-extrabold sm:text-3xl">
               {homeGoals.length} - {awayGoals.length}
             </div>
             <div className="flex flex-col items-center gap-2">
-              <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} variant="circle" />
+              <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} />
               <span className="text-lg font-extrabold sm:text-2xl">{match.awayTeam.name}</span>
             </div>
           </div>

@@ -22,11 +22,14 @@ prueba-error:
   gratis: si el contenedor se achica, el texto se parte en dos líneas en
   medio de la frase en vez de mantenerse entero o pasar la fila completa
   a la siguiente línea.
-- **`TeamCrest` usa `variant="clean"` (sin círculo) por default.** Sólo
-  pasar `variant="circle"` explícito cuando el fondo detrás del escudo es
-  oscuro (navy) — ahí un escudo con fondo transparente puede perder
-  legibilidad. El respaldo de iniciales (equipo sin logo cargado) siempre
-  se ve en círculo, sin importar la variante.
+- **`TeamCrest` usa `variant="clean"` (sin círculo) en TODOS lados, incluso
+  sobre fondos oscuros (navy) — ej. `NextMatchCard`, el header de
+  `/resultados/[id]`.** No hay excepción por defecto: el pedido explícito
+  del usuario fue "sin ningún contenedor, que se vea fluido", igual en
+  todos los apartados. Si un escudo puntual se pierde contra el fondo, usar
+  el prop `shadow` (drop-shadow que sigue el contorno del escudo) antes que
+  volver a `variant="circle"`. El respaldo de iniciales (equipo sin logo
+  cargado) siempre se ve en círculo, sin importar la variante.
 - **Orden ícono-antes-que-texto**: en cualquier fila con escudo + nombre
   de equipo, el escudo va SIEMPRE antes del nombre en el DOM (aunque el
   bloque esté alineado a la derecha) — nunca "nombre, después escudo".

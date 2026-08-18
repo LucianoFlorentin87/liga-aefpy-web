@@ -12,14 +12,16 @@ export function TeamCrest({
   shortName: string;
   logoUrl?: string | null;
   size?: number;
-  /** "clean" (default): el escudo solo, sin círculo ni borde.
-   *  "circle": fondo blanco + borde circular — usar sólo sobre fondos oscuros,
-   *  donde un escudo con fondo transparente puede perderse (ej. NextMatchCard). */
+  /** "clean" (default, usar en todos lados salvo excepción justificada):
+   *  el escudo solo, sin círculo ni borde — fluido con el diseño.
+   *  "circle": fondo blanco + borde circular, sólo para el caso extremo de
+   *  un escudo con fondo transparente ilegible que "shadow" no alcance a
+   *  resolver. */
   variant?: "circle" | "clean";
   /** Sombra proyectada (sigue el contorno del escudo, no un cuadrado) para
    *  que un escudo "clean" con fondo transparente no se pierda contra un
-   *  fondo blanco liso (ej. TeamLogosBar). No hace falta cuando ya hay
-   *  contraste de por sí (tarjetas con borde, fondos oscuros, variant="circle"). */
+   *  fondo liso parecido a su propio color (ej. TeamLogosBar sobre blanco).
+   *  No hace falta cuando ya hay contraste de por sí (tarjetas con borde). */
   shadow?: boolean;
 }) {
   if (logoUrl) {

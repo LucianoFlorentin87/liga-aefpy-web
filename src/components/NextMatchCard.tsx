@@ -36,12 +36,12 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
           quedar a la altura de los escudos en vez de la del texto. */}
       <div className="grid grid-cols-3 items-start gap-3 px-5 py-6 text-center">
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} variant="circle" />
+          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} />
           <span className="text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
         </div>
         <div className="flex h-10 items-center justify-center text-sm font-semibold text-white/70">vs</div>
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} variant="circle" />
+          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} />
           <span className="text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
         </div>
       </div>
