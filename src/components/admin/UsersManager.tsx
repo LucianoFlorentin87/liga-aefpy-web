@@ -5,6 +5,7 @@ import type { RoleKey, UserStatus } from "@prisma/client";
 import { roleLabel } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { PasswordInput } from "@/components/PasswordInput";
+import { Modal } from "@/components/admin/Modal";
 import {
   createUserAction,
   updateUserAction,
@@ -172,20 +173,17 @@ export function UsersManager({ users, actorId, teams }: { users: UserRow[]; acto
         </div>
       </div>
 
-      {panel && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">
-            {panel.mode === "create" && "Crear usuario"}
-            {panel.mode === "edit" && "Editar usuario"}
-            {panel.mode === "reset" && "Restablecer contraseña"}
-          </h2>
-          {panel.mode === "reset" ? (
-            <ResetPasswordForm user={panel.user!} onDone={() => setPanel(null)} />
-          ) : (
-            <UserForm mode={panel.mode} user={panel.user} teams={teams} onDone={() => setPanel(null)} />
-          )}
-        </div>
-      )}
+      <Modal
+        open={!!panel}
+        onClose={() => setPanel(null)}
+        title={panel?.mode === "create" ? "Crear usuario" : panel?.mode === "edit" ? "Editar usuario" : "Restablecer contraseña"}
+      >
+        {panel?.mode === "reset" ? (
+          <ResetPasswordForm user={panel.user!} onDone={() => setPanel(null)} />
+        ) : panel ? (
+          <UserForm mode={panel.mode} user={panel.user} teams={teams} onDone={() => setPanel(null)} />
+        ) : null}
+      </Modal>
 
       <div className="card p-3 sm:p-5">
         {users.length === 0 ? (

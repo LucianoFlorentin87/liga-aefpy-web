@@ -6,6 +6,7 @@ import type { Team, PlayerPosition, PlayerStatus } from "@prisma/client";
 import { positionLabel, playerFullName } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
+import { Modal } from "@/components/admin/Modal";
 import {
   updateMyTeamAction,
   createMyPlayerAction,
@@ -186,12 +187,9 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
           </button>
         </div>
 
-        {panel && (
-          <div className="card p-5">
-            <h3 className="section-title mb-4">{panel.mode === "create" ? "Cargar jugador" : "Editar jugador"}</h3>
-            <PlayerForm mode={panel.mode} player={panel.player} onDone={() => setPanel(null)} />
-          </div>
-        )}
+        <Modal open={!!panel} onClose={() => setPanel(null)} title={panel?.mode === "create" ? "Cargar jugador" : "Editar jugador"}>
+          {panel && <PlayerForm mode={panel.mode} player={panel.player} onDone={() => setPanel(null)} />}
+        </Modal>
 
         <div className="card p-3 sm:p-5">
           {players.length === 0 ? (

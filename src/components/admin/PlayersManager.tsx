@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { PlayerPosition, PlayerStatus } from "@prisma/client";
 import { positionLabel, playerFullName } from "@/lib/format";
+import { Modal } from "@/components/admin/Modal";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import {
   createPlayerAction,
@@ -149,12 +150,9 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
         </p>
       )}
 
-      {panel && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">{panel.mode === "create" ? "Crear jugador" : "Editar jugador"}</h2>
-          <PlayerForm mode={panel.mode} player={panel.player} teams={teams} onDone={() => setPanel(null)} />
-        </div>
-      )}
+      <Modal open={!!panel} onClose={() => setPanel(null)} title={panel?.mode === "create" ? "Crear jugador" : "Editar jugador"}>
+        {panel && <PlayerForm mode={panel.mode} player={panel.player} teams={teams} onDone={() => setPanel(null)} />}
+      </Modal>
 
       <div className="card p-3 sm:p-5">
         {filtered.length === 0 ? (

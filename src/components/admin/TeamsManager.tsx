@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { TeamStatus } from "@prisma/client";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
+import { Modal } from "@/components/admin/Modal";
 import {
   createTeamAction,
   updateTeamAction,
@@ -116,12 +117,9 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
         </button>
       </div>
 
-      {panel && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">{panel.mode === "create" ? "Crear equipo" : "Editar equipo"}</h2>
-          <TeamForm mode={panel.mode} team={panel.team} onDone={() => setPanel(null)} />
-        </div>
-      )}
+      <Modal open={!!panel} onClose={() => setPanel(null)} title={panel?.mode === "create" ? "Crear equipo" : "Editar equipo"}>
+        {panel && <TeamForm mode={panel.mode} team={panel.team} onDone={() => setPanel(null)} />}
+      </Modal>
 
       <div className="card p-3 sm:p-5">
         {teams.length === 0 ? (

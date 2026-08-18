@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { Video } from "@prisma/client";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { detectVideoPlatform, VIDEO_PLATFORM_LABEL } from "@/lib/video";
+import { Modal } from "@/components/admin/Modal";
 import {
   createVideoAction,
   updateVideoAction,
@@ -72,12 +73,9 @@ export function VideosManager({ videos }: { videos: Video[] }) {
         </button>
       </div>
 
-      {panel && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">{panel.mode === "create" ? "Cargar video" : "Editar video"}</h2>
-          <VideoForm mode={panel.mode} video={panel.video} onDone={() => setPanel(null)} />
-        </div>
-      )}
+      <Modal open={!!panel} onClose={() => setPanel(null)} title={panel?.mode === "create" ? "Cargar video" : "Editar video"}>
+        {panel && <VideoForm mode={panel.mode} video={panel.video} onDone={() => setPanel(null)} />}
+      </Modal>
 
       {videos.length === 0 ? (
         <div className="card p-5">

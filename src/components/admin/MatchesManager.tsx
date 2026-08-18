@@ -15,6 +15,7 @@ import {
   type BulkFormState,
 } from "@/app/admin/(protected)/partidos/actions";
 import { GenerateFixtureForm } from "@/components/admin/GenerateFixtureForm";
+import { Modal } from "@/components/admin/Modal";
 
 type MatchRow = {
   id: string;
@@ -235,22 +236,22 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
         </p>
       )}
 
-      {panel?.mode === "generate" && (
-        <div className="card p-5">
-          <h2 className="section-title mb-1">Generar fixture automáticamente</h2>
-          <p className="mb-4 text-sm text-[var(--color-gray-500)]">
-            Todos contra todos, ida y vuelta (Art. 1 del reglamento) — una jornada nueva por semana.
-          </p>
-          <GenerateFixtureForm teamCount={teams.length} onDone={() => setPanel(null)} />
-        </div>
-      )}
+      <Modal open={panel?.mode === "generate"} onClose={() => setPanel(null)} title="Generar fixture automáticamente">
+        <p className="mb-4 text-sm text-[var(--color-gray-500)]">
+          Todos contra todos, ida y vuelta (Art. 1 del reglamento) — una jornada nueva por semana.
+        </p>
+        <GenerateFixtureForm teamCount={teams.length} onDone={() => setPanel(null)} />
+      </Modal>
 
-      {(panel?.mode === "create" || panel?.mode === "edit") && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">{panel.mode === "create" ? "Crear partido" : "Editar partido"}</h2>
+      <Modal
+        open={panel?.mode === "create" || panel?.mode === "edit"}
+        onClose={() => setPanel(null)}
+        title={panel?.mode === "create" ? "Crear partido" : "Editar partido"}
+      >
+        {(panel?.mode === "create" || panel?.mode === "edit") && (
           <MatchForm mode={panel.mode} match={panel.match} teams={teams} onDone={() => setPanel(null)} />
-        </div>
-      )}
+        )}
+      </Modal>
 
       {selected.size > 0 && (
         <BulkActionsBar selectedIds={Array.from(selected)} onDone={() => setSelected(new Set())} />
