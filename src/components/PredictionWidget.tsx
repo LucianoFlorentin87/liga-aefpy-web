@@ -69,6 +69,11 @@ export function PredictionWidget({
     );
   }
 
+  // El % de cada opción se revela recién después de votar — antes sólo se
+  // ven los botones para elegir, para no arruinar el "morbo" de comparar tu
+  // elección contra la del resto apenas entrás.
+  const revealPercentages = ownChoice !== null;
+
   return (
     <div className="mt-2 flex flex-col gap-1.5">
       <div className="flex flex-wrap gap-1.5">
@@ -87,15 +92,20 @@ export function PredictionWidget({
                   : "border-[var(--color-gray-200)] text-[var(--color-gray-600)] hover:border-[var(--color-red-300)]"
               }`}
             >
-              {label} · {pct}%
+              {label}
+              {revealPercentages ? ` · ${pct}%` : ""}
             </button>
           );
         })}
       </div>
       {error && <p className="text-[0.7rem] font-medium text-[var(--color-red-600)]">{error}</p>}
-      <p className="text-[0.68rem] text-[var(--color-gray-400)]">
-        {total} {total === 1 ? "voto" : "votos"} · la predicción no afecta el resultado oficial
-      </p>
+      {revealPercentages ? (
+        <p className="text-[0.68rem] text-[var(--color-gray-400)]">
+          {total} {total === 1 ? "voto" : "votos"} · la predicción no afecta el resultado oficial
+        </p>
+      ) : (
+        <p className="text-[0.68rem] text-[var(--color-gray-400)]">Votá para ver qué eligió el resto.</p>
+      )}
     </div>
   );
 }

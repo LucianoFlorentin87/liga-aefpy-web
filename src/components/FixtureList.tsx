@@ -4,6 +4,8 @@ import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
 import { PredictionWidget, type PredictionTally } from "@/components/PredictionWidget";
+import { MatchOddsBar } from "@/components/MatchOddsBar";
+import type { MatchOdds } from "@/lib/stats";
 
 type MatchWithTeams = Match & { homeTeam: Team; awayTeam: Team; goals: MatchGoal[] };
 
@@ -13,10 +15,12 @@ export function FixtureList({
   matches,
   canVote = false,
   predictionsByMatch = {},
+  oddsByMatch = {},
 }: {
   matches: MatchWithTeams[];
   canVote?: boolean;
   predictionsByMatch?: Record<string, PredictionTally>;
+  oddsByMatch?: Record<string, MatchOdds | null>;
 }) {
   if (matches.length === 0) {
     return <EmptyState title="Sin datos registrados" hint="Todavía no hay partidos cargados en el fixture." />;
@@ -90,7 +94,8 @@ export function FixtureList({
                       </div>
                     </div>
                     {VOTABLE_STATUSES.has(match.status) && (
-                      <div className="pl-12 sm:pl-[3.75rem]">
+                      <div className="flex flex-col gap-3 pl-12 sm:pl-[3.75rem]">
+                        <MatchOddsBar odds={oddsByMatch[match.id] ?? null} />
                         <PredictionWidget
                           matchId={match.id}
                           canVote={canVote}

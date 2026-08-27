@@ -118,6 +118,44 @@ export async function computeStandings(): Promise<StandingsRow[]> {
   return Array.from(rows.values()).sort((a, b) => compareByCriteria(a, b, criteria));
 }
 
+export type MatchOdds = { homeWinPct: number; drawPct: number; awayWinPct: number };
+
+const MIN_MATCHES_FOR_ODDS = 2;
+
+/**
+ * "Favorito según rendimiento": probabilidad de cada resultado calculada a
+ * partir de las tasas de victoria/empate/derrota de ambos equipos en
+ * partidos finalizados de la liga — un indicador propio, separado del voto
+ * de los hinchas (PredictionWidget). Se oculta (null) si algún equipo
+ * todavía jugó menos de MIN_MATCHES_FOR_ODDS partidos: con muestra tan
+ * chica el cálculo no dice nada confiable.
+ */
+export function computeMatchOdds(home: StandingsRow, away: StandingsRow): MatchOdds | null {
+  if (home.pj < MIN_MATCHES_FOR_ODDS || away.pj < MIN_MATCHES_FOR_ODDS) return null;
+
+  const homeWinRate = home.pg / home.pj;
+  const homeDrawRate = home.pe / home.pj;
+  const homeLossRate = home.pp / home.pj;
+  const awayWinRate = away.pg / away.pj;
+  const awayDrawRate = away.pe / away.pj;
+  const awayLossRate = away.pp / away.pj;
+
+  // El favoritismo de cada equipo combina su propia tasa de victorias con la
+  // tasa de derrotas del rival (un equipo gana más seguido contra rivales
+  // que pierden seguido), y el empate promedia la tendencia al empate de
+  // los dos.
+  const rawHomeWin = (homeWinRate + awayLossRate) / 2;
+  const rawAwayWin = (awayWinRate + homeLossRate) / 2;
+  const rawDraw = (homeDrawRate + awayDrawRate) / 2;
+  const total = rawHomeWin + rawAwayWin + rawDraw || 1;
+
+  return {
+    homeWinPct: Math.round((rawHomeWin / total) * 100),
+    drawPct: Math.round((rawDraw / total) * 100),
+    awayWinPct: Math.round((rawAwayWin / total) * 100),
+  };
+}
+
 export type ScorerRow = {
   playerId: string;
   playerName: string;
