@@ -13,12 +13,10 @@ const VOTABLE_STATUSES = new Set(["PROGRAMADO", "REPROGRAMADO"]);
 
 export function FixtureList({
   matches,
-  canVote = false,
   predictionsByMatch = {},
   oddsByMatch = {},
 }: {
   matches: MatchWithTeams[];
-  canVote?: boolean;
   predictionsByMatch?: Record<string, PredictionTally>;
   oddsByMatch?: Record<string, MatchOdds | null>;
 }) {
@@ -98,7 +96,6 @@ export function FixtureList({
                         <MatchOddsBar odds={oddsByMatch[match.id] ?? null} />
                         <PredictionWidget
                           matchId={match.id}
-                          canVote={canVote}
                           tally={
                             predictionsByMatch[match.id] ?? {
                               counts: { LOCAL: 0, EMPATE: 0, VISITANTE: 0 },

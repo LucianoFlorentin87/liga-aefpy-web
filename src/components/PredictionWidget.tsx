@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { castPredictionAction } from "@/app/(public)/fixture/prediction-actions";
 
 export type PredictionChoice = "LOCAL" | "EMPATE" | "VISITANTE";
@@ -17,15 +16,8 @@ const CHOICES: { value: PredictionChoice; label: string }[] = [
   { value: "VISITANTE", label: "Gana visitante" },
 ];
 
-export function PredictionWidget({
-  matchId,
-  canVote,
-  tally,
-}: {
-  matchId: string;
-  canVote: boolean;
-  tally: PredictionTally;
-}) {
+/** Cualquier visitante puede votar, con o sin cuenta — ver src/lib/voter.ts. */
+export function PredictionWidget({ matchId, tally }: { matchId: string; tally: PredictionTally }) {
   const [pending, startTransition] = useTransition();
   const [ownChoice, setOwnChoice] = useState(tally.ownChoice);
   const [counts, setCounts] = useState(tally.counts);
@@ -52,21 +44,6 @@ export function PredictionWidget({
         setCounts(tally.counts);
       }
     });
-  }
-
-  if (!canVote) {
-    return (
-      <div className="mt-2 rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-xs text-[var(--color-gray-500)]">
-        <Link href="/cuenta/login" className="font-semibold text-[var(--color-red-600)] hover:underline">
-          Ingresá
-        </Link>{" "}
-        o{" "}
-        <Link href="/cuenta/registro" className="font-semibold text-[var(--color-red-600)] hover:underline">
-          creá tu cuenta
-        </Link>{" "}
-        para votar quién creés que gana.
-      </div>
-    );
   }
 
   // El % de cada opción se revela recién después de votar — antes sólo se

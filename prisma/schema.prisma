@@ -357,16 +357,19 @@ enum PredictionChoice {
   VISITANTE
 }
 
-// Una predicción pertenece a un hincha (fanUser) O a un usuario de staff con
-// rol DELEGADO (staffUser) — nunca a ambos. Se modela con dos relaciones
-// opcionales en vez de una sola columna genérica para conservar la
-// integridad referencial (FK real) hacia cada tabla de cuentas.
+// Una predicción pertenece a un hincha (fanUser), a un usuario de staff con
+// rol DELEGADO (staffUser), o a un visitante sin cuenta identificado por una
+// cookie anónima (anonId) — cualquier visitante puede votar sin iniciar
+// sesión. Se modela con relaciones/columna opcionales en vez de un solo
+// campo genérico para conservar la integridad referencial (FK real) hacia
+// cada tabla de cuentas cuando corresponde.
 model Prediction {
   id          String            @id @default(cuid())
   fanUser     FanUser?          @relation(fields: [fanUserId], references: [id], onDelete: Cascade)
   fanUserId   String?
   staffUser   User?             @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
   staffUserId String?
+  anonId      String?
   match       Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
   matchId     String
   choice      PredictionChoice
@@ -375,6 +378,7 @@ model Prediction {
 
   @@unique([fanUserId, matchId])
   @@unique([staffUserId, matchId])
+  @@unique([anonId, matchId])
   @@index([matchId])
   @@map("predictions")
 }

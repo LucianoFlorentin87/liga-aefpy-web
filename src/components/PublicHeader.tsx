@@ -3,13 +3,13 @@ import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { MobileMenuButton } from "@/components/MobileMenuButton";
-import { getVoterIdentity } from "@/lib/voter";
+import { getAccountVoter } from "@/lib/voter";
 import { logoutFanAction } from "@/app/(public)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
 
 export async function PublicHeader() {
   const [voter, settings] = await Promise.all([
-    getVoterIdentity(),
+    getAccountVoter(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 

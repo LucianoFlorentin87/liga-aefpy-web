@@ -37,7 +37,7 @@ export default async function FixturePage() {
   if (matchIds.length > 0) {
     const allPredictions = await prisma.prediction.findMany({
       where: { matchId: { in: matchIds } },
-      select: { matchId: true, choice: true, fanUserId: true, staffUserId: true },
+      select: { matchId: true, choice: true, fanUserId: true, staffUserId: true, anonId: true },
     });
     for (const matchId of matchIds) {
       predictionsByMatch[matchId] = { counts: { LOCAL: 0, EMPATE: 0, VISITANTE: 0 }, ownChoice: null };
@@ -47,7 +47,10 @@ export default async function FixturePage() {
       const choice = p.choice as PredictionChoice;
       tally.counts[choice] += 1;
       const isOwnVote =
-        voter && ((voter.kind === "fan" && p.fanUserId === voter.id) || (voter.kind === "staff" && p.staffUserId === voter.id));
+        voter &&
+        ((voter.kind === "fan" && p.fanUserId === voter.id) ||
+          (voter.kind === "staff" && p.staffUserId === voter.id) ||
+          (voter.kind === "anon" && p.anonId === voter.id));
       if (isOwnVote) tally.ownChoice = choice;
     }
   }
@@ -56,7 +59,7 @@ export default async function FixturePage() {
     <div>
       <PageHeader title="Fixture" subtitle="Todos los partidos del torneo, agrupados por jornada." />
       <div className="container-page py-8">
-        <FixtureList matches={matches} canVote={!!voter} predictionsByMatch={predictionsByMatch} oddsByMatch={oddsByMatch} />
+        <FixtureList matches={matches} predictionsByMatch={predictionsByMatch} oddsByMatch={oddsByMatch} />
       </div>
     </div>
   );

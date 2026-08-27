@@ -5,9 +5,9 @@ import Link from "next/link";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { logoutFanAction } from "@/app/(public)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
-import type { VoterIdentity } from "@/lib/voter";
+import type { AccountVoterIdentity } from "@/lib/voter";
 
-export function MobileMenuButton({ voter }: { voter: VoterIdentity | null }) {
+export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null }) {
   const [open, setOpen] = useState(false);
 
   return (
