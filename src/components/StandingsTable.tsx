@@ -1,8 +1,9 @@
-import type { StandingsRow } from "@/lib/stats";
+import type { StandingsRowWithTrend } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
+import { PositionTrendIcon } from "@/components/PositionTrendIcon";
 
-export function StandingsTable({ rows, limit }: { rows: StandingsRow[]; limit?: number }) {
+export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   if (data.length === 0) {
@@ -29,7 +30,12 @@ export function StandingsTable({ rows, limit }: { rows: StandingsRow[]; limit?: 
         <tbody>
           {data.map((row, index) => (
             <tr key={row.teamId}>
-              <td className="font-semibold text-[var(--color-gray-500)]">{index + 1}</td>
+              <td className="font-semibold text-[var(--color-gray-500)]">
+                <span className="flex items-center gap-1.5">
+                  {index + 1}
+                  <PositionTrendIcon trend={row.trend} />
+                </span>
+              </td>
               <td className="font-semibold text-[var(--color-navy-900)]">
                 <span className="flex items-center gap-2">
                   <TeamCrest name={row.teamName} shortName={row.teamShortName} logoUrl={row.logoUrl} size={20} />

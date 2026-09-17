@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { computeStandings } from "@/lib/stats";
+import { computeStandingsWithTrend } from "@/lib/stats";
 import { PageHeader } from "@/components/PageHeader";
 import { StandingsTable } from "@/components/StandingsTable";
 
@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Posiciones" };
 export const dynamic = "force-dynamic";
 
 export default async function PosicionesPage() {
-  const standings = await computeStandings();
+  const standings = await computeStandingsWithTrend();
 
   return (
     <div>

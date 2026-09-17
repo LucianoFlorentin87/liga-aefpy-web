@@ -38,21 +38,20 @@ function compareByCriteria(a: StandingsRow, b: StandingsRow, criteria: string[])
   return a.teamName.localeCompare(b.teamName, "es");
 }
 
-/** Calcula la tabla de posiciones a partir de los partidos finalizados. */
-export async function computeStandings(): Promise<StandingsRow[]> {
-  const [teams, settings] = await Promise.all([
-    prisma.team.findMany({ where: { status: "ACTIVO" } }),
-    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
-  ]);
+type TeamLite = { id: string; name: string; shortName: string; logoUrl: string | null };
+type FinishedMatch = Awaited<ReturnType<typeof fetchFinishedMatches>>[number];
+type PointAdjustmentRow = Awaited<ReturnType<typeof prisma.pointAdjustment.findMany>>[number];
 
-  const [finishedMatches, pointAdjustments] = await Promise.all([
-    prisma.match.findMany({
-      where: { status: "FINALIZADO" },
-      include: { goals: true },
-    }),
-    prisma.pointAdjustment.findMany(),
-  ]);
+function fetchFinishedMatches() {
+  return prisma.match.findMany({ where: { status: "FINALIZADO" }, include: { goals: true } });
+}
 
+function buildStandingsRows(
+  teams: TeamLite[],
+  finishedMatches: FinishedMatch[],
+  pointAdjustments: PointAdjustmentRow[],
+  criteria: string[],
+): StandingsRow[] {
   const rows = new Map<string, StandingsRow>();
   for (const team of teams) {
     rows.set(team.id, {
@@ -114,8 +113,73 @@ export async function computeStandings(): Promise<StandingsRow[]> {
     row.dg = row.gf - row.gc;
   }
 
-  const criteria = parseCriteria(settings?.standingsCriteria);
   return Array.from(rows.values()).sort((a, b) => compareByCriteria(a, b, criteria));
+}
+
+/** Calcula la tabla de posiciones a partir de los partidos finalizados. */
+export async function computeStandings(): Promise<StandingsRow[]> {
+  const [teams, settings] = await Promise.all([
+    prisma.team.findMany({ where: { status: "ACTIVO" } }),
+    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+  ]);
+
+  const [finishedMatches, pointAdjustments] = await Promise.all([
+    fetchFinishedMatches(),
+    prisma.pointAdjustment.findMany(),
+  ]);
+
+  const criteria = parseCriteria(settings?.standingsCriteria);
+  return buildStandingsRows(teams, finishedMatches, pointAdjustments, criteria);
+}
+
+export type PositionTrend = "up" | "down" | "same" | null;
+export type StandingsRowWithTrend = StandingsRow & { trend: PositionTrend };
+
+/**
+ * Igual que computeStandings, pero con la flechita de tendencia por equipo:
+ * compara la posición actual contra la que tenía antes de la última jornada
+ * jugada (excluyendo esa jornada del cálculo). Si el equipo todavía no había
+ * jugado ningún partido antes de esa jornada (recién arrancó la temporada,
+ * o se sumó después), no hay "antes" real con qué comparar — se deja sin
+ * flecha (trend: null) en vez de mostrar algo engañoso.
+ *
+ * Nota: los ajustes de puntos manuales (Art. 9/11) no están ubicados en el
+ * tiempo por jornada, así que se aplican igual en el cálculo "antes" y
+ * "ahora" — una simplificación razonable para un caso que es raro de por sí.
+ */
+export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend[]> {
+  const [teams, settings] = await Promise.all([
+    prisma.team.findMany({ where: { status: "ACTIVO" } }),
+    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+  ]);
+
+  const [finishedMatches, pointAdjustments] = await Promise.all([
+    fetchFinishedMatches(),
+    prisma.pointAdjustment.findMany(),
+  ]);
+
+  const criteria = parseCriteria(settings?.standingsCriteria);
+  const current = buildStandingsRows(teams, finishedMatches, pointAdjustments, criteria);
+
+  const latestMatchday = finishedMatches.reduce((max, m) => Math.max(max, m.matchday), 0);
+  if (latestMatchday === 0) {
+    return current.map((row) => ({ ...row, trend: null }));
+  }
+
+  const previousMatches = finishedMatches.filter((m) => m.matchday < latestMatchday);
+  const previous = buildStandingsRows(teams, previousMatches, pointAdjustments, criteria);
+  const previousIndexByTeam = new Map(previous.map((row, i) => [row.teamId, i]));
+  const previousRowByTeam = new Map(previous.map((row) => [row.teamId, row]));
+
+  return current.map((row, i) => {
+    const prevIndex = previousIndexByTeam.get(row.teamId);
+    const prevRow = previousRowByTeam.get(row.teamId);
+    let trend: PositionTrend = null;
+    if (prevIndex !== undefined && prevRow && prevRow.pj > 0) {
+      trend = i < prevIndex ? "up" : i > prevIndex ? "down" : "same";
+    }
+    return { ...row, trend };
+  });
 }
 
 export type MatchOdds = { homeWinPct: number; drawPct: number; awayWinPct: number };

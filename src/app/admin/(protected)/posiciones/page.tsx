@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireAuth } from "@/lib/permissions";
-import { computeStandings } from "@/lib/stats";
+import { computeStandingsWithTrend } from "@/lib/stats";
 import { StandingsTable } from "@/components/StandingsTable";
 
 export const metadata: Metadata = { title: "Posiciones" };
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPosicionesPage() {
   await requireAuth();
-  const standings = await computeStandings();
+  const standings = await computeStandingsWithTrend();
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
-  computeStandings,
+  computeStandingsWithTrend,
   computeScorers,
   computeDiscipline,
   getNextMatch,
@@ -27,7 +27,7 @@ export default async function HomePage() {
       getNextMatch(),
       getUpcomingMatches(8),
       getRecentResults(5),
-      computeStandings(),
+      computeStandingsWithTrend(),
       computeScorers(),
       computeDiscipline(),
       prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),

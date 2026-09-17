@@ -1,9 +1,10 @@
-import type { StandingsRow } from "@/lib/stats";
+import type { StandingsRowWithTrend } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
 import { WidgetCard } from "@/components/WidgetCard";
+import { PositionTrendIcon } from "@/components/PositionTrendIcon";
 
-export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; limit?: number }) {
+export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRowWithTrend[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   return (
@@ -26,7 +27,12 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRow[]; lim
           <tbody>
             {data.map((row, index) => (
               <tr key={row.teamId} className="border-b border-[var(--color-gray-100)] last:border-0">
-                <td className="py-2 pl-4 font-semibold text-[var(--color-gray-500)]">{index + 1}</td>
+                <td className="py-2 pl-4 font-semibold text-[var(--color-gray-500)]">
+                  <span className="flex items-center gap-1.5">
+                    {index + 1}
+                    <PositionTrendIcon trend={row.trend} />
+                  </span>
+                </td>
                 <td className="py-2">
                   <span className="flex items-center gap-2 font-semibold text-[var(--color-navy-900)]">
                     <TeamCrest name={row.teamName} shortName={row.teamShortName} logoUrl={row.logoUrl} size={20} />
