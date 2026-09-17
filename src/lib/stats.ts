@@ -137,14 +137,16 @@ export type StandingsRowWithTrend = StandingsRow & { trend: PositionTrend };
 
 /**
  * Igual que computeStandings, pero con la flechita de tendencia por equipo:
- * compara la posición actual contra la que tenía antes de la última jornada
- * jugada (excluyendo esa jornada del cálculo). Si el equipo todavía no había
- * jugado ningún partido antes de esa jornada (recién arrancó la temporada,
- * o se sumó después), no hay "antes" real con qué comparar — se deja sin
- * flecha (trend: null) en vez de mostrar algo engañoso.
+ * compara la posición actual contra la que tenía antes de la fecha más
+ * reciente en que se cargó un resultado (excluyendo los partidos de ese día
+ * del cálculo — no toda la jornada, porque una jornada se va jugando en
+ * fechas distintas). Si el equipo todavía no había jugado ningún partido
+ * antes de ese día (recién arrancó la temporada, o se sumó después), no hay
+ * "antes" real con qué comparar — se deja sin flecha (trend: null) en vez
+ * de mostrar algo engañoso.
  *
  * Nota: los ajustes de puntos manuales (Art. 9/11) no están ubicados en el
- * tiempo por jornada, así que se aplican igual en el cálculo "antes" y
+ * tiempo por fecha, así que se aplican igual en el cálculo "antes" y
  * "ahora" — una simplificación razonable para un caso que es raro de por sí.
  */
 export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend[]> {
@@ -161,12 +163,22 @@ export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend
   const criteria = parseCriteria(settings?.standingsCriteria);
   const current = buildStandingsRows(teams, finishedMatches, pointAdjustments, criteria);
 
-  const latestMatchday = finishedMatches.reduce((max, m) => Math.max(max, m.matchday), 0);
-  if (latestMatchday === 0) {
+  // Se usa la fecha real del partido (match.date), no la jornada, para
+  // decidir qué queda "antes". Una jornada no se juega toda el mismo día —
+  // sus partidos se van cargando en fechas distintas a medida que cada
+  // delegado juega el suyo — así que excluir la jornada entera dejaba
+  // "antes" resultados que en realidad ya estaban cargados desde hace
+  // tiempo, y la flecha de todos los demás equipos de esa jornada quedaba
+  // mal (no sólo la del equipo que jugó hoy).
+  const latestDate = finishedMatches.reduce<number | null>((max, m) => {
+    const t = m.date.getTime();
+    return max === null || t > max ? t : max;
+  }, null);
+  if (latestDate === null) {
     return current.map((row) => ({ ...row, trend: null }));
   }
 
-  const previousMatches = finishedMatches.filter((m) => m.matchday < latestMatchday);
+  const previousMatches = finishedMatches.filter((m) => m.date.getTime() < latestDate);
   const previous = buildStandingsRows(teams, previousMatches, pointAdjustments, criteria);
   const previousIndexByTeam = new Map(previous.map((row, i) => [row.teamId, i]));
   const previousRowByTeam = new Map(previous.map((row) => [row.teamId, row]));
