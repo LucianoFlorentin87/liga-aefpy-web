@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { goalSchema, cardSchema } from "@/lib/validation";
 import { playerFullName } from "@/lib/format";
+import { reconcileSanctions } from "@/lib/sanctions";
 import type { MatchStatus } from "@prisma/client";
 
 export type FormState = { error?: string; success?: string };
@@ -247,6 +248,7 @@ export async function setMatchStatusAction(formData: FormData): Promise<void> {
   if (!SETTABLE_STATUSES.includes(status)) return;
 
   const match = await prisma.match.update({ where: { id: matchId }, data: { status }, include: { homeTeam: true, awayTeam: true } });
+  if (status === "FINALIZADO") await reconcileSanctions();
   await logActivity(`${actor.firstName} ${actor.lastName} marcó ${match.homeTeam.name} vs ${match.awayTeam.name} como "${status}".`, actor.id);
   revalidatePath(`/admin/partidos/${matchId}`);
   revalidatePath("/admin/partidos");

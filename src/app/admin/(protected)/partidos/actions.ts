@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { matchSchema } from "@/lib/validation";
 import { matchStatusLabel } from "@/lib/format";
+import { reconcileSanctions } from "@/lib/sanctions";
 
 export type FormState = { error?: string; success?: string };
 
@@ -54,6 +55,7 @@ export async function createMatchAction(_prevState: FormState, formData: FormDat
       notes: parsed.data.notes || null,
     },
   });
+  if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
   await logActivity(`${actor.firstName} ${actor.lastName} agregó el partido ${home.name} vs ${away.name} (Jornada ${parsed.data.matchday}).`, actor.id);
   revalidatePath("/admin/partidos");
@@ -102,6 +104,7 @@ export async function updateMatchAction(_prevState: FormState, formData: FormDat
       notes: parsed.data.notes || null,
     },
   });
+  if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
   await logActivity(`${actor.firstName} ${actor.lastName} actualizó el partido ${home.name} vs ${away.name}.`, actor.id);
   revalidatePath("/admin/partidos");
@@ -173,6 +176,7 @@ export async function updateMatchesStatusAction(_prevState: BulkFormState, formD
   if (!BULK_STATUSES.includes(status as (typeof BULK_STATUSES)[number])) return { error: "Estado inválido." };
 
   await prisma.match.updateMany({ where: { id: { in: ids } }, data: { status: status as (typeof BULK_STATUSES)[number] } });
+  if (status === "FINALIZADO") await reconcileSanctions();
   await logActivity(
     `${actor.firstName} ${actor.lastName} cambió el estado de ${ids.length} partido(s) en lote a "${matchStatusLabel(status)}".`,
     actor.id,
