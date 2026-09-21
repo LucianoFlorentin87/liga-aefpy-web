@@ -28,7 +28,8 @@ export async function PublicFooter() {
       </div>
       <div className="border-t border-white/10 py-4">
         <p className="container-page text-center text-[0.72rem] text-white/40">
-          © {new Date().getFullYear()} {orgName} — {orgTagline}
+          © {new Date().getFullYear()} {orgName} — {orgTagline}. Todos los derechos reservados — prohibida su
+          reproducción total o parcial sin autorización.
         </p>
       </div>
     </footer>
