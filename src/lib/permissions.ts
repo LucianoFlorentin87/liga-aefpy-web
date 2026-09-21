@@ -21,6 +21,7 @@ export const PERMISSIONS = {
   reglamento: ["SUPERADMIN", "ADMINISTRADOR"],
   configuracion: ["SUPERADMIN", "ADMINISTRADOR"],
   videos: ["SUPERADMIN", "ADMINISTRADOR"],
+  auditoria: ["SUPERADMIN"],
 } as const satisfies Record<string, RoleKey[]>;
 
 export type PermissionResource = keyof typeof PERMISSIONS;
