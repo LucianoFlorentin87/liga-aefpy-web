@@ -1,3 +1,30 @@
+const FORFEIT_SCORE = 3;
+
+/**
+ * Goles de un partido, contemplando el caso de abandono (walkover): si el
+ * partido se resolvió por abandono de un equipo, el resultado es fijo 3-0 en
+ * su contra — no hay goles reales cargados para contar. Se comparte entre
+ * todos los lugares que muestran el marcador para que ninguno se olvide del
+ * caso y termine mostrando "0 - 0" en un partido resuelto por abandono.
+ */
+export function getMatchScore(match: {
+  homeTeamId: string;
+  awayTeamId: string;
+  forfeitedTeamId: string | null;
+  goals: { teamId: string }[];
+}): { home: number; away: number } {
+  if (match.forfeitedTeamId) {
+    return {
+      home: match.forfeitedTeamId === match.homeTeamId ? 0 : FORFEIT_SCORE,
+      away: match.forfeitedTeamId === match.awayTeamId ? 0 : FORFEIT_SCORE,
+    };
+  }
+  return {
+    home: match.goals.filter((g) => g.teamId === match.homeTeamId).length,
+    away: match.goals.filter((g) => g.teamId === match.awayTeamId).length,
+  };
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("es-PY", {
@@ -47,6 +74,7 @@ export function matchStatusLabel(status: string): string {
 const USER_STATUS_LABEL: Record<string, string> = {
   ACTIVO: "Activo",
   INACTIVO: "Inactivo",
+  RETIRADO: "Retirado",
 };
 export function statusLabel(status: string): string {
   return USER_STATUS_LABEL[status] ?? status;

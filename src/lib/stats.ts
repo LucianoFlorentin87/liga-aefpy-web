@@ -1,11 +1,12 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { playerFullName } from "@/lib/format";
+import { playerFullName, getMatchScore } from "@/lib/format";
 
 export type StandingsRow = {
   teamId: string;
   teamName: string;
   teamShortName: string;
+  teamStatus: string;
   logoUrl: string | null;
   pj: number;
   pg: number;
@@ -20,6 +21,11 @@ export type StandingsRow = {
 };
 
 const DEFAULT_CRITERIA = ["PTS", "DG", "GF"];
+
+/** Estados de equipo que siguen contando en la tabla de posiciones: ACTIVO
+ *  y RETIRADO (un equipo que abandonó la liga conserva los puntos que ya
+ *  sumó). INACTIVO es el único que desaparece del todo. */
+const STANDINGS_TEAM_STATUSES: ("ACTIVO" | "RETIRADO")[] = ["ACTIVO", "RETIRADO"];
 
 function parseCriteria(raw: string | undefined): string[] {
   const list = (raw ?? "").split(",").map((c) => c.trim().toUpperCase()).filter(Boolean);
@@ -38,7 +44,7 @@ function compareByCriteria(a: StandingsRow, b: StandingsRow, criteria: string[])
   return a.teamName.localeCompare(b.teamName, "es");
 }
 
-type TeamLite = { id: string; name: string; shortName: string; logoUrl: string | null };
+type TeamLite = { id: string; name: string; shortName: string; logoUrl: string | null; status: string };
 type FinishedMatch = Awaited<ReturnType<typeof fetchFinishedMatches>>[number];
 type PointAdjustmentRow = Awaited<ReturnType<typeof prisma.pointAdjustment.findMany>>[number];
 
@@ -58,6 +64,7 @@ function buildStandingsRows(
       teamId: team.id,
       teamName: team.name,
       teamShortName: team.shortName,
+      teamStatus: team.status,
       logoUrl: team.logoUrl,
       pj: 0,
       pg: 0,
@@ -76,8 +83,7 @@ function buildStandingsRows(
     const away = rows.get(match.awayTeamId);
     if (!home || !away) continue; // equipo inactivo/eliminado: se excluye de la tabla
 
-    const homeGoals = match.goals.filter((g) => g.teamId === match.homeTeamId).length;
-    const awayGoals = match.goals.filter((g) => g.teamId === match.awayTeamId).length;
+    const { home: homeGoals, away: awayGoals } = getMatchScore(match);
 
     home.pj += 1;
     away.pj += 1;
@@ -119,7 +125,7 @@ function buildStandingsRows(
 /** Calcula la tabla de posiciones a partir de los partidos finalizados. */
 export async function computeStandings(): Promise<StandingsRow[]> {
   const [teams, settings] = await Promise.all([
-    prisma.team.findMany({ where: { status: "ACTIVO" } }),
+    prisma.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 
@@ -155,7 +161,7 @@ export type StandingsRowWithTrend = StandingsRow & { trend: PositionTrend };
  */
 export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend[]> {
   const [teams, settings] = await Promise.all([
-    prisma.team.findMany({ where: { status: "ACTIVO" } }),
+    prisma.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 

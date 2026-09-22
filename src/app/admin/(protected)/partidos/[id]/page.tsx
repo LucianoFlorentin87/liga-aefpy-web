@@ -28,7 +28,13 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const canLoadResults = can(session.role, "resultados");
   if (!canEditSchedule && !canLoadResults) notFound();
 
-  const teams = await prisma.team.findMany({ where: { status: "ACTIVO" }, orderBy: { name: "asc" } });
+  // Incluye RETIRADO: si el partido ya involucra a un equipo retirado (p. ej.
+  // uno de los partidos resueltos 3-0 por abandono), tiene que seguir siendo
+  // una opción válida del <select>, si no el formulario queda roto.
+  const teams = await prisma.team.findMany({
+    where: { status: { in: ["ACTIVO", "RETIRADO"] } },
+    orderBy: { name: "asc" },
+  });
 
   const activeSanctions = await prisma.sanction.findMany({
     where: {

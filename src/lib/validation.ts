@@ -83,7 +83,13 @@ const teamContactFields = {
 export const teamSchema = z.object({
   ...teamNameFields,
   ...teamContactFields,
-  status: statusEnum,
+  // Distinto del statusEnum de arriba (usuarios/jugadores): un equipo
+  // también puede estar RETIRADO (abandonó la liga a mitad de temporada).
+  // No se retira desde este formulario — eso lo hace retireTeamAction, que
+  // además resuelve los partidos pendientes — pero el valor tiene que ser
+  // válido acá para poder editar otros datos de un equipo ya retirado sin
+  // que el formulario lo reactive por accidente.
+  status: z.enum(["ACTIVO", "INACTIVO", "RETIRADO"]),
 });
 
 /** Datos que puede editar el propio delegado sobre su equipo (incluye nombre/abreviatura, no el estado). */

@@ -2,6 +2,7 @@ import type { StandingsRowWithTrend } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
 import { PositionTrendIcon } from "@/components/PositionTrendIcon";
+import { ActiveStatusBadge } from "@/components/StatusBadge";
 
 export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
@@ -37,9 +38,14 @@ export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[];
                 </span>
               </td>
               <td className="font-semibold text-[var(--color-navy-900)]">
-                <span className="flex items-center gap-2">
+                <span className="flex min-w-0 items-center gap-2">
                   <TeamCrest name={row.teamName} shortName={row.teamShortName} logoUrl={row.logoUrl} size={20} />
-                  {row.teamName}
+                  <span className="truncate">{row.teamName}</span>
+                  {row.teamStatus === "RETIRADO" && (
+                    <span className="shrink-0">
+                      <ActiveStatusBadge status="RETIRADO" />
+                    </span>
+                  )}
                 </span>
               </td>
               <td className="text-center">{row.pj}</td>

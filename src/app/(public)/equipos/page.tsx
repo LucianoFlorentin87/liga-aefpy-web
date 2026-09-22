@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { SocialIcons } from "@/components/SocialIcons";
 import { TeamCrest } from "@/components/TeamCrest";
+import { ActiveStatusBadge } from "@/components/StatusBadge";
 
 export const metadata: Metadata = { title: "Equipos" };
 export const dynamic = "force-dynamic";
@@ -13,7 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function EquiposPage() {
   const [teams, standings] = await Promise.all([
     prisma.team.findMany({
-      where: { status: "ACTIVO" },
+      // RETIRADO también se muestra (con su récord acumulado) — sólo
+      // desaparece un equipo si queda INACTIVO.
+      where: { status: { in: ["ACTIVO", "RETIRADO"] } },
       include: { _count: { select: { players: true } } },
       orderBy: { name: "asc" },
     }),
@@ -50,7 +53,10 @@ export default async function EquiposPage() {
                             #{position} en la tabla
                           </p>
                         )}
-                        <p className="truncate text-base font-extrabold uppercase text-[var(--color-navy-900)]">{team.name}</p>
+                        <p className="flex min-w-0 items-center gap-1.5 text-base font-extrabold uppercase text-[var(--color-navy-900)]">
+                          <span className="truncate">{team.name}</span>
+                          {team.status === "RETIRADO" && <span className="shrink-0"><ActiveStatusBadge status="RETIRADO" /></span>}
+                        </p>
                         <p className="text-xs text-[var(--color-gray-500)]">
                           {team._count.players} jugadores
                           {team.gamertag && <span className="text-[var(--color-gray-400)]"> · 🎮 {team.gamertag}</span>}

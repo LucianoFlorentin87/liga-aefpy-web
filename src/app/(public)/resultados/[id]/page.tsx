@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatDate, playerFullName } from "@/lib/format";
+import { formatDate, playerFullName, getMatchScore } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -23,8 +23,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
 
   if (!match) notFound();
 
-  const homeGoals = match.goals.filter((g) => g.teamId === match.homeTeamId);
-  const awayGoals = match.goals.filter((g) => g.teamId === match.awayTeamId);
+  const score = getMatchScore(match);
 
   return (
     <div>
@@ -37,7 +36,10 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             <span className="text-xs font-semibold uppercase tracking-widest text-white/70">
               Jornada {match.matchday}
             </span>
-            <MatchStatusBadge status={match.status} />
+            <div className="flex items-center gap-2">
+              {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
+              <MatchStatusBadge status={match.status} />
+            </div>
           </div>
           {/* items-start (no items-center): si el nombre de un equipo pasa a
               dos líneas y el otro no, items-center desalinearía los escudos
@@ -49,7 +51,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
               <span className="text-lg font-extrabold sm:text-2xl">{match.homeTeam.name}</span>
             </div>
             <div className="flex h-9 items-center justify-center text-2xl font-extrabold sm:text-3xl">
-              {homeGoals.length} - {awayGoals.length}
+              {score.home} - {score.away}
             </div>
             <div className="flex flex-col items-center gap-2">
               <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} />
@@ -67,7 +69,12 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
       <div className="container-page grid gap-6 py-8 lg:grid-cols-2">
         <div className="card p-5">
           <h2 className="section-title mb-3">⚽ Goles</h2>
-          {match.goals.length === 0 ? (
+          {match.forfeitedTeamId ? (
+            <EmptyState
+              title="Partido resuelto por abandono"
+              hint={`${match.forfeitedTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} se retiró de la liga — resultado 3-0 en su contra, sin goles cargados.`}
+            />
+          ) : match.goals.length === 0 ? (
             <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron goles para este partido." />
           ) : (
             <ul className="flex flex-col gap-2">

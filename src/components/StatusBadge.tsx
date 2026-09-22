@@ -13,11 +13,8 @@ export function MatchStatusBadge({ status }: { status: string }) {
 }
 
 export function ActiveStatusBadge({ status }: { status: string }) {
-  return (
-    <span className={`badge ${status === "ACTIVO" ? "badge-green" : "badge-gray"}`}>
-      {statusLabel(status)}
-    </span>
-  );
+  const style = status === "ACTIVO" ? "badge-green" : status === "RETIRADO" ? "badge-amber" : "badge-gray";
+  return <span className={`badge ${style}`}>{statusLabel(status)}</span>;
 }
 
 export function SanctionStatusBadge({ status }: { status: string }) {

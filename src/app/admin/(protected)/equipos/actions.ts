@@ -137,6 +137,7 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
 
   const target = await prisma.team.findUnique({ where: { id } });
   if (!target) return;
+  if (target.status === "RETIRADO") return; // se reactiva editando el equipo, no con este botón
 
   const newStatus = target.status === "ACTIVO" ? "INACTIVO" : "ACTIVO";
   await prisma.team.update({ where: { id }, data: { status: newStatus } });
@@ -146,6 +147,59 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
   );
   revalidatePath("/admin/equipos");
   revalidatePath("/equipos");
+}
+
+const FORFEITABLE_STATUSES: ("PROGRAMADO" | "EN_CURSO" | "SUSPENDIDO" | "REPROGRAMADO")[] = [
+  "PROGRAMADO",
+  "EN_CURSO",
+  "SUSPENDIDO",
+  "REPROGRAMADO",
+];
+
+/**
+ * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
+ * RETIRADO (sigue en la tabla con los puntos ya sumados, a diferencia de
+ * INACTIVO) y resuelve todos sus partidos todavía no jugados como 3-0 en
+ * contra por abandono (walkover), para que el resto del fixture no quede
+ * con partidos colgados esperando a un equipo que ya no va a jugar.
+ */
+export async function retireTeamAction(formData: FormData): Promise<void> {
+  const { user: actor } = await requirePermission("equipos");
+  const id = String(formData.get("id"));
+
+  const target = await prisma.team.findUnique({ where: { id } });
+  if (!target || target.status === "RETIRADO") return;
+
+  const pendingMatches = await prisma.match.findMany({
+    where: {
+      OR: [{ homeTeamId: id }, { awayTeamId: id }],
+      status: { in: FORFEITABLE_STATUSES },
+    },
+    select: { id: true },
+  });
+
+  await prisma.$transaction([
+    prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
+    ...pendingMatches.map((m) =>
+      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id } }),
+    ),
+  ]);
+
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} retiró al equipo "${target.name}" de la liga` +
+      (pendingMatches.length > 0
+        ? ` — ${pendingMatches.length} partido(s) pendiente(s) se resolvieron 3-0 en contra por abandono.`
+        : "."),
+    actor.id,
+  );
+  revalidatePath("/admin/equipos");
+  revalidatePath("/admin/partidos");
+  revalidatePath("/admin/resultados");
+  revalidatePath("/equipos");
+  revalidatePath("/fixture");
+  revalidatePath("/resultados");
+  revalidatePath("/posiciones");
+  revalidatePath("/");
 }
 
 export async function deleteTeamAction(formData: FormData): Promise<void> {

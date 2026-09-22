@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Match, MatchGoal, Team } from "@prisma/client";
-import { formatDateShort } from "@/lib/format";
+import { formatDateShort, getMatchScore } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -15,8 +15,7 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
   return (
     <ul className="divide-y divide-[var(--color-gray-100)]">
       {matches.map((match) => {
-        const homeGoals = match.goals.filter((g) => g.teamId === match.homeTeamId).length;
-        const awayGoals = match.goals.filter((g) => g.teamId === match.awayTeamId).length;
+        const { home: homeGoals, away: awayGoals } = getMatchScore(match);
         return (
           <li key={match.id}>
             {/* Siempre en columna: el bloque de meta info nunca compite por ancho con los
@@ -43,6 +42,9 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                 <span className="shrink-0">
                   <MatchStatusBadge status={match.status} />
                 </span>
+                {match.forfeitedTeamId && (
+                  <span className="badge badge-amber shrink-0 whitespace-nowrap">Por abandono</span>
+                )}
               </div>
             </Link>
           </li>

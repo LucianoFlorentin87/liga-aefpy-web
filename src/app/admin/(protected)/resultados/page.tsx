@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
-import { formatDateShort } from "@/lib/format";
+import { formatDateShort, getMatchScore } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 
@@ -44,8 +44,7 @@ export default async function AdminResultadosPage() {
               </thead>
               <tbody>
                 {matches.map((m) => {
-                  const homeGoals = m.goals.filter((g) => g.teamId === m.homeTeamId).length;
-                  const awayGoals = m.goals.filter((g) => g.teamId === m.awayTeamId).length;
+                  const { home: homeGoals, away: awayGoals } = getMatchScore(m);
                   return (
                     <tr key={m.id}>
                       <td>{m.matchday}</td>
@@ -58,6 +57,7 @@ export default async function AdminResultadosPage() {
                       </td>
                       <td>
                         <MatchStatusBadge status={m.status} />
+                        {m.forfeitedTeamId && <span className="badge badge-amber ml-1.5">Por abandono</span>}
                       </td>
                       <td>
                         <Link href={`/admin/partidos/${m.id}`} className="btn btn-primary !px-2.5 !py-1 text-xs">

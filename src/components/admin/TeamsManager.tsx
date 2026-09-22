@@ -9,6 +9,7 @@ import {
   createTeamAction,
   updateTeamAction,
   toggleTeamStatusAction,
+  retireTeamAction,
   deleteTeamAction,
   type FormState,
 } from "@/app/admin/(protected)/equipos/actions";
@@ -76,7 +77,14 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         <select name="status" required defaultValue={team?.status ?? "ACTIVO"} className="input">
           <option value="ACTIVO">Activo</option>
           <option value="INACTIVO">Inactivo</option>
+          {team?.status === "RETIRADO" && <option value="RETIRADO">Retirado</option>}
         </select>
+        {team?.status === "RETIRADO" && (
+          <p className="mt-1 text-xs text-[var(--color-gray-500)]">
+            Este equipo se retiró de la liga. Para reactivarlo elegí &quot;Activo&quot; acá (esto no revierte los
+            partidos que ya se resolvieron 3-0 por abandono).
+          </p>
+        )}
       </div>
 
       <div className="sm:col-span-2">
@@ -158,12 +166,31 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                           <button className="btn btn-ghost !px-2 !py-1 text-xs" onClick={() => setPanel({ mode: "edit", team: t })}>
                             Editar
                           </button>
-                          <form action={toggleTeamStatusAction}>
-                            <input type="hidden" name="id" value={t.id} />
-                            <button className="btn btn-ghost !px-2 !py-1 text-xs">
-                              {t.status === "ACTIVO" ? "Desactivar" : "Activar"}
-                            </button>
-                          </form>
+                          {t.status !== "RETIRADO" && (
+                            <form action={toggleTeamStatusAction}>
+                              <input type="hidden" name="id" value={t.id} />
+                              <button className="btn btn-ghost !px-2 !py-1 text-xs">
+                                {t.status === "ACTIVO" ? "Desactivar" : "Activar"}
+                              </button>
+                            </form>
+                          )}
+                          {t.status !== "RETIRADO" && (
+                            <form
+                              action={retireTeamAction}
+                              onSubmit={(e) => {
+                                if (
+                                  !confirm(
+                                    `¿Retirar a ${t.name} de la liga? Se van a resolver 3-0 en su contra todos los partidos que todavía no jugó. Esta acción no se puede deshacer.`,
+                                  )
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <input type="hidden" name="id" value={t.id} />
+                              <button className="btn btn-danger !px-2 !py-1 text-xs">Retirar de la liga</button>
+                            </form>
+                          )}
                           <form
                             action={deleteTeamAction}
                             onSubmit={(e) => {

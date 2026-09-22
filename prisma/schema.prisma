@@ -78,6 +78,11 @@ model User {
 enum TeamStatus {
   ACTIVO
   INACTIVO
+  // Abandonó la liga a mitad de temporada: a diferencia de INACTIVO, sigue
+  // apareciendo en la tabla de posiciones con los puntos que ya sumó (ver
+  // computeStandings) — no se pierde el historial de los rivales que ya
+  // jugaron contra él.
+  RETIRADO
 }
 
 model Team {
@@ -110,6 +115,7 @@ model Team {
   players       Player[]
   homeMatches   Match[]        @relation("HomeTeam")
   awayMatches   Match[]        @relation("AwayTeam")
+  forfeitedMatches Match[]     @relation("ForfeitedTeam")
   goals         MatchGoal[]
   cards         MatchCard[]
   sanctions     Sanction[]
@@ -179,6 +185,12 @@ model Match {
   awayTeamId   String
   status       MatchStatus @default(PROGRAMADO)
   notes        String?
+  // Si no es null, el partido se resolvió por abandono del equipo indicado
+  // (retiro de la liga a mitad de temporada): el resultado se fija 3-0 en
+  // contra suyo en vez de contar los goles cargados (ver buildStandingsRows
+  // en lib/stats.ts) — no hace falta cargar goles falsos a ningún jugador.
+  forfeitedTeam   Team?    @relation("ForfeitedTeam", fields: [forfeitedTeamId], references: [id])
+  forfeitedTeamId String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

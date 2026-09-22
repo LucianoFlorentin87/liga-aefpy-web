@@ -1,5 +1,5 @@
 import type { Match, MatchGoal, Team } from "@prisma/client";
-import { formatDate } from "@/lib/format";
+import { formatDate, getMatchScore } from "@/lib/format";
 import { MatchStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -43,8 +43,7 @@ export function FixtureList({
             <ul className="divide-y divide-[var(--color-gray-100)]">
               {games.map((match) => {
                 const isFinished = match.status === "FINALIZADO";
-                const homeGoals = match.goals.filter((g) => g.teamId === match.homeTeamId).length;
-                const awayGoals = match.goals.filter((g) => g.teamId === match.awayTeamId).length;
+                const { home: homeGoals, away: awayGoals } = getMatchScore(match);
 
                 return (
                   <li key={match.id} className="flex flex-col gap-3 px-4 py-4">
@@ -89,6 +88,7 @@ export function FixtureList({
                         <span className="capitalize">{formatDate(match.date)}</span>
                         <span>{match.venue}</span>
                         <MatchStatusBadge status={match.status} />
+                        {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
                       </div>
                     </div>
                     {VOTABLE_STATUSES.has(match.status) && (
