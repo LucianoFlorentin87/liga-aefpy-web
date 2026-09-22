@@ -9,7 +9,7 @@ equipo, y un panel de administración privado con autenticación, roles y
 permisos, para cargar todos los datos del torneo.
 
 > **Sobre el logo:** se usa el logo oficial de la Liga AEFPY
-> (`public/logo-exa-frutos.png`), consumido por el componente compartido
+> (`public/logo-liga-aefpy.png`), consumido por el componente compartido
 > `src/components/Logo.tsx` en header, footer, login, dashboard y favicon.
 
 ---
@@ -400,7 +400,7 @@ no hay ningún dato escrito a mano en el HTML.
 ### 8.2 Hosting: Render
 
 1. Creá una cuenta en [render.com](https://render.com) y conectá tu GitHub.
-2. "New" → "Web Service" → elegís el repo `torneo-exa-frutos`.
+2. "New" → "Web Service" → elegís el repo `liga-aefpy-web`.
 3. Configuración del servicio:
    - **Runtime**: Node
    - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
@@ -417,13 +417,13 @@ no hay ningún dato escrito a mano en el HTML.
 6. Una vez desplegado, creá el primer Superadmin corriendo **desde tu propia
    computadora** (no desde Render, que no da terminal gratis):
    ```bash
-   git clone https://github.com/LucianoFlorentin87/torneo-exa-frutos.git
-   cd torneo-exa-frutos && npm install
+   git clone https://github.com/LucianoFlorentin87/liga-aefpy-web.git
+   cd liga-aefpy-web && npm install
    # pegá DATABASE_URL y DIRECT_URL (las mismas de Supabase) en un archivo .env
    npm run create:superadmin
    ```
 
-Render te da una URL pública del tipo `https://torneo-exa-frutos.onrender.com`
+Render te da una URL pública del tipo `https://liga-aefpy-web.onrender.com`
 apenas termine el deploy.
 
 ### Subida de archivos (logos de equipos y PDF del reglamento)

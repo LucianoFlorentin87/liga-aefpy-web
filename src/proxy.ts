@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "exafrutos_session";
+const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "aefpy_session";
 
 function getSecretKey() {
   const secret = process.env.SESSION_SECRET;

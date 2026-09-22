@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 
 export { hashPassword, verifyPassword } from "@/lib/password";
 
-const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "exafrutos_session";
+const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "aefpy_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 8; // 8 horas
 
 function getSecretKey() {

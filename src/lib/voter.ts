@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { getFanSession } from "@/lib/fan-auth";
 import { getSession } from "@/lib/auth";
 
-const ANON_VOTER_COOKIE_NAME = process.env.ANON_VOTER_COOKIE_NAME || "exafrutos_anon_voter";
+const ANON_VOTER_COOKIE_NAME = process.env.ANON_VOTER_COOKIE_NAME || "aefpy_anon_voter";
 const ANON_VOTER_DURATION_SECONDS = 60 * 60 * 24 * 365; // 1 año
 
 /**

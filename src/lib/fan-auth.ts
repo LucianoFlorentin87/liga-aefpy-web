@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
-const FAN_SESSION_COOKIE_NAME = process.env.FAN_SESSION_COOKIE_NAME || "exafrutos_fan_session";
+const FAN_SESSION_COOKIE_NAME = process.env.FAN_SESSION_COOKIE_NAME || "aefpy_fan_session";
 const FAN_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30; // 30 días — sesión de hincha, no de staff
 
 function getSecretKey() {

@@ -29,7 +29,7 @@ export function Logo({
   return (
     <span className="inline-flex shrink-0 items-center gap-2.5">
       <Image
-        src="/logo-exa-frutos.png"
+        src="/logo-liga-aefpy.png"
         alt={name}
         width={size}
         height={size}
