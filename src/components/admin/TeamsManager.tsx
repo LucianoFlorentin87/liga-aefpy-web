@@ -181,7 +181,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               onSubmit={(e) => {
                                 if (
                                   !confirm(
-                                    `¿Retirar a ${t.name} de la liga? Se van a anular todos sus partidos (jugados o no) y cada rival va a recibir 6 puntos de bonificación. Esta acción no se puede deshacer.`,
+                                    `¿Retirar a ${t.name} de la liga? Se van a anular todos sus partidos (jugados o no) y cada rival va a recibir 3 puntos de bonificación por cada uno (el valor de una victoria). Esta acción no se puede deshacer.`,
                                   )
                                 ) {
                                   e.preventDefault();
@@ -198,7 +198,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               onSubmit={(e) => {
                                 if (
                                   !confirm(
-                                    `¿Reconciliar los partidos de ${t.name}? Corrige a la bonificación de 6 puntos parejos los partidos que hayan quedado con una versión anterior de esta lógica. No duplica bonificaciones ya otorgadas — es seguro repetirlo.`,
+                                    `¿Reconciliar los partidos de ${t.name}? Corrige a la bonificación vigente (3 puntos por partido) los que hayan quedado con un valor de una versión anterior de esta lógica. Es seguro repetirlo.`,
                                   )
                                 ) {
                                   e.preventDefault();

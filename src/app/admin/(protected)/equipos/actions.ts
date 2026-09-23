@@ -149,11 +149,12 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
   revalidatePath("/equipos");
 }
 
-// Bonificación fija para el rival de CADA partido contra el equipo
-// retirado — ya jugado (cualquier resultado: ganó, empató o perdió) o
-// todavía pendiente — en vez del valor normal de una victoria (3 pts) o de
-// un empate. Es la misma bonificación para todos los casos, sin excepción.
-const RETIRED_OPPONENT_BONUS_POINTS = 6;
+// El rival recibe el valor normal de una victoria (3 pts) por CADA partido
+// contra el equipo retirado — ya jugado (cualquier resultado real: ganó,
+// empató o perdió) o todavía pendiente —, como si lo hubiera ganado. Si el
+// campeonato es ida y vuelta, un rival con los dos partidos contra el
+// retirado recibe 3+3=6 en total; uno con un solo partido recibe 3.
+const RETIRED_OPPONENT_BONUS_POINTS = 3;
 
 // Prefijo fijo del reason de cada PointAdjustment que otorga esta
 // bonificación, para poder detectarlos de forma confiable en
@@ -218,13 +219,14 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
 
 /**
  * Corrige a un equipo YA retirado cuyos partidos quedaron procesados con
- * una versión anterior de esta lógica (por ejemplo, walkover 3-0 real en
- * vez de anulado, o un resultado real sin ninguna bonificación) —
- * retireTeamAction no se puede volver a ejecutar sobre un equipo que ya
- * está en RETIRADO, así que esto recorre sus partidos sueltos y los deja
- * en el estado final correcto: anulados, con el rival recibiendo
- * RETIRED_OPPONENT_BONUS_POINTS si todavía no lo tenía. Es seguro
- * ejecutarlo más de una vez — no duplica bonificaciones ya otorgadas.
+ * una versión anterior de esta lógica (walkover 3-0 real en vez de
+ * anulado, un resultado real sin ninguna bonificación, o una bonificación
+ * con un valor de puntos que ya no es el vigente) — retireTeamAction no se
+ * puede volver a ejecutar sobre un equipo que ya está en RETIRADO, así que
+ * esto recorre sus partidos sueltos y los deja en el estado final
+ * correcto: anulados, con el rival recibiendo exactamente
+ * RETIRED_OPPONENT_BONUS_POINTS por partido (ni de más ni de menos). Es
+ * seguro ejecutarlo más de una vez.
  */
 export async function reconcileRetiredTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -242,16 +244,18 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
     .map((m) => {
       const opponentId = m.homeTeamId === id ? m.awayTeamId : m.homeTeamId;
       const needsAnnul = m.annulledTeamId !== id;
-      const needsBonus = !m.pointAdjustments.some(
+      const existingBonus = m.pointAdjustments.find(
         (pa) => pa.teamId === opponentId && pa.reason.startsWith(RETIREMENT_BONUS_REASON_PREFIX),
       );
-      return { match: m, opponentId, needsAnnul, needsBonus };
+      const needsBonusCreate = !existingBonus;
+      const needsBonusFix = Boolean(existingBonus) && existingBonus!.points !== RETIRED_OPPONENT_BONUS_POINTS;
+      return { match: m, opponentId, needsAnnul, existingBonus, needsBonusCreate, needsBonusFix };
     })
-    .filter((x) => x.needsAnnul || x.needsBonus);
+    .filter((x) => x.needsAnnul || x.needsBonusCreate || x.needsBonusFix);
 
   if (pending.length > 0) {
     await prisma.$transaction(
-      pending.flatMap(({ match: m, opponentId, needsAnnul, needsBonus }) => [
+      pending.flatMap(({ match: m, opponentId, needsAnnul, existingBonus, needsBonusCreate, needsBonusFix }) => [
         ...(needsAnnul
           ? [
               prisma.match.update({
@@ -260,7 +264,7 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
               }),
             ]
           : []),
-        ...(needsBonus
+        ...(needsBonusCreate
           ? [
               prisma.pointAdjustment.create({
                 data: {
@@ -272,6 +276,14 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
               }),
             ]
           : []),
+        ...(needsBonusFix
+          ? [
+              prisma.pointAdjustment.update({
+                where: { id: existingBonus!.id },
+                data: { points: RETIRED_OPPONENT_BONUS_POINTS },
+              }),
+            ]
+          : []),
       ]),
     );
   }
@@ -279,7 +291,7 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
   await logActivity(
     `${actor.firstName} ${actor.lastName} reconcilió los partidos del equipo retirado "${target.name}"` +
       (pending.length > 0
-        ? ` — ${pending.length} partido(s) corregido(s) a la bonificación de ${RETIRED_OPPONENT_BONUS_POINTS} puntos.`
+        ? ` — ${pending.length} partido(s) corregido(s) a la bonificación de ${RETIRED_OPPONENT_BONUS_POINTS} puntos por partido.`
         : " — no había nada para corregir."),
     actor.id,
   );
