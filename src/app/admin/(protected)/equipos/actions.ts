@@ -183,7 +183,7 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
   await prisma.$transaction([
     prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
     ...matchesToForfeit.map((m) =>
-      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id, annulledTeamId: null } }),
+      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id } }),
     ),
   ]);
 
@@ -245,7 +245,7 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
           ? [
               prisma.match.update({
                 where: { id: m.id },
-                data: { status: "FINALIZADO", forfeitedTeamId: id, annulledTeamId: null },
+                data: { status: "FINALIZADO", forfeitedTeamId: id },
               }),
             ]
           : []),

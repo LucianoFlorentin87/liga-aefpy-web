@@ -23,9 +23,9 @@ export type StandingsRow = {
 const DEFAULT_CRITERIA = ["PTS", "DG", "GF"];
 
 /** Estados de equipo que siguen contando en la tabla de posiciones: ACTIVO
- *  y RETIRADO (un equipo que abandonó la liga sigue visible, aunque sus
- *  partidos ya jugados quedan anulados — ver annulledTeamId). INACTIVO es
- *  el único que desaparece del todo. */
+ *  y RETIRADO (un equipo que abandonó la liga sigue visible, con todos sus
+ *  partidos resueltos 3-0 en contra por abandono — ver forfeitedTeamId).
+ *  INACTIVO es el único que desaparece del todo. */
 const STANDINGS_TEAM_STATUSES: ("ACTIVO" | "RETIRADO")[] = ["ACTIVO", "RETIRADO"];
 
 function parseCriteria(raw: string | undefined): string[] {
@@ -83,7 +83,6 @@ function buildStandingsRows(
     const home = rows.get(match.homeTeamId);
     const away = rows.get(match.awayTeamId);
     if (!home || !away) continue; // equipo inactivo/eliminado: se excluye de la tabla
-    if (match.annulledTeamId) continue; // partido jugado contra un equipo que después se retiró: no cuenta para nadie
 
     const { home: homeGoals, away: awayGoals } = getMatchScore(match);
 

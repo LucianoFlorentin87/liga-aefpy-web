@@ -16,7 +16,6 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
     <ul className="divide-y divide-[var(--color-gray-100)]">
       {matches.map((match) => {
         const { home: homeGoals, away: awayGoals } = getMatchScore(match);
-        const notPlayed = Boolean(match.annulledTeamId) && match.goals.length === 0;
         return (
           <li key={match.id}>
             {/* Siempre en columna: el bloque de meta info nunca compite por ancho con los
@@ -29,7 +28,7 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                   <span className="truncate">{match.homeTeam.name}</span>
                 </span>
                 <span className="shrink-0 whitespace-nowrap rounded-md bg-[var(--color-gray-100)] px-2.5 py-1 text-sm font-extrabold text-[var(--color-navy-900)]">
-                  {notPlayed ? "—" : `${homeGoals} - ${awayGoals}`}
+                  {homeGoals} - {awayGoals}
                 </span>
                 <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold text-[var(--color-navy-900)]">
                   <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={20} />
@@ -45,11 +44,6 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                 </span>
                 {match.forfeitedTeamId && (
                   <span className="badge badge-amber shrink-0 whitespace-nowrap">Por abandono</span>
-                )}
-                {match.annulledTeamId && (
-                  <span className="badge badge-gray shrink-0 whitespace-nowrap">
-                    {notPlayed ? "No se jugó (anulado)" : "Anulado (no cuenta)"}
-                  </span>
                 )}
               </div>
             </Link>
