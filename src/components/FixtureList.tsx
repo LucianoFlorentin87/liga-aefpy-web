@@ -42,7 +42,8 @@ export function FixtureList({
             </div>
             <ul className="divide-y divide-[var(--color-gray-100)]">
               {games.map((match) => {
-                const isFinished = match.status === "FINALIZADO";
+                const notPlayed = Boolean(match.annulledTeamId) && match.goals.length === 0;
+                const isFinished = match.status === "FINALIZADO" && !notPlayed;
                 const { home: homeGoals, away: awayGoals } = getMatchScore(match);
 
                 return (
@@ -89,7 +90,9 @@ export function FixtureList({
                         <span>{match.venue}</span>
                         <MatchStatusBadge status={match.status} />
                         {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
-                        {match.annulledTeamId && <span className="badge badge-gray">Anulado (no cuenta)</span>}
+                        {match.annulledTeamId && (
+                          <span className="badge badge-gray">{notPlayed ? "No se jugó (anulado)" : "Anulado (no cuenta)"}</span>
+                        )}
                       </div>
                     </div>
                     {VOTABLE_STATUSES.has(match.status) && (

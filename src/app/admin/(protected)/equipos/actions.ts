@@ -149,29 +149,19 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
   revalidatePath("/equipos");
 }
 
-const FORFEITABLE_STATUSES: ("PROGRAMADO" | "EN_CURSO" | "SUSPENDIDO" | "REPROGRAMADO")[] = [
-  "PROGRAMADO",
-  "EN_CURSO",
-  "SUSPENDIDO",
-  "REPROGRAMADO",
-];
-
-// Bonificación fija para el rival de cada partido YA JUGADO contra el
-// equipo retirado, en vez del resultado real (que se anula: ver
-// annulledTeamId en el schema) — decisión administrativa de la liga, no
-// vinculada al valor normal de una victoria (3 pts).
+// Bonificación fija para el rival de CADA partido contra el equipo
+// retirado — ya jugado (cualquier resultado: ganó, empató o perdió) o
+// todavía pendiente — en vez del valor normal de una victoria (3 pts) o de
+// un empate. Es la misma bonificación para todos los casos, sin excepción.
 const RETIRED_OPPONENT_BONUS_POINTS = 6;
 
 /**
  * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
- * RETIRADO (sigue en la tabla, pero ver más abajo qué puntos le quedan),
- * resuelve todos sus partidos todavía no jugados como 3-0 en contra por
- * abandono (walkover) para que el resto del fixture no quede colgado, y
- * anula sus partidos YA JUGADOS: dejan de contar (PJ, goles, PG/PE/PP) para
- * cualquiera de los dos equipos, y en cambio el rival recibe
- * RETIRED_OPPONENT_BONUS_POINTS de bonificación fija, sin importar el
- * resultado real (que sigue mostrándose en el detalle del partido, sólo a
- * título informativo).
+ * RETIRADO (sigue en la tabla, pero ver más abajo qué puntos le quedan) y
+ * anula TODOS sus partidos contra el resto de la liga, ya jugados o
+ * pendientes: dejan de contar (PJ, goles, PG/PE/PP) para cualquiera de los
+ * dos equipos, sin importar el resultado real, y en cambio el rival recibe
+ * RETIRED_OPPONENT_BONUS_POINTS de bonificación fija por cada uno.
  */
 export async function retireTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -180,19 +170,9 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
   const target = await prisma.team.findUnique({ where: { id } });
   if (!target || target.status === "RETIRADO") return;
 
-  const pendingMatches = await prisma.match.findMany({
+  const matchesToAnnul = await prisma.match.findMany({
     where: {
       OR: [{ homeTeamId: id }, { awayTeamId: id }],
-      status: { in: FORFEITABLE_STATUSES },
-    },
-    select: { id: true },
-  });
-
-  const playedMatches = await prisma.match.findMany({
-    where: {
-      OR: [{ homeTeamId: id }, { awayTeamId: id }],
-      status: "FINALIZADO",
-      forfeitedTeamId: null,
       annulledTeamId: null,
     },
     select: { id: true, homeTeamId: true, awayTeamId: true },
@@ -200,11 +180,8 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
 
   await prisma.$transaction([
     prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
-    ...pendingMatches.map((m) =>
-      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id } }),
-    ),
-    ...playedMatches.flatMap((m) => [
-      prisma.match.update({ where: { id: m.id }, data: { annulledTeamId: id } }),
+    ...matchesToAnnul.flatMap((m) => [
+      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", annulledTeamId: id } }),
       prisma.pointAdjustment.create({
         data: {
           teamId: m.homeTeamId === id ? m.awayTeamId : m.homeTeamId,
@@ -218,12 +195,9 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
 
   await logActivity(
     `${actor.firstName} ${actor.lastName} retiró al equipo "${target.name}" de la liga` +
-      (pendingMatches.length > 0
-        ? ` — ${pendingMatches.length} partido(s) pendiente(s) se resolvieron 3-0 en contra por abandono.`
-        : ".") +
-      (playedMatches.length > 0
-        ? ` — ${playedMatches.length} partido(s) ya jugado(s) se anularon y sus rivales recibieron ${RETIRED_OPPONENT_BONUS_POINTS} puntos de bonificación.`
-        : ""),
+      (matchesToAnnul.length > 0
+        ? ` — ${matchesToAnnul.length} partido(s) se anularon y sus rivales recibieron ${RETIRED_OPPONENT_BONUS_POINTS} puntos de bonificación cada uno.`
+        : "."),
     actor.id,
   );
   revalidatePath("/admin/equipos");

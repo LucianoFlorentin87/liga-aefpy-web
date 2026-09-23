@@ -45,6 +45,7 @@ export default async function AdminResultadosPage() {
               <tbody>
                 {matches.map((m) => {
                   const { home: homeGoals, away: awayGoals } = getMatchScore(m);
+                  const notPlayed = Boolean(m.annulledTeamId) && m.goals.length === 0;
                   return (
                     <tr key={m.id}>
                       <td>{m.matchday}</td>
@@ -53,12 +54,14 @@ export default async function AdminResultadosPage() {
                         {m.homeTeam.name} vs {m.awayTeam.name}
                       </td>
                       <td className="text-center font-bold">
-                        {m.status === "PROGRAMADO" ? "—" : `${homeGoals} - ${awayGoals}`}
+                        {m.status === "PROGRAMADO" || notPlayed ? "—" : `${homeGoals} - ${awayGoals}`}
                       </td>
                       <td>
                         <MatchStatusBadge status={m.status} />
                         {m.forfeitedTeamId && <span className="badge badge-amber ml-1.5">Por abandono</span>}
-                        {m.annulledTeamId && <span className="badge badge-gray ml-1.5">Anulado</span>}
+                        {m.annulledTeamId && (
+                          <span className="badge badge-gray ml-1.5">{notPlayed ? "No se jugó" : "Anulado"}</span>
+                        )}
                       </td>
                       <td>
                         <Link href={`/admin/partidos/${m.id}`} className="btn btn-primary !px-2.5 !py-1 text-xs">

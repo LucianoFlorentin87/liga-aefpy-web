@@ -82,7 +82,7 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         {team?.status === "RETIRADO" && (
           <p className="mt-1 text-xs text-[var(--color-gray-500)]">
             Este equipo se retiró de la liga. Para reactivarlo elegí &quot;Activo&quot; acá (esto no revierte los
-            partidos que ya se resolvieron 3-0 por abandono).
+            partidos anulados ni las bonificaciones de puntos que ya se dieron).
           </p>
         )}
       </div>
@@ -180,7 +180,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               onSubmit={(e) => {
                                 if (
                                   !confirm(
-                                    `¿Retirar a ${t.name} de la liga? Se van a resolver 3-0 en su contra todos los partidos que todavía no jugó. Esta acción no se puede deshacer.`,
+                                    `¿Retirar a ${t.name} de la liga? Se van a anular todos sus partidos (jugados o no) y cada rival va a recibir 6 puntos de bonificación. Esta acción no se puede deshacer.`,
                                   )
                                 ) {
                                   e.preventDefault();

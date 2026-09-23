@@ -24,6 +24,8 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
   if (!match) notFound();
 
   const score = getMatchScore(match);
+  const notPlayed = Boolean(match.annulledTeamId) && match.goals.length === 0;
+  const annulledTeamName = match.annulledTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name;
 
   return (
     <div>
@@ -38,7 +40,9 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             </span>
             <div className="flex items-center gap-2">
               {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
-              {match.annulledTeamId && <span className="badge badge-gray">Anulado (no cuenta)</span>}
+              {match.annulledTeamId && (
+                <span className="badge badge-gray">{notPlayed ? "No se jugó (anulado)" : "Anulado (no cuenta)"}</span>
+              )}
               <MatchStatusBadge status={match.status} />
             </div>
           </div>
@@ -52,7 +56,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
               <span className="text-lg font-extrabold sm:text-2xl">{match.homeTeam.name}</span>
             </div>
             <div className="flex h-9 items-center justify-center text-2xl font-extrabold sm:text-3xl">
-              {score.home} - {score.away}
+              {notPlayed ? "—" : `${score.home} - ${score.away}`}
             </div>
             <div className="flex flex-col items-center gap-2">
               <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} />
@@ -70,9 +74,10 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
       <div className="container-page py-8">
         {match.annulledTeamId && (
           <div className="card mb-6 border-[var(--color-gray-300)] bg-[var(--color-gray-50)] p-4 text-sm text-[var(--color-gray-600)]">
-            Este partido se jugó, pero {match.annulledTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}{" "}
-            se retiró de la liga después: el resultado ya no cuenta para la tabla de posiciones de ninguno de los dos
-            equipos. El rival recibió una bonificación de puntos aparte.
+            {notPlayed
+              ? `Este partido no llegó a jugarse: ${annulledTeamName} se retiró de la liga antes de la fecha. `
+              : `Este partido se jugó, pero ${annulledTeamName} se retiró de la liga después: el resultado ya no cuenta para la tabla de posiciones de ninguno de los dos equipos. `}
+            El rival recibió una bonificación de puntos aparte.
           </div>
         )}
         <div className="grid gap-6 lg:grid-cols-2">
@@ -83,6 +88,8 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
                 title="Partido resuelto por abandono"
                 hint={`${match.forfeitedTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} se retiró de la liga — resultado 3-0 en su contra, sin goles cargados.`}
               />
+            ) : notPlayed ? (
+              <EmptyState title="Partido no jugado" hint={`${annulledTeamName} se retiró de la liga antes de que se jugara.`} />
             ) : match.goals.length === 0 ? (
               <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron goles para este partido." />
             ) : (
