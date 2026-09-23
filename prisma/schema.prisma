@@ -79,9 +79,11 @@ enum TeamStatus {
   ACTIVO
   INACTIVO
   // Abandonó la liga a mitad de temporada: a diferencia de INACTIVO, sigue
-  // apareciendo en la tabla de posiciones con los puntos que ya sumó (ver
-  // computeStandings) — no se pierde el historial de los rivales que ya
-  // jugaron contra él.
+  // apareciendo en la tabla de posiciones (ver computeStandings), pero sus
+  // partidos ya jugados se anulan (annulledTeamId) y los pendientes se dan
+  // por perdidos 3-0 (forfeitedTeamId) — los rivales no pierden puntos por
+  // haber jugado contra un equipo que después abandonó, aunque el retirado
+  // en la práctica termina con 0 (o casi).
   RETIRADO
 }
 
@@ -116,6 +118,7 @@ model Team {
   homeMatches   Match[]        @relation("HomeTeam")
   awayMatches   Match[]        @relation("AwayTeam")
   forfeitedMatches Match[]     @relation("ForfeitedTeam")
+  annulledMatches Match[]      @relation("AnnulledTeam")
   goals         MatchGoal[]
   cards         MatchCard[]
   sanctions     Sanction[]
@@ -191,6 +194,14 @@ model Match {
   // en lib/stats.ts) — no hace falta cargar goles falsos a ningún jugador.
   forfeitedTeam   Team?    @relation("ForfeitedTeam", fields: [forfeitedTeamId], references: [id])
   forfeitedTeamId String?
+  // Si no es null, el equipo indicado se retiró de la liga DESPUÉS de haber
+  // jugado este partido: el partido ya no cuenta para la tabla de nadie (ni
+  // PJ, ni goles, ni PG/PE/PP) sin importar el resultado real, que se sigue
+  // mostrando en el detalle del partido a título informativo. El rival
+  // recibe en cambio una bonificación fija de puntos (PointAdjustment
+  // ligado a este partido) — ver retireTeamAction en admin/equipos/actions.ts.
+  annulledTeam   Team?    @relation("AnnulledTeam", fields: [annulledTeamId], references: [id])
+  annulledTeamId String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

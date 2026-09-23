@@ -156,12 +156,22 @@ const FORFEITABLE_STATUSES: ("PROGRAMADO" | "EN_CURSO" | "SUSPENDIDO" | "REPROGR
   "REPROGRAMADO",
 ];
 
+// Bonificación fija para el rival de cada partido YA JUGADO contra el
+// equipo retirado, en vez del resultado real (que se anula: ver
+// annulledTeamId en el schema) — decisión administrativa de la liga, no
+// vinculada al valor normal de una victoria (3 pts).
+const RETIRED_OPPONENT_BONUS_POINTS = 6;
+
 /**
  * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
- * RETIRADO (sigue en la tabla con los puntos ya sumados, a diferencia de
- * INACTIVO) y resuelve todos sus partidos todavía no jugados como 3-0 en
- * contra por abandono (walkover), para que el resto del fixture no quede
- * con partidos colgados esperando a un equipo que ya no va a jugar.
+ * RETIRADO (sigue en la tabla, pero ver más abajo qué puntos le quedan),
+ * resuelve todos sus partidos todavía no jugados como 3-0 en contra por
+ * abandono (walkover) para que el resto del fixture no quede colgado, y
+ * anula sus partidos YA JUGADOS: dejan de contar (PJ, goles, PG/PE/PP) para
+ * cualquiera de los dos equipos, y en cambio el rival recibe
+ * RETIRED_OPPONENT_BONUS_POINTS de bonificación fija, sin importar el
+ * resultado real (que sigue mostrándose en el detalle del partido, sólo a
+ * título informativo).
  */
 export async function retireTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -178,23 +188,48 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
     select: { id: true },
   });
 
+  const playedMatches = await prisma.match.findMany({
+    where: {
+      OR: [{ homeTeamId: id }, { awayTeamId: id }],
+      status: "FINALIZADO",
+      forfeitedTeamId: null,
+      annulledTeamId: null,
+    },
+    select: { id: true, homeTeamId: true, awayTeamId: true },
+  });
+
   await prisma.$transaction([
     prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
     ...pendingMatches.map((m) =>
       prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id } }),
     ),
+    ...playedMatches.flatMap((m) => [
+      prisma.match.update({ where: { id: m.id }, data: { annulledTeamId: id } }),
+      prisma.pointAdjustment.create({
+        data: {
+          teamId: m.homeTeamId === id ? m.awayTeamId : m.homeTeamId,
+          points: RETIRED_OPPONENT_BONUS_POINTS,
+          reason: `Bonificación por partido anulado contra "${target.name}", retirado de la liga.`,
+          matchId: m.id,
+        },
+      }),
+    ]),
   ]);
 
   await logActivity(
     `${actor.firstName} ${actor.lastName} retiró al equipo "${target.name}" de la liga` +
       (pendingMatches.length > 0
         ? ` — ${pendingMatches.length} partido(s) pendiente(s) se resolvieron 3-0 en contra por abandono.`
-        : "."),
+        : ".") +
+      (playedMatches.length > 0
+        ? ` — ${playedMatches.length} partido(s) ya jugado(s) se anularon y sus rivales recibieron ${RETIRED_OPPONENT_BONUS_POINTS} puntos de bonificación.`
+        : ""),
     actor.id,
   );
   revalidatePath("/admin/equipos");
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
+  revalidatePath("/admin/ajustes-puntos");
   revalidatePath("/equipos");
   revalidatePath("/fixture");
   revalidatePath("/resultados");

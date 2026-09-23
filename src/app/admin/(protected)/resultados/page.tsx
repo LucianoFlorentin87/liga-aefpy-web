@@ -58,6 +58,7 @@ export default async function AdminResultadosPage() {
                       <td>
                         <MatchStatusBadge status={m.status} />
                         {m.forfeitedTeamId && <span className="badge badge-amber ml-1.5">Por abandono</span>}
+                        {m.annulledTeamId && <span className="badge badge-gray ml-1.5">Anulado</span>}
                       </td>
                       <td>
                         <Link href={`/admin/partidos/${m.id}`} className="btn btn-primary !px-2.5 !py-1 text-xs">

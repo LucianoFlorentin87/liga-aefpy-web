@@ -38,6 +38,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             </span>
             <div className="flex items-center gap-2">
               {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
+              {match.annulledTeamId && <span className="badge badge-gray">Anulado (no cuenta)</span>}
               <MatchStatusBadge status={match.status} />
             </div>
           </div>
@@ -66,57 +67,66 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="container-page grid gap-6 py-8 lg:grid-cols-2">
-        <div className="card p-5">
-          <h2 className="section-title mb-3">⚽ Goles</h2>
-          {match.forfeitedTeamId ? (
-            <EmptyState
-              title="Partido resuelto por abandono"
-              hint={`${match.forfeitedTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} se retiró de la liga — resultado 3-0 en su contra, sin goles cargados.`}
-            />
-          ) : match.goals.length === 0 ? (
-            <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron goles para este partido." />
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {match.goals.map((goal) => (
-                <li key={goal.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
-                  <span className="font-semibold text-[var(--color-navy-900)]">{playerFullName(goal.player)}</span>
-                  <span className="text-[var(--color-gray-500)]">
-                    {goal.minute}&apos; · {goal.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="container-page py-8">
+        {match.annulledTeamId && (
+          <div className="card mb-6 border-[var(--color-gray-300)] bg-[var(--color-gray-50)] p-4 text-sm text-[var(--color-gray-600)]">
+            Este partido se jugó, pero {match.annulledTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}{" "}
+            se retiró de la liga después: el resultado ya no cuenta para la tabla de posiciones de ninguno de los dos
+            equipos. El rival recibió una bonificación de puntos aparte.
+          </div>
+        )}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="card p-5">
+            <h2 className="section-title mb-3">⚽ Goles</h2>
+            {match.forfeitedTeamId ? (
+              <EmptyState
+                title="Partido resuelto por abandono"
+                hint={`${match.forfeitedTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} se retiró de la liga — resultado 3-0 en su contra, sin goles cargados.`}
+              />
+            ) : match.goals.length === 0 ? (
+              <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron goles para este partido." />
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {match.goals.map((goal) => (
+                  <li key={goal.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
+                    <span className="font-semibold text-[var(--color-navy-900)]">{playerFullName(goal.player)}</span>
+                    <span className="text-[var(--color-gray-500)]">
+                      {goal.minute}&apos; · {goal.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        <div className="card p-5">
-          <h2 className="section-title mb-3">🟨🟥 Tarjetas</h2>
-          {match.cards.length === 0 ? (
-            <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron tarjetas para este partido." />
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {match.cards.map((card) => (
-                <li key={card.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
-                  <span className="font-semibold text-[var(--color-navy-900)]">
-                    {card.type === "AMARILLA" ? "🟨" : "🟥"} {playerFullName(card.player)}
-                  </span>
-                  <span className="text-[var(--color-gray-500)]">
-                    {card.minute}&apos; · {card.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <div className="card p-5">
+            <h2 className="section-title mb-3">🟨🟥 Tarjetas</h2>
+            {match.cards.length === 0 ? (
+              <EmptyState title="Sin datos registrados" hint="Todavía no se cargaron tarjetas para este partido." />
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {match.cards.map((card) => (
+                  <li key={card.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
+                    <span className="font-semibold text-[var(--color-navy-900)]">
+                      {card.type === "AMARILLA" ? "🟨" : "🟥"} {playerFullName(card.player)}
+                    </span>
+                    <span className="text-[var(--color-gray-500)]">
+                      {card.minute}&apos; · {card.teamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        <div className="card p-5 lg:col-span-2">
-          <h2 className="section-title mb-3">Observaciones</h2>
-          {match.notes ? (
-            <p className="whitespace-pre-wrap text-sm text-[var(--color-gray-700)]">{match.notes}</p>
-          ) : (
-            <EmptyState title="Sin datos registrados" hint="No hay observaciones para este partido." />
-          )}
+          <div className="card p-5 lg:col-span-2">
+            <h2 className="section-title mb-3">Observaciones</h2>
+            {match.notes ? (
+              <p className="whitespace-pre-wrap text-sm text-[var(--color-gray-700)]">{match.notes}</p>
+            ) : (
+              <EmptyState title="Sin datos registrados" hint="No hay observaciones para este partido." />
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -89,6 +89,7 @@ export function FixtureList({
                         <span>{match.venue}</span>
                         <MatchStatusBadge status={match.status} />
                         {match.forfeitedTeamId && <span className="badge badge-amber">Por abandono</span>}
+                        {match.annulledTeamId && <span className="badge badge-gray">Anulado (no cuenta)</span>}
                       </div>
                     </div>
                     {VOTABLE_STATUSES.has(match.status) && (

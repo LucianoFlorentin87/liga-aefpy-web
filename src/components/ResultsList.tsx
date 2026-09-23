@@ -45,6 +45,9 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                 {match.forfeitedTeamId && (
                   <span className="badge badge-amber shrink-0 whitespace-nowrap">Por abandono</span>
                 )}
+                {match.annulledTeamId && (
+                  <span className="badge badge-gray shrink-0 whitespace-nowrap">Anulado (no cuenta)</span>
+                )}
               </div>
             </Link>
           </li>
