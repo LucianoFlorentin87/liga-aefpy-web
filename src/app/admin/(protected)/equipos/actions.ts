@@ -149,25 +149,21 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
   revalidatePath("/equipos");
 }
 
-// El rival recibe el valor normal de una victoria (3 pts) por CADA partido
-// contra el equipo retirado — ya jugado (cualquier resultado real: ganó,
-// empató o perdió) o todavía pendiente —, como si lo hubiera ganado. Si el
-// campeonato es ida y vuelta, un rival con los dos partidos contra el
-// retirado recibe 3+3=6 en total; uno con un solo partido recibe 3.
-const RETIRED_OPPONENT_BONUS_POINTS = 3;
-
-// Prefijo fijo del reason de cada PointAdjustment que otorga esta
-// bonificación, para poder detectarlos de forma confiable en
-// reconcileRetiredTeamAction sin depender de otra marca.
+// Prefijo fijo del reason de cualquier PointAdjustment que una versión
+// anterior de esta lógica haya llegado a crear, para poder encontrarlos y
+// borrarlos en reconcileRetiredTeamAction (ya no se usan: el 3-0 walkover
+// da los puntos directo por PJ/PG, no hace falta un ajuste aparte).
 const RETIREMENT_BONUS_REASON_PREFIX = "Bonificación por partido anulado contra ";
 
 /**
  * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
- * RETIRADO (sigue en la tabla, pero ver más abajo qué puntos le quedan) y
- * anula TODOS sus partidos contra el resto de la liga, ya jugados o
- * pendientes: dejan de contar (PJ, goles, PG/PE/PP) para cualquiera de los
- * dos equipos, sin importar el resultado real, y en cambio el rival recibe
- * RETIRED_OPPONENT_BONUS_POINTS de bonificación fija por cada uno.
+ * RETIRADO (sigue en la tabla) y resuelve TODOS sus partidos contra el
+ * resto de la liga —ya jugados o pendientes— como 3-0 en contra suyo por
+ * abandono (forfeitedTeamId), igual que un partido normal ganado: cuenta
+ * como PJ, PG y 3 puntos para el rival en las columnas de siempre, sin
+ * bonificación aparte ni resultado invisible. El resultado real (si el
+ * partido se había jugado) queda en la base pero deja de mostrarse — ver
+ * getMatchScore en lib/format.ts.
  */
 export async function retireTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -176,33 +172,25 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
   const target = await prisma.team.findUnique({ where: { id } });
   if (!target || target.status === "RETIRADO") return;
 
-  const matchesToAnnul = await prisma.match.findMany({
+  const matchesToForfeit = await prisma.match.findMany({
     where: {
       OR: [{ homeTeamId: id }, { awayTeamId: id }],
-      annulledTeamId: null,
+      forfeitedTeamId: null,
     },
-    select: { id: true, homeTeamId: true, awayTeamId: true },
+    select: { id: true },
   });
 
   await prisma.$transaction([
     prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
-    ...matchesToAnnul.flatMap((m) => [
-      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", annulledTeamId: id } }),
-      prisma.pointAdjustment.create({
-        data: {
-          teamId: m.homeTeamId === id ? m.awayTeamId : m.homeTeamId,
-          points: RETIRED_OPPONENT_BONUS_POINTS,
-          reason: `${RETIREMENT_BONUS_REASON_PREFIX}"${target.name}", retirado de la liga.`,
-          matchId: m.id,
-        },
-      }),
-    ]),
+    ...matchesToForfeit.map((m) =>
+      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id, annulledTeamId: null } }),
+    ),
   ]);
 
   await logActivity(
     `${actor.firstName} ${actor.lastName} retiró al equipo "${target.name}" de la liga` +
-      (matchesToAnnul.length > 0
-        ? ` — ${matchesToAnnul.length} partido(s) se anularon y sus rivales recibieron ${RETIRED_OPPONENT_BONUS_POINTS} puntos de bonificación cada uno.`
+      (matchesToForfeit.length > 0
+        ? ` — ${matchesToForfeit.length} partido(s) se resolvieron 3-0 en contra por abandono.`
         : "."),
     actor.id,
   );
@@ -219,14 +207,13 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
 
 /**
  * Corrige a un equipo YA retirado cuyos partidos quedaron procesados con
- * una versión anterior de esta lógica (walkover 3-0 real en vez de
- * anulado, un resultado real sin ninguna bonificación, o una bonificación
- * con un valor de puntos que ya no es el vigente) — retireTeamAction no se
- * puede volver a ejecutar sobre un equipo que ya está en RETIRADO, así que
- * esto recorre sus partidos sueltos y los deja en el estado final
- * correcto: anulados, con el rival recibiendo exactamente
- * RETIRED_OPPONENT_BONUS_POINTS por partido (ni de más ni de menos). Es
- * seguro ejecutarlo más de una vez.
+ * una versión anterior de esta lógica (anulados con una bonificación de
+ * puntos aparte, en vez de contar como un 3-0 ganado normal) —
+ * retireTeamAction no se puede volver a ejecutar sobre un equipo que ya
+ * está en RETIRADO, así que esto recorre sus partidos sueltos, los pasa a
+ * forfeitedTeamId (3-0 walkover, cuenta como PJ/PG normal) y borra
+ * cualquier PointAdjustment de la bonificación vieja que ya no corresponde
+ * (evita duplicar puntos). Es seguro ejecutarlo más de una vez.
  */
 export async function reconcileRetiredTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -243,47 +230,26 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
   const pending = matches
     .map((m) => {
       const opponentId = m.homeTeamId === id ? m.awayTeamId : m.homeTeamId;
-      const needsAnnul = m.annulledTeamId !== id;
-      const existingBonus = m.pointAdjustments.find(
+      const needsForfeit = m.forfeitedTeamId !== id;
+      const staleBonuses = m.pointAdjustments.filter(
         (pa) => pa.teamId === opponentId && pa.reason.startsWith(RETIREMENT_BONUS_REASON_PREFIX),
       );
-      const needsBonusCreate = !existingBonus;
-      const needsBonusFix = Boolean(existingBonus) && existingBonus!.points !== RETIRED_OPPONENT_BONUS_POINTS;
-      return { match: m, opponentId, needsAnnul, existingBonus, needsBonusCreate, needsBonusFix };
+      return { match: m, needsForfeit, staleBonuses };
     })
-    .filter((x) => x.needsAnnul || x.needsBonusCreate || x.needsBonusFix);
+    .filter((x) => x.needsForfeit || x.staleBonuses.length > 0);
 
   if (pending.length > 0) {
     await prisma.$transaction(
-      pending.flatMap(({ match: m, opponentId, needsAnnul, existingBonus, needsBonusCreate, needsBonusFix }) => [
-        ...(needsAnnul
+      pending.flatMap(({ match: m, needsForfeit, staleBonuses }) => [
+        ...(needsForfeit
           ? [
               prisma.match.update({
                 where: { id: m.id },
-                data: { status: "FINALIZADO", annulledTeamId: id, forfeitedTeamId: null },
+                data: { status: "FINALIZADO", forfeitedTeamId: id, annulledTeamId: null },
               }),
             ]
           : []),
-        ...(needsBonusCreate
-          ? [
-              prisma.pointAdjustment.create({
-                data: {
-                  teamId: opponentId,
-                  points: RETIRED_OPPONENT_BONUS_POINTS,
-                  reason: `${RETIREMENT_BONUS_REASON_PREFIX}"${target.name}", retirado de la liga.`,
-                  matchId: m.id,
-                },
-              }),
-            ]
-          : []),
-        ...(needsBonusFix
-          ? [
-              prisma.pointAdjustment.update({
-                where: { id: existingBonus!.id },
-                data: { points: RETIRED_OPPONENT_BONUS_POINTS },
-              }),
-            ]
-          : []),
+        ...staleBonuses.map((pa) => prisma.pointAdjustment.delete({ where: { id: pa.id } })),
       ]),
     );
   }
@@ -291,7 +257,7 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
   await logActivity(
     `${actor.firstName} ${actor.lastName} reconcilió los partidos del equipo retirado "${target.name}"` +
       (pending.length > 0
-        ? ` — ${pending.length} partido(s) corregido(s) a la bonificación de ${RETIRED_OPPONENT_BONUS_POINTS} puntos por partido.`
+        ? ` — ${pending.length} partido(s) corregido(s) a 3-0 walkover, sin bonificación aparte.`
         : " — no había nada para corregir."),
     actor.id,
   );

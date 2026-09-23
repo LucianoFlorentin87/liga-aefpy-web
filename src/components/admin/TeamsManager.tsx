@@ -83,7 +83,7 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         {team?.status === "RETIRADO" && (
           <p className="mt-1 text-xs text-[var(--color-gray-500)]">
             Este equipo se retiró de la liga. Para reactivarlo elegí &quot;Activo&quot; acá (esto no revierte los
-            partidos anulados ni las bonificaciones de puntos que ya se dieron).
+            3-0 por abandono que ya se cargaron en sus partidos).
           </p>
         )}
       </div>
@@ -181,7 +181,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               onSubmit={(e) => {
                                 if (
                                   !confirm(
-                                    `¿Retirar a ${t.name} de la liga? Se van a anular todos sus partidos (jugados o no) y cada rival va a recibir 3 puntos de bonificación por cada uno (el valor de una victoria). Esta acción no se puede deshacer.`,
+                                    `¿Retirar a ${t.name} de la liga? Se van a resolver 3-0 en su contra todos sus partidos (jugados o no) por abandono. Esta acción no se puede deshacer.`,
                                   )
                                 ) {
                                   e.preventDefault();
@@ -198,7 +198,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               onSubmit={(e) => {
                                 if (
                                   !confirm(
-                                    `¿Reconciliar los partidos de ${t.name}? Corrige a la bonificación vigente (3 puntos por partido) los que hayan quedado con un valor de una versión anterior de esta lógica. Es seguro repetirlo.`,
+                                    `¿Reconciliar los partidos de ${t.name}? Los pasa a 3-0 walkover por abandono (cuenta como PJ/PG normal) y borra cualquier bonificación de puntos aparte que haya quedado de una versión anterior. Es seguro repetirlo.`,
                                   )
                                 ) {
                                   e.preventDefault();
