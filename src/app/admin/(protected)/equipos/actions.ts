@@ -155,6 +155,11 @@ export async function toggleTeamStatusAction(formData: FormData): Promise<void> 
 // un empate. Es la misma bonificación para todos los casos, sin excepción.
 const RETIRED_OPPONENT_BONUS_POINTS = 6;
 
+// Prefijo fijo del reason de cada PointAdjustment que otorga esta
+// bonificación, para poder detectarlos de forma confiable en
+// reconcileRetiredTeamAction sin depender de otra marca.
+const RETIREMENT_BONUS_REASON_PREFIX = "Bonificación por partido anulado contra ";
+
 /**
  * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
  * RETIRADO (sigue en la tabla, pero ver más abajo qué puntos le quedan) y
@@ -186,7 +191,7 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
         data: {
           teamId: m.homeTeamId === id ? m.awayTeamId : m.homeTeamId,
           points: RETIRED_OPPONENT_BONUS_POINTS,
-          reason: `Bonificación por partido anulado contra "${target.name}", retirado de la liga.`,
+          reason: `${RETIREMENT_BONUS_REASON_PREFIX}"${target.name}", retirado de la liga.`,
           matchId: m.id,
         },
       }),
@@ -198,6 +203,84 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
       (matchesToAnnul.length > 0
         ? ` — ${matchesToAnnul.length} partido(s) se anularon y sus rivales recibieron ${RETIRED_OPPONENT_BONUS_POINTS} puntos de bonificación cada uno.`
         : "."),
+    actor.id,
+  );
+  revalidatePath("/admin/equipos");
+  revalidatePath("/admin/partidos");
+  revalidatePath("/admin/resultados");
+  revalidatePath("/admin/ajustes-puntos");
+  revalidatePath("/equipos");
+  revalidatePath("/fixture");
+  revalidatePath("/resultados");
+  revalidatePath("/posiciones");
+  revalidatePath("/");
+}
+
+/**
+ * Corrige a un equipo YA retirado cuyos partidos quedaron procesados con
+ * una versión anterior de esta lógica (por ejemplo, walkover 3-0 real en
+ * vez de anulado, o un resultado real sin ninguna bonificación) —
+ * retireTeamAction no se puede volver a ejecutar sobre un equipo que ya
+ * está en RETIRADO, así que esto recorre sus partidos sueltos y los deja
+ * en el estado final correcto: anulados, con el rival recibiendo
+ * RETIRED_OPPONENT_BONUS_POINTS si todavía no lo tenía. Es seguro
+ * ejecutarlo más de una vez — no duplica bonificaciones ya otorgadas.
+ */
+export async function reconcileRetiredTeamAction(formData: FormData): Promise<void> {
+  const { user: actor } = await requirePermission("equipos");
+  const id = String(formData.get("id"));
+
+  const target = await prisma.team.findUnique({ where: { id } });
+  if (!target || target.status !== "RETIRADO") return;
+
+  const matches = await prisma.match.findMany({
+    where: { OR: [{ homeTeamId: id }, { awayTeamId: id }] },
+    include: { pointAdjustments: true },
+  });
+
+  const pending = matches
+    .map((m) => {
+      const opponentId = m.homeTeamId === id ? m.awayTeamId : m.homeTeamId;
+      const needsAnnul = m.annulledTeamId !== id;
+      const needsBonus = !m.pointAdjustments.some(
+        (pa) => pa.teamId === opponentId && pa.reason.startsWith(RETIREMENT_BONUS_REASON_PREFIX),
+      );
+      return { match: m, opponentId, needsAnnul, needsBonus };
+    })
+    .filter((x) => x.needsAnnul || x.needsBonus);
+
+  if (pending.length > 0) {
+    await prisma.$transaction(
+      pending.flatMap(({ match: m, opponentId, needsAnnul, needsBonus }) => [
+        ...(needsAnnul
+          ? [
+              prisma.match.update({
+                where: { id: m.id },
+                data: { status: "FINALIZADO", annulledTeamId: id, forfeitedTeamId: null },
+              }),
+            ]
+          : []),
+        ...(needsBonus
+          ? [
+              prisma.pointAdjustment.create({
+                data: {
+                  teamId: opponentId,
+                  points: RETIRED_OPPONENT_BONUS_POINTS,
+                  reason: `${RETIREMENT_BONUS_REASON_PREFIX}"${target.name}", retirado de la liga.`,
+                  matchId: m.id,
+                },
+              }),
+            ]
+          : []),
+      ]),
+    );
+  }
+
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} reconcilió los partidos del equipo retirado "${target.name}"` +
+      (pending.length > 0
+        ? ` — ${pending.length} partido(s) corregido(s) a la bonificación de ${RETIRED_OPPONENT_BONUS_POINTS} puntos.`
+        : " — no había nada para corregir."),
     actor.id,
   );
   revalidatePath("/admin/equipos");

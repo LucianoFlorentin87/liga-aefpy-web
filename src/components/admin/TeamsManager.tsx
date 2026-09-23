@@ -10,6 +10,7 @@ import {
   updateTeamAction,
   toggleTeamStatusAction,
   retireTeamAction,
+  reconcileRetiredTeamAction,
   deleteTeamAction,
   type FormState,
 } from "@/app/admin/(protected)/equipos/actions";
@@ -189,6 +190,23 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                             >
                               <input type="hidden" name="id" value={t.id} />
                               <button className="btn btn-danger !px-2 !py-1 text-xs">Retirar de la liga</button>
+                            </form>
+                          )}
+                          {t.status === "RETIRADO" && (
+                            <form
+                              action={reconcileRetiredTeamAction}
+                              onSubmit={(e) => {
+                                if (
+                                  !confirm(
+                                    `¿Reconciliar los partidos de ${t.name}? Corrige a la bonificación de 6 puntos parejos los partidos que hayan quedado con una versión anterior de esta lógica. No duplica bonificaciones ya otorgadas — es seguro repetirlo.`,
+                                  )
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <input type="hidden" name="id" value={t.id} />
+                              <button className="btn btn-ghost !px-2 !py-1 text-xs">Reconciliar bonificaciones</button>
                             </form>
                           )}
                           <form
