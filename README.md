@@ -444,6 +444,16 @@ no hay ningún dato escrito a mano en el HTML.
    `SUPABASE_SECRET_KEY` — ver sección "Subida de archivos" más abajo) más:
    - `SESSION_SECRET` → un valor generado con `openssl rand -base64 48`
    - `NODE_ENV` → `production`
+   - `PLAYWRIGHT_BROWSERS_PATH` → `0`
+
+   Este último es imprescindible para el buscador de eFHUB: por defecto,
+   `npx playwright install chromium` descarga el navegador a una carpeta
+   fuera del proyecto (el caché del usuario) — pero Render **no conserva**
+   nada que se escriba ahí entre el build y el arranque del servicio, así
+   que el navegador "desaparece" y la búsqueda falla con
+   `Executable doesn't exist`. Con `PLAYWRIGHT_BROWSERS_PATH=0`, Playwright
+   instala el navegador **adentro** de `node_modules` en cambio, que sí
+   forma parte de lo que Render conserva.
 5. "Create Web Service". Cada deploy aplica las migraciones y vuelve a
    sembrar los roles/configuración inicial automáticamente (el seed es
    idempotente, no duplica nada si ya existían).
