@@ -40,7 +40,15 @@ export async function proxy(request: NextRequest) {
     // y su cuenta (/admin/cuenta): cualquier otra ruta admin lo redirige de
     // vuelta. Esta es la barrera de borde; la definitiva vive en
     // src/lib/permissions.ts (requireDelegate), que revalida contra la BD.
-    const DELEGADO_ALLOWED_PREFIXES = ["/admin/mi-equipo", "/admin/cuenta"];
+    const DELEGADO_ALLOWED_PREFIXES = [
+      "/admin/mi-equipo",
+      "/admin/cuenta",
+      // No abre /admin/jugadores (esa pantalla sigue vedada al delegado):
+      // sólo el endpoint de búsqueda de cartas, que el picker de
+      // /admin/mi-equipo consulta por fetch. La autorización real la hace
+      // requireEfhubSearchAccess en ese mismo route.ts.
+      "/admin/jugadores/efhub-search",
+    ];
     if (
       payload.role === "DELEGADO" &&
       !DELEGADO_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))
