@@ -5,6 +5,7 @@ import type { SanctionStatus } from "@prisma/client";
 import { formatDateShort, playerFullName } from "@/lib/format";
 import { Modal } from "@/components/admin/Modal";
 import { SanctionStatusBadge } from "@/components/StatusBadge";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 import { createSanctionAction, updateSanctionAction, deleteSanctionAction, type FormState } from "@/app/admin/(protected)/sanciones/actions";
 
 type SanctionRow = {
@@ -15,7 +16,7 @@ type SanctionRow = {
   endDate: Date | null;
   status: SanctionStatus;
   playerId: string;
-  player: { firstName: string; lastName: string | null };
+  player: { firstName: string; lastName: string | null; efhubCard: { cardImageUrl: string | null } | null };
   team: { name: string };
 };
 
@@ -138,7 +139,12 @@ export function SanctionsManager({ sanctions, players }: { sanctions: SanctionRo
               <tbody>
                 {sanctions.map((s) => (
                   <tr key={s.id}>
-                    <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(s.player)}</td>
+                    <td className="font-semibold text-[var(--color-navy-900)]">
+                      <span className="flex items-center gap-2">
+                        <PlayerCardThumb name={playerFullName(s.player)} cardImageUrl={s.player.efhubCard?.cardImageUrl} size={136} />
+                        {playerFullName(s.player)}
+                      </span>
+                    </td>
                     <td>{s.team.name}</td>
                     <td>{s.reason}</td>
                     <td className="text-center">{s.matchesCount}</td>

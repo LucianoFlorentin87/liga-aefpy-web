@@ -18,7 +18,7 @@ export default async function SancionesPage() {
   const [sanctions, players] = await Promise.all([
     prisma.sanction.findMany({
       orderBy: { startDate: "desc" },
-      include: { player: true, team: true },
+      include: { player: { include: { efhubCard: true } }, team: true },
     }),
     prisma.player.findMany({
       where: { status: "ACTIVO" },
