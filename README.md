@@ -307,6 +307,29 @@ Sólo funciona si el build instaló el Chromium de Playwright (ver el Build
 Command en la sección de Render más abajo) — en desarrollo local ya viene
 con `npx playwright install chromium` (ver sección 4).
 
+### Modo oscuro
+
+Botón sol/luna en el header público y en el panel de administración
+(`ThemeToggle.tsx`). Casi todos los colores del sitio son variables CSS
+(`src/app/globals.css`), así que el modo oscuro es sobre todo redefinir
+el valor de esas variables — los componentes no necesitan saber en qué
+tema están. La elección se guarda en `localStorage` (`theme: "light" |
+"dark"`) y, si el usuario nunca tocó el botón, se respeta
+`prefers-color-scheme` del sistema. Un script inline en `layout.tsx`
+aplica el atributo `data-theme` al `<html>` antes de que React hidrate,
+para que no haya parpadeo de claro a oscuro al cargar la página (por eso
+el `<html>` tiene `suppressHydrationWarning` — la discrepancia con lo que
+React esperaría ahí es intencional, ver el comentario en el archivo).
+
+Dos colores necesitan un valor propio para texto vs. fondo, en vez de
+uno solo que sirva para los dos: `--color-navy-900` es el texto principal
+(se aclara en oscuro) pero también se usaba como fondo fijo en un puñado
+de lugares (botón navy, ítem activo del menú admin) — esos pasaron a
+`--color-navy-950`, que nunca cambia. Y `--color-red-600`/`700` siguen
+fijos como fondo de botón (el texto blanco de encima ya contrasta bien en
+cualquier fondo), pero como texto suelto sobre la página usan
+`--color-red-accent`, que sí se aclara en oscuro.
+
 ---
 
 ## 3. Roles y permisos
