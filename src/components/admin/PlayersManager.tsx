@@ -46,11 +46,13 @@ function toInputDate(date: Date | null) {
 function PlayerForm({
   mode,
   player,
+  defaultTeamId,
   teams,
   onDone,
 }: {
   mode: "create" | "edit";
   player?: PlayerRow;
+  defaultTeamId?: string;
   teams: TeamOption[];
   onDone: () => void;
 }) {
@@ -121,7 +123,7 @@ function PlayerForm({
       </div>
       <div>
         <label className="field-label">Equipo</label>
-        <select name="teamId" required defaultValue={player?.teamId} className="input">
+        <select name="teamId" required defaultValue={player?.teamId ?? defaultTeamId ?? ""} className="input">
           <option value="" disabled>
             Seleccionar…
           </option>
@@ -174,7 +176,7 @@ function PlayerForm({
 }
 
 export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams: TeamOption[] }) {
-  const [panel, setPanel] = useState<{ mode: "create" | "edit"; player?: PlayerRow } | null>(null);
+  const [panel, setPanel] = useState<{ mode: "create" | "edit"; player?: PlayerRow; defaultTeamId?: string } | null>(null);
   const [teamFilter, setTeamFilter] = useState("");
 
   const filtered = teamFilter ? players.filter((p) => p.teamId === teamFilter) : players;
@@ -192,7 +194,11 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
               </option>
             ))}
           </select>
-          <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })} disabled={teams.length === 0}>
+          <button
+            className="btn btn-primary"
+            onClick={() => setPanel({ mode: "create", defaultTeamId: teamFilter || undefined })}
+            disabled={teams.length === 0}
+          >
             + Nuevo jugador
           </button>
         </div>
@@ -205,7 +211,15 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
       )}
 
       <Modal open={!!panel} onClose={() => setPanel(null)} title={panel?.mode === "create" ? "Crear jugador" : "Editar jugador"}>
-        {panel && <PlayerForm mode={panel.mode} player={panel.player} teams={teams} onDone={() => setPanel(null)} />}
+        {panel && (
+          <PlayerForm
+            mode={panel.mode}
+            player={panel.player}
+            defaultTeamId={panel.defaultTeamId}
+            teams={teams}
+            onDone={() => setPanel(null)}
+          />
+        )}
       </Modal>
 
       <div className="card p-3 sm:p-5">
