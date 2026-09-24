@@ -130,7 +130,7 @@ async function scrapeCards(page: Page): Promise<EfhubCardResult[]> {
         nationality: null,
         cardImageUrl: imageUrls[0] || null,
         playerImageUrl: imageUrls[1] || null,
-        sourceUrl: `https://efhub.com/players/${efhubId}`,
+        sourceUrl: `https://efhub.com/es/players/${efhubId}`,
       });
     }
 
@@ -168,7 +168,10 @@ export async function GET(request: NextRequest) {
     });
     const page = await context.newPage();
 
-    const url = `https://efhub.com/players?search=${encodeURIComponent(search)}`;
+    // El "/es/" es necesario: sin locale, eFHUB muestra otro catálogo de
+    // cartas (por idioma/región) y quedan afuera resultados que sí
+    // aparecen buscando manualmente en el sitio.
+    const url = `https://efhub.com/es/players?search=${encodeURIComponent(search)}`;
     let cards: EfhubCardResult[] = [];
 
     // eFHUB carga parte de los resultados dinámicamente. Reintentamos si
