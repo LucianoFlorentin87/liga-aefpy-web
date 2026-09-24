@@ -100,6 +100,44 @@ export function positionLabel(position: string): string {
   return POSITION_LABEL[position] ?? position;
 }
 
+/**
+ * eFHUB usa las posiciones detalladas del juego (GK, CB, DMF, RWF, etc.);
+ * las mapeamos a nuestras 4 categorías para autocompletar el campo Posición
+ * al elegir una carta. Por defecto (código desconocido o ausente) asume
+ * DELANTERO, la posición más común entre las cartas ofensivas.
+ */
+const EFHUB_POSITION_MAP: Record<string, string> = {
+  GK: "ARQUERO",
+  CB: "DEFENSOR",
+  LB: "DEFENSOR",
+  RB: "DEFENSOR",
+  DMF: "MEDIOCAMPISTA",
+  CMF: "MEDIOCAMPISTA",
+  AMF: "MEDIOCAMPISTA",
+  LMF: "MEDIOCAMPISTA",
+  RMF: "MEDIOCAMPISTA",
+  LWF: "DELANTERO",
+  RWF: "DELANTERO",
+  SS: "DELANTERO",
+  CF: "DELANTERO",
+};
+export function mapEfhubPosition(efhubPosition: string | null): "ARQUERO" | "DEFENSOR" | "MEDIOCAMPISTA" | "DELANTERO" {
+  if (!efhubPosition) return "DELANTERO";
+  return (EFHUB_POSITION_MAP[efhubPosition.toUpperCase()] ?? "DELANTERO") as
+    | "ARQUERO"
+    | "DEFENSOR"
+    | "MEDIOCAMPISTA"
+    | "DELANTERO";
+}
+
+/** Divide el nombre completo de una carta de eFHUB en nombre/apellido. */
+export function splitEfhubName(fullName: string): { firstName: string; lastName: string } {
+  const trimmed = fullName.trim();
+  const spaceIndex = trimmed.indexOf(" ");
+  if (spaceIndex === -1) return { firstName: trimmed, lastName: "" };
+  return { firstName: trimmed.slice(0, spaceIndex), lastName: trimmed.slice(spaceIndex + 1) };
+}
+
 /** El apellido es opcional (muchos gamertags se cargan sólo con nombre). */
 export function playerFullName(player: { firstName: string; lastName?: string | null }): string {
   return player.lastName ? `${player.firstName} ${player.lastName}` : player.firstName;

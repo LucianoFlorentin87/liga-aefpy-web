@@ -9,6 +9,48 @@ import { playerFullName } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
+export type EfhubCardInput = {
+  efhubId: string;
+  name: string;
+  overall: number | null;
+  position: string | null;
+  cardType: string | null;
+  playstyle: string | null;
+  club: string | null;
+  league: string | null;
+  nationality: string | null;
+  cardImageUrl: string | null;
+  playerImageUrl: string | null;
+  sourceUrl: string | null;
+};
+
+/**
+ * Guarda (o actualiza) la carta de eFHUB una sola vez por efhubId, para no
+ * duplicarla si dos jugadores eligen la misma o si se la vuelve a buscar
+ * después. Compartido entre el alta de jugador (elegís la carta al crear)
+ * y setPlayerEfhubCardAction (la cambiás editando un jugador existente).
+ */
+async function upsertEfhubCard(card: EfhubCardInput) {
+  const cardData = {
+    name: card.name,
+    overall: card.overall,
+    position: card.position,
+    cardType: card.cardType,
+    playstyle: card.playstyle,
+    club: card.club,
+    league: card.league,
+    nationality: card.nationality,
+    cardImageUrl: card.cardImageUrl,
+    playerImageUrl: card.playerImageUrl,
+    sourceUrl: card.sourceUrl,
+  };
+  return prisma.efhubCard.upsert({
+    where: { efhubId: card.efhubId },
+    update: cardData,
+    create: { efhubId: card.efhubId, ...cardData },
+  });
+}
+
 export async function createPlayerAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const { user: actor } = await requirePermission("jugadores");
 
@@ -33,6 +75,14 @@ export async function createPlayerAction(_prevState: FormState, formData: FormDa
   });
   if (duplicateNumber) return { error: `Ya hay un jugador activo con el número ${parsed.data.jerseyNumber} en ${team.name}.` };
 
+  // Carta de eFHUB elegida (opcional) al crear el jugador — ver EfhubCardPicker en modo "create".
+  let efhubCardId: string | undefined;
+  const efhubCardRaw = formData.get("efhubCard");
+  if (typeof efhubCardRaw === "string" && efhubCardRaw) {
+    const efhubCard = await upsertEfhubCard(JSON.parse(efhubCardRaw) as EfhubCardInput);
+    efhubCardId = efhubCard.id;
+  }
+
   const player = await prisma.player.create({
     data: {
       firstName: parsed.data.firstName,
@@ -42,6 +92,7 @@ export async function createPlayerAction(_prevState: FormState, formData: FormDa
       teamId: parsed.data.teamId,
       birthDate: parsed.data.birthDate ? new Date(parsed.data.birthDate) : null,
       status: parsed.data.status,
+      efhubCardId,
     },
   });
 
@@ -133,21 +184,6 @@ export async function deletePlayerAction(formData: FormData): Promise<void> {
   revalidatePath("/admin/jugadores");
 }
 
-export type EfhubCardInput = {
-  efhubId: string;
-  name: string;
-  overall: number | null;
-  position: string | null;
-  cardType: string | null;
-  playstyle: string | null;
-  club: string | null;
-  league: string | null;
-  nationality: string | null;
-  cardImageUrl: string | null;
-  playerImageUrl: string | null;
-  sourceUrl: string | null;
-};
-
 function revalidateEfhubCardViews() {
   revalidatePath("/admin/jugadores");
   revalidatePath("/goleadores");
@@ -167,25 +203,7 @@ export async function setPlayerEfhubCardAction(playerId: string, card: EfhubCard
   const player = await prisma.player.findUnique({ where: { id: playerId } });
   if (!player) return { error: "El jugador no existe." };
 
-  const cardData = {
-    name: card.name,
-    overall: card.overall,
-    position: card.position,
-    cardType: card.cardType,
-    playstyle: card.playstyle,
-    club: card.club,
-    league: card.league,
-    nationality: card.nationality,
-    cardImageUrl: card.cardImageUrl,
-    playerImageUrl: card.playerImageUrl,
-    sourceUrl: card.sourceUrl,
-  };
-
-  const efhubCard = await prisma.efhubCard.upsert({
-    where: { efhubId: card.efhubId },
-    update: cardData,
-    create: { efhubId: card.efhubId, ...cardData },
-  });
+  const efhubCard = await upsertEfhubCard(card);
 
   await prisma.player.update({ where: { id: playerId }, data: { efhubCardId: efhubCard.id } });
   await logActivity(

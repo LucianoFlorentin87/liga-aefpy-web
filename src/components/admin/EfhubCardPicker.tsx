@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
-import {
-  setPlayerEfhubCardAction,
-  clearPlayerEfhubCardAction,
-  type EfhubCardInput,
-} from "@/app/admin/(protected)/jugadores/actions";
-
-type EfhubSearchResult = EfhubCardInput;
+import type { EfhubCardInput } from "@/app/admin/(protected)/jugadores/actions";
 
 type SelectedCard = {
   name: string;
@@ -18,18 +12,27 @@ type SelectedCard = {
 };
 
 /**
- * Buscador de cartas de eFootball en eFHUB para asignarle una a un
- * jugador puntual — sólo disponible al editar un jugador que ya existe
- * (necesita su id para guardar la elección). Ver
- * /admin/jugadores/efhub-search (el scraper) y setPlayerEfhubCardAction.
+ * Buscador de cartas de eFootball en eFHUB. No sabe si el jugador ya existe
+ * o se está por crear: al elegir una carta llama a onPick, que decide qué
+ * hacer con ella (guardarla ya mismo en el jugador editado, o sólo dejarla
+ * lista para enviarla junto con el alta de un jugador nuevo). Si onPick
+ * devuelve un mensaje, se muestra como error y la carta no se marca como
+ * elegida.
  */
-export function EfhubCardPicker({ playerId, initialCard }: { playerId: string; initialCard: SelectedCard | null }) {
+export function EfhubCardPicker({
+  selected,
+  onPick,
+  onClear,
+}: {
+  selected: SelectedCard | null;
+  onPick: (card: EfhubCardInput) => Promise<string | void> | string | void;
+  onClear: () => Promise<void> | void;
+}) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<EfhubSearchResult[]>([]);
+  const [results, setResults] = useState<EfhubCardInput[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<SelectedCard | null>(initialCard);
   const [searched, setSearched] = useState(false);
 
   async function handleSearch() {
@@ -56,26 +59,30 @@ export function EfhubCardPicker({ playerId, initialCard }: { playerId: string; i
     }
   }
 
-  async function handlePick(card: EfhubSearchResult) {
-    setSaving(true);
+  async function handlePick(card: EfhubCardInput) {
+    setBusy(true);
     setError(null);
-    const result = await setPlayerEfhubCardAction(playerId, card);
-    setSaving(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const errorMessage = await onPick(card);
+      if (errorMessage) {
+        setError(errorMessage);
+        return;
+      }
+      setResults([]);
+      setQuery("");
+      setSearched(false);
+    } finally {
+      setBusy(false);
     }
-    setSelected({ name: card.name, cardImageUrl: card.cardImageUrl, overall: card.overall, position: card.position });
-    setResults([]);
-    setQuery("");
-    setSearched(false);
   }
 
   async function handleClear() {
-    setSaving(true);
-    await clearPlayerEfhubCardAction(playerId);
-    setSaving(false);
-    setSelected(null);
+    setBusy(true);
+    try {
+      await onClear();
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -91,7 +98,7 @@ export function EfhubCardPicker({ playerId, initialCard }: { playerId: string; i
               {[selected.overall ? `${selected.overall} OVR` : null, selected.position].filter(Boolean).join(" · ")}
             </p>
           </div>
-          <button type="button" onClick={handleClear} disabled={saving} className="btn btn-ghost !px-2 !py-1 text-xs">
+          <button type="button" onClick={handleClear} disabled={busy} className="btn btn-ghost !px-2 !py-1 text-xs">
             Quitar
           </button>
         </div>
@@ -128,7 +135,7 @@ export function EfhubCardPicker({ playerId, initialCard }: { playerId: string; i
               <button
                 type="button"
                 onClick={() => handlePick(card)}
-                disabled={saving}
+                disabled={busy}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--color-gray-50)]"
               >
                 <PlayerCardThumb name={card.name} cardImageUrl={card.cardImageUrl} size={32} />

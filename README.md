@@ -276,17 +276,29 @@ sugerencias.
 
 ### Cartas de eFootball (eFHUB)
 
-En `/admin/jugadores`, al editar un jugador que ya existe, se puede
-buscarle y asignarle su carta de eFootball real (la que usa en el juego)
-desde [eFHUB](https://efhub.com) — no hay una API pública, así que la
-búsqueda abre un Chromium real con Playwright y scrapea los resultados
+En `/admin/jugadores` se puede buscarle y asignarle a un jugador su carta
+de eFootball real (la que usa en el juego) desde
+[eFHUB](https://efhub.com) — no hay una API pública, así que la búsqueda
+abre un Chromium real con Playwright y scrapea los resultados
 (`src/app/admin/(protected)/jugadores/efhub-search/route.ts`). La carta
 elegida queda guardada en la tabla `efhub_cards` (una sola vez por carta,
 aunque varios jugadores elijan la misma) y vinculada al jugador por
 `players.efhubCardId` — no hace falta volver a buscarla en cada carga de
-página. La miniatura aparece en `/admin/jugadores`, Goleadores y
-Disciplina; si un jugador no tiene carta elegida, se muestra un ícono con
+página. La miniatura aparece en `/admin/jugadores`, Goleadores, Disciplina
+y Equipos; si un jugador no tiene carta elegida, se muestra un ícono con
 sus iniciales en su lugar.
+
+Se puede elegir en dos momentos:
+
+- **Al crear un jugador**: buscás y elegís la carta primero, y eso
+  autocompleta Nombre, Apellido y Posición (`mapEfhubPosition`/
+  `splitEfhubName` en `src/lib/format.ts` traducen las posiciones
+  detalladas del juego — GK, CB, DMF, RWF, etc. — a nuestras 4 categorías,
+  y separan el nombre completo de la carta en nombre/apellido). Sólo
+  quedan por cargar a mano el número de camiseta y el equipo. La carta
+  recién se guarda en la base al crear el jugador (no antes).
+- **Editando un jugador existente**: se puede asignar, cambiar o quitar
+  la carta en cualquier momento, independiente del resto de sus datos.
 
 Sólo funciona si el build instaló el Chromium de Playwright (ver el Build
 Command en la sección de Render más abajo) — en desarrollo local ya viene

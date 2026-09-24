@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel, playerFullName } from "@/lib/format";
+import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName } from "@/lib/format";
 import { Modal } from "@/components/admin/Modal";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
@@ -13,7 +13,10 @@ import {
   updatePlayerAction,
   togglePlayerStatusAction,
   deletePlayerAction,
+  setPlayerEfhubCardAction,
+  clearPlayerEfhubCardAction,
   type FormState,
+  type EfhubCardInput,
 } from "@/app/admin/(protected)/jugadores/actions";
 
 type PlayerRow = {
@@ -54,6 +57,19 @@ function PlayerForm({
   const action = mode === "create" ? createPlayerAction : updatePlayerAction;
   const [state, formAction, pending] = useActionState(action, emptyState);
 
+  // Nombre, apellido y posición se vuelven controlados para que, al crear
+  // un jugador, elegir una carta de eFHUB pueda autocompletarlos. En modo
+  // "edit" arrancan con los datos del jugador, igual que antes.
+  const [firstName, setFirstName] = useState(player?.firstName ?? "");
+  const [lastName, setLastName] = useState(player?.lastName ?? "");
+  const [position, setPosition] = useState<PlayerPosition>(player?.position ?? "DELANTERO");
+
+  // Sólo se usa en modo "create": la carta elegida todavía no se puede
+  // guardar (no existe el jugador), así que viaja como JSON en un input
+  // oculto y createPlayerAction la vincula recién al crearlo.
+  const [pickedCard, setPickedCard] = useState<EfhubCardInput | null>(null);
+  const [editCard, setEditCard] = useState(player?.efhubCard ?? null);
+
   useEffect(() => {
     if (state.success) onDone();
   }, [state.success, onDone]);
@@ -61,13 +77,33 @@ function PlayerForm({
   return (
     <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {mode === "edit" && <input type="hidden" name="id" value={player!.id} />}
+      {mode === "create" && pickedCard && <input type="hidden" name="efhubCard" value={JSON.stringify(pickedCard)} />}
+
+      {mode === "create" && (
+        <EfhubCardPicker
+          selected={
+            pickedCard
+              ? { name: pickedCard.name, cardImageUrl: pickedCard.cardImageUrl, overall: pickedCard.overall, position: pickedCard.position }
+              : null
+          }
+          onPick={(card) => {
+            setPickedCard(card);
+            const { firstName: fn, lastName: ln } = splitEfhubName(card.name);
+            setFirstName(fn);
+            setLastName(ln);
+            setPosition(mapEfhubPosition(card.position));
+          }}
+          onClear={() => setPickedCard(null)}
+        />
+      )}
+
       <div>
         <label className="field-label">Nombre</label>
-        <input name="firstName" required defaultValue={player?.firstName} className="input" />
+        <input name="firstName" required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input" />
       </div>
       <div>
         <label className="field-label">Apellido (opcional)</label>
-        <input name="lastName" defaultValue={player?.lastName ?? ""} className="input" />
+        <input name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="input" />
       </div>
       <div>
         <label className="field-label">Número de camiseta</label>
@@ -75,7 +111,7 @@ function PlayerForm({
       </div>
       <div>
         <label className="field-label">Posición</label>
-        <select name="position" required defaultValue={player?.position ?? "DELANTERO"} className="input">
+        <select name="position" required value={position} onChange={(e) => setPosition(e.target.value as PlayerPosition)} className="input">
           {POSITIONS.map((p) => (
             <option key={p} value={p}>
               {positionLabel(p)}
@@ -109,12 +145,18 @@ function PlayerForm({
       </div>
 
       {mode === "edit" && player && (
-        <EfhubCardPicker playerId={player.id} initialCard={player.efhubCard} />
-      )}
-      {mode === "create" && (
-        <p className="text-xs text-[var(--color-gray-500)] sm:col-span-2">
-          La carta de eFootball (eFHUB) se elige después de crear el jugador, editándolo.
-        </p>
+        <EfhubCardPicker
+          selected={editCard}
+          onPick={async (card) => {
+            const result = await setPlayerEfhubCardAction(player.id, card);
+            if (result.error) return result.error;
+            setEditCard({ name: card.name, cardImageUrl: card.cardImageUrl, overall: card.overall, position: card.position });
+          }}
+          onClear={async () => {
+            await clearPlayerEfhubCardAction(player.id);
+            setEditCard(null);
+          }}
+        />
       )}
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}
