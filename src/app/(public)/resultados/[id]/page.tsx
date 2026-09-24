@@ -27,7 +27,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div>
-      <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-navy-900)] text-white">
+      <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-navy-950)] text-white">
         <div className="container-page py-8">
           <Link href="/resultados" className="text-xs font-semibold text-white/70 hover:text-white">
             ← Volver a resultados

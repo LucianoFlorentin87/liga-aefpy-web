@@ -44,7 +44,11 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="bg-gradient-to-br from-[var(--color-navy-800)] via-[var(--color-navy-900)] to-[var(--color-navy-950)]">
+      {/* via-[#0b1b3f] (no var(--color-navy-900)): este degradé siempre tiene
+          que quedar oscuro — esa variable ahora es el color de texto
+          principal y se aclara en modo oscuro, así que reusarla acá
+          dejaba una franja clara cruzando el degradé. */}
+      <section className="bg-gradient-to-br from-[var(--color-navy-800)] via-[#0b1b3f] to-[var(--color-navy-950)]">
         <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
             <p className="eyebrow">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
