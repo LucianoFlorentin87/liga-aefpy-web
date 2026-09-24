@@ -71,6 +71,20 @@ function setCached(key: string, cards: EfhubCardResult[]) {
   searchCache.set(key, { cards, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
+// Nombres comunes (ej. "Neymar") pueden tener más cartas de las que eFHUB
+// renderiza de entrada — el resto carga con scroll infinito. Sin esto,
+// esas cartas nunca llegan al DOM y el scraper no las puede ver.
+async function loadMoreResults(page: Page) {
+  let previousCount = -1;
+  for (let i = 0; i < 6; i++) {
+    const count = await page.evaluate(() => document.querySelectorAll('a[href*="/players/"]').length);
+    if (count === previousCount) break; // dejó de aparecer contenido nuevo
+    previousCount = count;
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(600);
+  }
+}
+
 async function scrapeCards(page: Page): Promise<EfhubCardResult[]> {
   return page.evaluate(() => {
     const results: EfhubCardResult[] = [];
@@ -169,6 +183,7 @@ export async function GET(request: NextRequest) {
       try {
         await page.waitForSelector('a[href*="/players/"]', { timeout: 10000 });
         await page.waitForTimeout(500); // deja asentar el resto de las tarjetas que cargan después de la primera
+        await loadMoreResults(page);
       } catch {
         // sigue igual, se reintenta el scrape con lo que haya
       }
@@ -180,8 +195,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    if (cards.length > 0) setCached(cacheKey, cards.slice(0, 30));
-    return NextResponse.json({ cards: cards.slice(0, 30) });
+    if (cards.length > 0) setCached(cacheKey, cards.slice(0, 40));
+    return NextResponse.json({ cards: cards.slice(0, 40) });
   } catch (error) {
     // Si el browser reusado quedó en mal estado, se descarta para que la
     // próxima búsqueda lance uno nuevo en vez de repetir el mismo error.
