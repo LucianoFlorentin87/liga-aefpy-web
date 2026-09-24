@@ -5,6 +5,7 @@ import { positionLabel, playerFullName } from "@/lib/format";
 import { EmptyState } from "@/components/EmptyState";
 import { SocialLinks } from "@/components/SocialLinks";
 import { TeamCrest } from "@/components/TeamCrest";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
         include: {
           goals: { where: { match: { status: "FINALIZADO" } } },
           cards: { where: { match: { status: "FINALIZADO" } } },
+          efhubCard: true,
         },
       },
     },
@@ -73,7 +75,12 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
                   {team.players.map((player) => (
                     <tr key={player.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{player.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(player)}</td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">
+                        <span className="flex items-center gap-2">
+                          <PlayerCardThumb name={playerFullName(player)} cardImageUrl={player.efhubCard?.cardImageUrl} size={136} />
+                          {playerFullName(player)}
+                        </span>
+                      </td>
                       <td>{positionLabel(player.position)}</td>
                       <td className="text-center font-bold text-[var(--color-red-600)]">{player.goals.length}</td>
                       <td className="text-center">{player.cards.filter((c) => c.type === "AMARILLA").length}</td>

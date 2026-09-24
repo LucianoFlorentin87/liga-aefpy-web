@@ -6,6 +6,7 @@ import { positionLabel, formatDateShort, playerFullName } from "@/lib/format";
 import { StatCard } from "@/components/admin/StatCard";
 import { SanctionStatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function PlayerStatsPage({ params }: { params: Promise<{ id
       cards: { include: { match: true }, orderBy: { minute: "asc" } },
       sanctions: { orderBy: { startDate: "desc" } },
       participations: true,
+      efhubCard: true,
     },
   });
 
@@ -37,10 +39,15 @@ export default async function PlayerStatsPage({ params }: { params: Promise<{ id
         <Link href="/admin/jugadores" className="text-xs font-semibold text-[var(--color-gray-500)] hover:text-[var(--color-navy-900)]">
           ← Volver a jugadores
         </Link>
-        <h1 className="mt-1 text-xl font-extrabold text-[var(--color-navy-900)]">{playerFullName(player)}</h1>
-        <p className="text-sm text-[var(--color-gray-500)]">
-          {player.team.name} · N° {player.jerseyNumber} · {positionLabel(player.position)}
-        </p>
+        <div className="mt-1 flex items-center gap-3">
+          <PlayerCardThumb name={playerFullName(player)} cardImageUrl={player.efhubCard?.cardImageUrl} size={136} />
+          <div>
+            <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">{playerFullName(player)}</h1>
+            <p className="text-sm text-[var(--color-gray-500)]">
+              {player.team.name} · N° {player.jerseyNumber} · {positionLabel(player.position)}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
