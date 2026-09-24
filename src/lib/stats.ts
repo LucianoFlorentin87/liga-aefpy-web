@@ -259,6 +259,7 @@ export type ScorerRow = {
   playerName: string;
   teamName: string;
   teamId: string;
+  cardImageUrl: string | null;
   goals: number;
   matchesPlayed: number;
   average: number;
@@ -268,7 +269,7 @@ export type ScorerRow = {
 export async function computeScorers(): Promise<ScorerRow[]> {
   const goals = await prisma.matchGoal.findMany({
     where: { match: { status: "FINALIZADO" } },
-    include: { player: { include: { team: true } } },
+    include: { player: { include: { team: true, efhubCard: true } } },
   });
 
   const participations = await prisma.matchParticipation.findMany({
@@ -292,6 +293,7 @@ export async function computeScorers(): Promise<ScorerRow[]> {
         playerName: playerFullName(g.player),
         teamName: g.player.team.name,
         teamId: g.player.teamId,
+        cardImageUrl: g.player.efhubCard?.cardImageUrl ?? null,
         goals: 1,
         matchesPlayed: matchesPlayedByPlayer.get(g.playerId)?.size ?? 0,
         average: 0,
@@ -316,6 +318,7 @@ export type DisciplineRow = {
   playerName: string;
   teamName: string;
   teamId: string;
+  cardImageUrl: string | null;
   matchesPlayed: number;
   yellowCards: number;
   redCards: number;
@@ -326,7 +329,7 @@ export type DisciplineRow = {
 export async function computeDiscipline(): Promise<DisciplineRow[]> {
   const cards = await prisma.matchCard.findMany({
     where: { match: { status: "FINALIZADO" } },
-    include: { player: { include: { team: true } } },
+    include: { player: { include: { team: true, efhubCard: true } } },
   });
 
   const participations = await prisma.matchParticipation.findMany({
@@ -353,6 +356,7 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
         playerName: playerFullName(c.player),
         teamName: c.player.team.name,
         teamId: c.player.teamId,
+        cardImageUrl: c.player.efhubCard?.cardImageUrl ?? null,
         matchesPlayed: matchesPlayedByPlayer.get(c.playerId)?.size ?? 0,
         yellowCards: 0,
         redCards: 0,

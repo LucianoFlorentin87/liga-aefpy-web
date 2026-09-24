@@ -154,12 +154,46 @@ model Player {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  // Carta de eFootball elegida para este jugador (buscada en eFHUB) — sólo
+  // para mostrarla como miniatura en el sitio, no afecta ninguna regla del
+  // torneo. Puede quedar sin elegir.
+  efhubCard   EfhubCard? @relation(fields: [efhubCardId], references: [id], onDelete: SetNull)
+  efhubCardId String?
+
   goals          MatchGoal[]
   cards          MatchCard[]
   sanctions      Sanction[]
   participations MatchParticipation[]
 
   @@map("players")
+}
+
+// Carta de eFootball scrapeada de eFHUB (efhub.com) y elegida por el admin
+// para un jugador puntual — ver /api/efhub/search. Se guarda una vez
+// encontrada para no tener que volver a scrapear en cada carga de página.
+model EfhubCard {
+  id             String   @id @default(cuid())
+  // Id del jugador en eFHUB (de la URL /players/{id}) — único para no
+  // duplicar la misma carta si se la vuelve a buscar y elegir después.
+  efhubId        String?  @unique
+  name           String
+  overall        Int?
+  position       String?
+  cardType       String?
+  playstyle      String?
+  club           String?
+  league         String?
+  nationality    String?
+  cardImageUrl   String?
+  playerImageUrl String?
+  sourceUrl      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  players Player[]
+
+  @@index([name])
+  @@map("efhub_cards")
 }
 
 // ---------------------------------------------------------------------------

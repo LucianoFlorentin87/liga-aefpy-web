@@ -32,6 +32,7 @@
     "exceljs": "^4.4.0",
     "jose": "^6.2.8",
     "next": "16.3.0",
+    "playwright": "^1.63.0",
     "prisma": "^6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -41,7 +42,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "playwright": "^1.62.1",
     "tsx": "^4.23.12"
   }
 }

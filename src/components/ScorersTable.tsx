@@ -1,5 +1,6 @@
 import type { ScorerRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 
 export function ScorersTable({ rows, limit }: { rows: ScorerRow[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
@@ -25,7 +26,12 @@ export function ScorersTable({ rows, limit }: { rows: ScorerRow[]; limit?: numbe
           {data.map((row, index) => (
             <tr key={row.playerId}>
               <td className="font-semibold text-[var(--color-gray-500)]">{index + 1}</td>
-              <td className="font-semibold text-[var(--color-navy-900)]">{row.playerName}</td>
+              <td className="font-semibold text-[var(--color-navy-900)]">
+                <span className="flex items-center gap-2">
+                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={24} />
+                  {row.playerName}
+                </span>
+              </td>
               <td>{row.teamName}</td>
               <td className="text-center font-bold text-[var(--color-red-600)]">{row.goals}</td>
               <td className="text-center">{row.matchesPlayed}</td>

@@ -12,7 +12,11 @@ export default async function AdminJugadoresPage() {
   const [players, teams] = await Promise.all([
     prisma.player.findMany({
       orderBy: [{ team: { name: "asc" } }, { jerseyNumber: "asc" }],
-      include: { team: true, _count: { select: { goals: true, cards: true, sanctions: true, participations: true } } },
+      include: {
+        team: true,
+        efhubCard: true,
+        _count: { select: { goals: true, cards: true, sanctions: true, participations: true } },
+      },
     }),
     prisma.team.findMany({ where: { status: "ACTIVO" }, orderBy: { name: "asc" } }),
   ]);

@@ -274,6 +274,24 @@ Lo genera `src/app/admin/(protected)/usuarios/export/route.ts` con
 `exceljs`, reutilizando `src/lib/delegate-suggestions.ts` para las
 sugerencias.
 
+### Cartas de eFootball (eFHUB)
+
+En `/admin/jugadores`, al editar un jugador que ya existe, se puede
+buscarle y asignarle su carta de eFootball real (la que usa en el juego)
+desde [eFHUB](https://efhub.com) — no hay una API pública, así que la
+búsqueda abre un Chromium real con Playwright y scrapea los resultados
+(`src/app/admin/(protected)/jugadores/efhub-search/route.ts`). La carta
+elegida queda guardada en la tabla `efhub_cards` (una sola vez por carta,
+aunque varios jugadores elijan la misma) y vinculada al jugador por
+`players.efhubCardId` — no hace falta volver a buscarla en cada carga de
+página. La miniatura aparece en `/admin/jugadores`, Goleadores y
+Disciplina; si un jugador no tiene carta elegida, se muestra un ícono con
+sus iniciales en su lugar.
+
+Sólo funciona si el build instaló el Chromium de Playwright (ver el Build
+Command en la sección de Render más abajo) — en desarrollo local ya viene
+con `npx playwright install chromium` (ver sección 4).
+
 ---
 
 ## 3. Roles y permisos
@@ -308,6 +326,7 @@ sirve para desarrollar, o una instancia Postgres propia/local).
 
 ```bash
 npm install
+npx playwright install chromium   # necesario para el buscador de cartas de eFHUB
 cp .env.example .env
 # Editá .env: pegá tu DATABASE_URL de Postgres y generá tu propio SESSION_SECRET:
 openssl rand -base64 48
@@ -403,9 +422,14 @@ no hay ningún dato escrito a mano en el HTML.
 2. "New" → "Web Service" → elegís el repo `liga-aefpy-web`.
 3. Configuración del servicio:
    - **Runtime**: Node
-   - **Build Command**: `npm install && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
+   - **Build Command**: `npm install && npx playwright install --with-deps chromium && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
    - **Start Command**: `npm run start`
-   - **Instance Type**: Free (o el que prefieras)
+   - **Instance Type**: Free (o el que prefieras) — con el buscador de eFHUB conviene no usar el plan Free si tarda mucho: cada búsqueda abre un Chromium real, y el Free comparte CPU.
+
+   `npx playwright install --with-deps chromium` descarga el navegador que
+   usa el buscador de cartas de eFHUB (`/admin/jugadores/efhub-search`,
+   ver "Cartas de eFootball (eFHUB)" más abajo). Sin este paso esa
+   búsqueda falla en producción aunque el resto del sitio funcione bien.
 4. En "Environment Variables" agregá las variables de Supabase de los
    pasos anteriores (`DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`,
    `SUPABASE_SECRET_KEY` — ver sección "Subida de archivos" más abajo) más:

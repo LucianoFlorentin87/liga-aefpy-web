@@ -1,5 +1,6 @@
 import type { DisciplineRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 
 export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
@@ -24,7 +25,12 @@ export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?
         <tbody>
           {data.map((row) => (
             <tr key={row.playerId}>
-              <td className="font-semibold text-[var(--color-navy-900)]">{row.playerName}</td>
+              <td className="font-semibold text-[var(--color-navy-900)]">
+                <span className="flex items-center gap-2">
+                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={24} />
+                  {row.playerName}
+                </span>
+              </td>
               <td>{row.teamName}</td>
               <td className="text-center">{row.matchesPlayed}</td>
               <td className="text-center font-semibold">{row.yellowCards}</td>

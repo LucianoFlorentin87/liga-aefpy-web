@@ -6,6 +6,8 @@ import type { PlayerPosition, PlayerStatus } from "@prisma/client";
 import { positionLabel, playerFullName } from "@/lib/format";
 import { Modal } from "@/components/admin/Modal";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
+import { EfhubCardPicker } from "@/components/admin/EfhubCardPicker";
 import {
   createPlayerAction,
   updatePlayerAction,
@@ -24,6 +26,7 @@ type PlayerRow = {
   birthDate: Date | null;
   teamId: string;
   team: { id: string; name: string };
+  efhubCard: { name: string; cardImageUrl: string | null; overall: number | null; position: string | null } | null;
   _count: { goals: number; cards: number; sanctions: number; participations: number };
 };
 
@@ -105,6 +108,15 @@ function PlayerForm({
         </select>
       </div>
 
+      {mode === "edit" && player && (
+        <EfhubCardPicker playerId={player.id} initialCard={player.efhubCard} />
+      )}
+      {mode === "create" && (
+        <p className="text-xs text-[var(--color-gray-500)] sm:col-span-2">
+          La carta de eFootball (eFHUB) se elige después de crear el jugador, editándolo.
+        </p>
+      )}
+
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}
 
       <div className="flex gap-2 sm:col-span-2">
@@ -179,7 +191,12 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                   return (
                     <tr key={p.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{p.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(p)}</td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">
+                        <span className="flex items-center gap-2">
+                          <PlayerCardThumb name={playerFullName(p)} cardImageUrl={p.efhubCard?.cardImageUrl} size={24} />
+                          {playerFullName(p)}
+                        </span>
+                      </td>
                       <td>{p.team.name}</td>
                       <td>{positionLabel(p.position)}</td>
                       <td>

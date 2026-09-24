@@ -132,3 +132,77 @@ export async function deletePlayerAction(formData: FormData): Promise<void> {
   await logActivity(`${actor.firstName} ${actor.lastName} eliminó el jugador "${playerFullName(target)}".`, actor.id);
   revalidatePath("/admin/jugadores");
 }
+
+export type EfhubCardInput = {
+  efhubId: string;
+  name: string;
+  overall: number | null;
+  position: string | null;
+  cardType: string | null;
+  playstyle: string | null;
+  club: string | null;
+  league: string | null;
+  nationality: string | null;
+  cardImageUrl: string | null;
+  playerImageUrl: string | null;
+  sourceUrl: string | null;
+};
+
+function revalidateEfhubCardViews() {
+  revalidatePath("/admin/jugadores");
+  revalidatePath("/goleadores");
+  revalidatePath("/disciplina");
+  revalidatePath("/equipos");
+}
+
+/**
+ * Le asigna a un jugador la carta de eFHUB elegida por el admin (ver
+ * /admin/jugadores/efhub-search). Guarda la carta una sola vez por
+ * efhubId (upsert) para no duplicarla si dos jugadores eligen la misma, o
+ * si se la vuelve a buscar después.
+ */
+export async function setPlayerEfhubCardAction(playerId: string, card: EfhubCardInput): Promise<{ error?: string }> {
+  const { user: actor } = await requirePermission("jugadores");
+
+  const player = await prisma.player.findUnique({ where: { id: playerId } });
+  if (!player) return { error: "El jugador no existe." };
+
+  const cardData = {
+    name: card.name,
+    overall: card.overall,
+    position: card.position,
+    cardType: card.cardType,
+    playstyle: card.playstyle,
+    club: card.club,
+    league: card.league,
+    nationality: card.nationality,
+    cardImageUrl: card.cardImageUrl,
+    playerImageUrl: card.playerImageUrl,
+    sourceUrl: card.sourceUrl,
+  };
+
+  const efhubCard = await prisma.efhubCard.upsert({
+    where: { efhubId: card.efhubId },
+    update: cardData,
+    create: { efhubId: card.efhubId, ...cardData },
+  });
+
+  await prisma.player.update({ where: { id: playerId }, data: { efhubCardId: efhubCard.id } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} le asignó la carta de eFHUB "${card.name}" a ${playerFullName(player)}.`,
+    actor.id,
+  );
+  revalidateEfhubCardViews();
+  return {};
+}
+
+export async function clearPlayerEfhubCardAction(playerId: string): Promise<void> {
+  const { user: actor } = await requirePermission("jugadores");
+
+  const player = await prisma.player.findUnique({ where: { id: playerId } });
+  if (!player) return;
+
+  await prisma.player.update({ where: { id: playerId }, data: { efhubCardId: null } });
+  await logActivity(`${actor.firstName} ${actor.lastName} le quitó la carta de eFHUB a ${playerFullName(player)}.`, actor.id);
+  revalidateEfhubCardViews();
+}

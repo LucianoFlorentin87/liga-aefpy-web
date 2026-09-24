@@ -6,10 +6,18 @@ import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { SocialIcons } from "@/components/SocialIcons";
 import { TeamCrest } from "@/components/TeamCrest";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { playerFullName } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Equipos" };
 export const dynamic = "force-dynamic";
+
+// Cuántas cartas de jugadores se muestran como preview en la tarjeta de
+// cada equipo — priorizando a los que ya tienen una carta de eFHUB
+// elegida, para no mostrar huecos vacíos mientras se van cargando de a
+// poco (ver PlayerCardThumb).
+const PLAYER_PREVIEW_COUNT = 4;
 
 export default async function EquiposPage() {
   const [teams, standings] = await Promise.all([
@@ -17,7 +25,14 @@ export default async function EquiposPage() {
       // RETIRADO también se muestra (con su récord acumulado) — sólo
       // desaparece un equipo si queda INACTIVO.
       where: { status: { in: ["ACTIVO", "RETIRADO"] } },
-      include: { _count: { select: { players: true } } },
+      include: {
+        _count: { select: { players: true } },
+        players: {
+          where: { status: "ACTIVO" },
+          orderBy: { jerseyNumber: "asc" },
+          select: { id: true, firstName: true, lastName: true, efhubCard: { select: { cardImageUrl: true } } },
+        },
+      },
       orderBy: { name: "asc" },
     }),
     computeStandings(),
@@ -39,6 +54,9 @@ export default async function EquiposPage() {
             {teams.map((team) => {
               const row = standingsByTeam.get(team.id);
               const position = positionByTeam.get(team.id);
+              const previewPlayers = [...team.players]
+                .sort((a, b) => (b.efhubCard?.cardImageUrl ? 1 : 0) - (a.efhubCard?.cardImageUrl ? 1 : 0))
+                .slice(0, PLAYER_PREVIEW_COUNT);
               return (
                 <div
                   key={team.id}
@@ -63,6 +81,18 @@ export default async function EquiposPage() {
                         </p>
                       </div>
                     </div>
+                    {previewPlayers.length > 0 && (
+                      <div className="flex gap-1.5">
+                        {previewPlayers.map((p) => (
+                          <PlayerCardThumb
+                            key={p.id}
+                            name={playerFullName(p)}
+                            cardImageUrl={p.efhubCard?.cardImageUrl}
+                            size={40}
+                          />
+                        ))}
+                      </div>
+                    )}
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
                       <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">PJ</p>
