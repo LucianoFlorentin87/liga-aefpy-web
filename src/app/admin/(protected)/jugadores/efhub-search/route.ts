@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { chromium, type Page } from "playwright";
+import { chromium, type Browser, type Page } from "playwright";
 import { requirePermission } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,57 @@ type EfhubCardResult = {
   playerImageUrl: string | null;
   sourceUrl: string;
 };
+
+// Lanzar Chromium de cero tardaba 1-3s en cada búsqueda. Como esto corre
+// como servidor Node persistente en Render (no funciones serverless), se
+// puede reusar la misma instancia del navegador entre requests — cada
+// búsqueda sólo abre/cierra su propio contexto (liviano), no el browser
+// entero. Si queda 5 minutos sin uso se cierra solo, para no dejar
+// Chromium consumiendo RAM de más todo el tiempo.
+let browserPromise: Promise<Browser> | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+const IDLE_CLOSE_MS = 5 * 60 * 1000;
+
+function scheduleIdleClose() {
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    const promise = browserPromise;
+    browserPromise = null;
+    idleTimer = null;
+    promise?.then((browser) => browser.close()).catch(() => undefined);
+  }, IDLE_CLOSE_MS);
+}
+
+async function getBrowser(): Promise<Browser> {
+  if (browserPromise) {
+    const browser = await browserPromise;
+    if (browser.isConnected()) return browser;
+    browserPromise = null;
+  }
+  browserPromise = chromium.launch({ headless: true });
+  return browserPromise;
+}
+
+// Cache corta en memoria: las cartas de eFHUB no cambian de un minuto a
+// otro, y es común que se repita la misma búsqueda (varios admins, o el
+// mismo admin probando de nuevo) — evita repetir el scrape entero.
+type EfhubCacheEntry = { cards: EfhubCardResult[]; expiresAt: number };
+const searchCache = new Map<string, EfhubCacheEntry>();
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+function getCached(key: string): EfhubCardResult[] | null {
+  const entry = searchCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt < Date.now()) {
+    searchCache.delete(key);
+    return null;
+  }
+  return entry.cards;
+}
+
+function setCached(key: string, cards: EfhubCardResult[]) {
+  searchCache.set(key, { cards, expiresAt: Date.now() + CACHE_TTL_MS });
+}
 
 async function scrapeCards(page: Page): Promise<EfhubCardResult[]> {
   return page.evaluate(() => {
@@ -87,14 +138,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ cards: [] });
   }
 
-  let browser;
+  const cacheKey = search.toLowerCase();
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return NextResponse.json({ cards: cached });
+  }
+
+  let context;
 
   try {
-    browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage({
+    const browser = await getBrowser();
+    context = await browser.newContext({
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36",
       viewport: { width: 1440, height: 900 },
     });
+    const page = await context.newPage();
 
     const url = `https://efhub.com/players?search=${encodeURIComponent(search)}`;
     let cards: EfhubCardResult[] = [];
@@ -103,33 +161,37 @@ export async function GET(request: NextRequest) {
     // la primera carga todavía no contiene las tarjetas.
     for (let attempt = 1; attempt <= 3 && cards.length === 0; attempt++) {
       try {
-        await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
       } catch {
         // sigue igual al próximo intento
       }
 
       try {
-        await page.waitForSelector('a[href*="/players/"]', { timeout: 15000 });
+        await page.waitForSelector('a[href*="/players/"]', { timeout: 10000 });
+        await page.waitForTimeout(500); // deja asentar el resto de las tarjetas que cargan después de la primera
       } catch {
         // sigue igual, se reintenta el scrape con lo que haya
       }
 
-      await page.waitForTimeout(1500 + attempt * 500);
       cards = await scrapeCards(page);
 
       if (cards.length === 0 && attempt < 3) {
-        await page.reload({ waitUntil: "domcontentloaded", timeout: 30000 }).catch(() => undefined);
-        await page.waitForTimeout(2000);
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 20000 }).catch(() => undefined);
       }
     }
 
+    if (cards.length > 0) setCached(cacheKey, cards.slice(0, 30));
     return NextResponse.json({ cards: cards.slice(0, 30) });
   } catch (error) {
+    // Si el browser reusado quedó en mal estado, se descarta para que la
+    // próxima búsqueda lance uno nuevo en vez de repetir el mismo error.
+    browserPromise = null;
     return NextResponse.json(
       { error: "No se pudo consultar eFHUB.", details: error instanceof Error ? error.message : String(error) },
       { status: 500 },
     );
   } finally {
-    if (browser) await browser.close();
+    if (context) await context.close();
+    scheduleIdleClose();
   }
 }
