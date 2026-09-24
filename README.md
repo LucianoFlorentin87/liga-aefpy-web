@@ -422,14 +422,23 @@ no hay ningún dato escrito a mano en el HTML.
 2. "New" → "Web Service" → elegís el repo `liga-aefpy-web`.
 3. Configuración del servicio:
    - **Runtime**: Node
-   - **Build Command**: `npm install && npx playwright install --with-deps chromium && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
+   - **Build Command**: `npm install && npx playwright install chromium && npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run build`
    - **Start Command**: `npm run start`
    - **Instance Type**: Free (o el que prefieras) — con el buscador de eFHUB conviene no usar el plan Free si tarda mucho: cada búsqueda abre un Chromium real, y el Free comparte CPU.
 
-   `npx playwright install --with-deps chromium` descarga el navegador que
-   usa el buscador de cartas de eFHUB (`/admin/jugadores/efhub-search`,
-   ver "Cartas de eFootball (eFHUB)" más abajo). Sin este paso esa
-   búsqueda falla en producción aunque el resto del sitio funcione bien.
+   `npx playwright install chromium` descarga el navegador que usa el
+   buscador de cartas de eFHUB (`/admin/jugadores/efhub-search`, ver
+   "Cartas de eFootball (eFHUB)" más abajo). Sin este paso esa búsqueda
+   falla en producción aunque el resto del sitio funcione bien.
+
+   Nota: **no** se usa `--with-deps` (instalaría además las librerías del
+   sistema que Chromium necesita) porque Render no da permisos de
+   administrador durante el build — el comando falla con "Authentication
+   failure" si se lo agregás. Si el navegador de todos modos no arranca en
+   producción por faltarle alguna librería del sistema, la alternativa es
+   pasar este servicio a **Runtime: Docker** con un `Dockerfile` propio
+   (ahí sí se puede instalar como root al construir la imagen) — pero
+   probá primero sin `--with-deps`, así tal cual, antes de complicarlo.
 4. En "Environment Variables" agregá las variables de Supabase de los
    pasos anteriores (`DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`,
    `SUPABASE_SECRET_KEY` — ver sección "Subida de archivos" más abajo) más:
