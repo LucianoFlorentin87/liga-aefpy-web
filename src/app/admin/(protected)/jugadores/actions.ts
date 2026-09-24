@@ -27,10 +27,10 @@ export type EfhubCardInput = {
 /**
  * Guarda (o actualiza) la carta de eFHUB una sola vez por efhubId, para no
  * duplicarla si dos jugadores eligen la misma o si se la vuelve a buscar
- * después. Compartido entre el alta de jugador (elegís la carta al crear)
- * y setPlayerEfhubCardAction (la cambiás editando un jugador existente).
+ * después. Se exporta porque también la usan las acciones de
+ * /admin/mi-equipo (el delegado elige carta para sus propios jugadores).
  */
-async function upsertEfhubCard(card: EfhubCardInput) {
+export async function upsertEfhubCard(card: EfhubCardInput) {
   const cardData = {
     name: card.name,
     overall: card.overall,

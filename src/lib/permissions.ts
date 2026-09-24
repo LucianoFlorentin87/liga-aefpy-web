@@ -62,6 +62,20 @@ export async function requirePermission(resource: PermissionResource) {
 }
 
 /**
+ * El buscador de eFHUB (/admin/jugadores/efhub-search) lo usan tanto los
+ * admins (con permiso "jugadores") como los delegados de equipo, que
+ * buscan cartas para sus propios jugadores en /admin/mi-equipo pero no
+ * tienen el permiso "jugadores" (ese es genérico para todos los equipos).
+ */
+export async function requireEfhubSearchAccess() {
+  const { session, user } = await requireAuth();
+  if (!can(session.role, "jugadores") && session.role !== "DELEGADO") {
+    redirect("/admin/dashboard?denegado=jugadores");
+  }
+  return { session, user };
+}
+
+/**
  * Ruta exclusiva del delegado de equipo (/admin/mi-equipo): no forma parte
  * de la matriz PERMISSIONS porque no es un recurso administrativo genérico,
  * sino el propio equipo del usuario. El teamId siempre se resuelve desde la

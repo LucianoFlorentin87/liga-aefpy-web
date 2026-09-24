@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium, type Browser, type Page } from "playwright";
-import { requirePermission } from "@/lib/permissions";
+import { requireEfhubSearchAccess } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -131,7 +131,7 @@ async function scrapeCards(page: Page): Promise<EfhubCardResult[]> {
  * prisma/migrations/20260924000000_efhub_cards y el modelo EfhubCard.
  */
 export async function GET(request: NextRequest) {
-  await requirePermission("jugadores");
+  await requireEfhubSearchAccess();
 
   const search = request.nextUrl.searchParams.get("q")?.trim();
   if (!search || search.length < 2) {

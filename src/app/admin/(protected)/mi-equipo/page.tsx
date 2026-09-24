@@ -14,7 +14,7 @@ export default async function MiEquipoPage() {
     prisma.player.findMany({
       where: { teamId },
       orderBy: { jerseyNumber: "asc" },
-      include: { _count: { select: { goals: true, cards: true, sanctions: true, participations: true } } },
+      include: { efhubCard: true, _count: { select: { goals: true, cards: true, sanctions: true, participations: true } } },
     }),
   ]);
 

@@ -276,17 +276,20 @@ sugerencias.
 
 ### Cartas de eFootball (eFHUB)
 
-En `/admin/jugadores` se puede buscarle y asignarle a un jugador su carta
-de eFootball real (la que usa en el juego) desde
+Tanto en `/admin/jugadores` (admins) como en `/admin/mi-equipo` (delegados,
+sólo para sus propios jugadores) se puede buscarle y asignarle a un
+jugador su carta de eFootball real (la que usa en el juego) desde
 [eFHUB](https://efhub.com) — no hay una API pública, así que la búsqueda
 abre un Chromium real con Playwright y scrapea los resultados
-(`src/app/admin/(protected)/jugadores/efhub-search/route.ts`). La carta
-elegida queda guardada en la tabla `efhub_cards` (una sola vez por carta,
-aunque varios jugadores elijan la misma) y vinculada al jugador por
+(`src/app/admin/(protected)/jugadores/efhub-search/route.ts`, accesible
+con el permiso "jugadores" o con el rol DELEGADO — ver
+`requireEfhubSearchAccess` en `src/lib/permissions.ts`). La carta elegida
+queda guardada en la tabla `efhub_cards` (una sola vez por carta, aunque
+varios jugadores elijan la misma) y vinculada al jugador por
 `players.efhubCardId` — no hace falta volver a buscarla en cada carga de
-página. La miniatura aparece en `/admin/jugadores`, Goleadores, Disciplina
-y Equipos; si un jugador no tiene carta elegida, se muestra un ícono con
-sus iniciales en su lugar.
+página. La miniatura aparece en `/admin/jugadores`, `/admin/mi-equipo`,
+Goleadores, Disciplina, Sanciones y Equipos; si un jugador no tiene carta
+elegida, se muestra un ícono con sus iniciales en su lugar.
 
 Se puede elegir en dos momentos:
 

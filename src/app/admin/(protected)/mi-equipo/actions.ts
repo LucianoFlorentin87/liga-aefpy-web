@@ -7,12 +7,20 @@ import { logActivity } from "@/lib/activity";
 import { myTeamSchema, playerSchema } from "@/lib/validation";
 import { saveTeamLogo } from "@/lib/upload";
 import { playerFullName } from "@/lib/format";
+import { upsertEfhubCard, type EfhubCardInput } from "@/app/admin/(protected)/jugadores/actions";
 
 export type FormState = { error?: string; success?: string };
 
 function revalidatePublic() {
   revalidatePath("/equipos");
   revalidatePath("/");
+}
+
+function revalidateEfhubCardViews() {
+  revalidatePath("/admin/mi-equipo");
+  revalidatePath("/goleadores");
+  revalidatePath("/disciplina");
+  revalidatePublic();
 }
 
 export async function updateMyTeamAction(_prevState: FormState, formData: FormData): Promise<FormState> {
@@ -95,6 +103,14 @@ export async function createMyPlayerAction(_prevState: FormState, formData: Form
   });
   if (duplicateNumber) return { error: `Ya hay un jugador activo con el número ${parsed.data.jerseyNumber}.` };
 
+  // Carta de eFHUB elegida (opcional) al crear el jugador — ver EfhubCardPicker en modo "create".
+  let efhubCardId: string | undefined;
+  const efhubCardRaw = formData.get("efhubCard");
+  if (typeof efhubCardRaw === "string" && efhubCardRaw) {
+    const efhubCard = await upsertEfhubCard(JSON.parse(efhubCardRaw) as EfhubCardInput);
+    efhubCardId = efhubCard.id;
+  }
+
   const player = await prisma.player.create({
     data: {
       firstName: parsed.data.firstName,
@@ -104,6 +120,7 @@ export async function createMyPlayerAction(_prevState: FormState, formData: Form
       teamId,
       birthDate: parsed.data.birthDate ? new Date(parsed.data.birthDate) : null,
       status: parsed.data.status,
+      efhubCardId,
     },
   });
 
@@ -171,4 +188,38 @@ export async function toggleMyPlayerStatusAction(formData: FormData): Promise<vo
   );
   revalidatePath("/admin/mi-equipo");
   revalidatePublic();
+}
+
+/**
+ * Le asigna a un jugador propio la carta de eFHUB elegida por el
+ * delegado (ver /admin/jugadores/efhub-search, accesible también para
+ * DELEGADO). El player.teamId se valida contra el equipo de la sesión
+ * para que un delegado no pueda tocar jugadores de otro equipo.
+ */
+export async function setMyPlayerEfhubCardAction(playerId: string, card: EfhubCardInput): Promise<{ error?: string }> {
+  const { user: actor, teamId } = await requireDelegate();
+
+  const player = await prisma.player.findUnique({ where: { id: playerId } });
+  if (!player || player.teamId !== teamId) return { error: "El jugador no existe." };
+
+  const efhubCard = await upsertEfhubCard(card);
+
+  await prisma.player.update({ where: { id: playerId }, data: { efhubCardId: efhubCard.id } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} le asignó la carta de eFHUB "${card.name}" a ${playerFullName(player)}.`,
+    actor.id,
+  );
+  revalidateEfhubCardViews();
+  return {};
+}
+
+export async function clearMyPlayerEfhubCardAction(playerId: string): Promise<void> {
+  const { user: actor, teamId } = await requireDelegate();
+
+  const player = await prisma.player.findUnique({ where: { id: playerId } });
+  if (!player || player.teamId !== teamId) return;
+
+  await prisma.player.update({ where: { id: playerId }, data: { efhubCardId: null } });
+  await logActivity(`${actor.firstName} ${actor.lastName} le quitó la carta de eFHUB a ${playerFullName(player)}.`, actor.id);
+  revalidateEfhubCardViews();
 }

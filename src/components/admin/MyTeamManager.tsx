@@ -3,17 +3,22 @@
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import type { Team, PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel, playerFullName } from "@/lib/format";
+import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
 import { Modal } from "@/components/admin/Modal";
+import { PlayerCardThumb } from "@/components/PlayerCardThumb";
+import { EfhubCardPicker } from "@/components/admin/EfhubCardPicker";
 import {
   updateMyTeamAction,
   createMyPlayerAction,
   updateMyPlayerAction,
   toggleMyPlayerStatusAction,
+  setMyPlayerEfhubCardAction,
+  clearMyPlayerEfhubCardAction,
   type FormState,
 } from "@/app/admin/(protected)/mi-equipo/actions";
+import type { EfhubCardInput } from "@/app/admin/(protected)/jugadores/actions";
 
 type PlayerRow = {
   id: string;
@@ -23,6 +28,7 @@ type PlayerRow = {
   position: PlayerPosition;
   status: PlayerStatus;
   birthDate: Date | null;
+  efhubCard: { name: string; cardImageUrl: string | null; overall: number | null; position: string | null } | null;
   _count: { goals: number; cards: number; sanctions: number; participations: number };
 };
 
@@ -107,6 +113,18 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
   const action = mode === "create" ? createMyPlayerAction : updateMyPlayerAction;
   const [state, formAction, pending] = useActionState(action, emptyState);
 
+  // Nombre, apellido y posición se vuelven controlados para que, al crear
+  // un jugador, elegir una carta de eFHUB pueda autocompletarlos.
+  const [firstName, setFirstName] = useState(player?.firstName ?? "");
+  const [lastName, setLastName] = useState(player?.lastName ?? "");
+  const [position, setPosition] = useState<PlayerPosition>(player?.position ?? "DELANTERO");
+
+  // Sólo se usa en modo "create": la carta elegida todavía no se puede
+  // guardar (no existe el jugador), así que viaja como JSON en un input
+  // oculto y createMyPlayerAction la vincula recién al crearlo.
+  const [pickedCard, setPickedCard] = useState<EfhubCardInput | null>(null);
+  const [editCard, setEditCard] = useState(player?.efhubCard ?? null);
+
   useEffect(() => {
     if (state.success) onDone();
   }, [state.success, onDone]);
@@ -114,13 +132,33 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
   return (
     <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {mode === "edit" && <input type="hidden" name="id" value={player!.id} />}
+      {mode === "create" && pickedCard && <input type="hidden" name="efhubCard" value={JSON.stringify(pickedCard)} />}
+
+      {mode === "create" && (
+        <EfhubCardPicker
+          selected={
+            pickedCard
+              ? { name: pickedCard.name, cardImageUrl: pickedCard.cardImageUrl, overall: pickedCard.overall, position: pickedCard.position }
+              : null
+          }
+          onPick={(card) => {
+            setPickedCard(card);
+            const { firstName: fn, lastName: ln } = splitEfhubName(card.name);
+            setFirstName(fn);
+            setLastName(ln);
+            setPosition(mapEfhubPosition(card.position));
+          }}
+          onClear={() => setPickedCard(null)}
+        />
+      )}
+
       <div>
         <label className="field-label">Nombre</label>
-        <input name="firstName" required defaultValue={player?.firstName} className="input" />
+        <input name="firstName" required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input" />
       </div>
       <div>
         <label className="field-label">Apellido (opcional)</label>
-        <input name="lastName" defaultValue={player?.lastName ?? ""} className="input" />
+        <input name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="input" />
       </div>
       <div>
         <label className="field-label">Número de camiseta</label>
@@ -128,7 +166,7 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
       </div>
       <div>
         <label className="field-label">Posición</label>
-        <select name="position" required defaultValue={player?.position ?? "DELANTERO"} className="input">
+        <select name="position" required value={position} onChange={(e) => setPosition(e.target.value as PlayerPosition)} className="input">
           {POSITIONS.map((p) => (
             <option key={p} value={p}>
               {positionLabel(p)}
@@ -147,6 +185,21 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
           <option value="INACTIVO">Inactivo</option>
         </select>
       </div>
+
+      {mode === "edit" && player && (
+        <EfhubCardPicker
+          selected={editCard}
+          onPick={async (card) => {
+            const result = await setMyPlayerEfhubCardAction(player.id, card);
+            if (result.error) return result.error;
+            setEditCard({ name: card.name, cardImageUrl: card.cardImageUrl, overall: card.overall, position: card.position });
+          }}
+          onClear={async () => {
+            await clearMyPlayerEfhubCardAction(player.id);
+            setEditCard(null);
+          }}
+        />
+      )}
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}
 
@@ -212,7 +265,12 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
                   {players.map((p) => (
                     <tr key={p.id}>
                       <td className="font-bold text-[var(--color-gray-500)]">{p.jerseyNumber}</td>
-                      <td className="font-semibold text-[var(--color-navy-900)]">{playerFullName(p)}</td>
+                      <td className="font-semibold text-[var(--color-navy-900)]">
+                        <span className="flex items-center gap-2">
+                          <PlayerCardThumb name={playerFullName(p)} cardImageUrl={p.efhubCard?.cardImageUrl} size={136} />
+                          {playerFullName(p)}
+                        </span>
+                      </td>
                       <td>{positionLabel(p.position)}</td>
                       <td>
                         <ActiveStatusBadge status={p.status} />
