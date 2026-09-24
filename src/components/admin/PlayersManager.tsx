@@ -235,7 +235,7 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                       <td className="font-bold text-[var(--color-gray-500)]">{p.jerseyNumber}</td>
                       <td className="font-semibold text-[var(--color-navy-900)]">
                         <span className="flex items-center gap-2">
-                          <PlayerCardThumb name={playerFullName(p)} cardImageUrl={p.efhubCard?.cardImageUrl} size={36} />
+                          <PlayerCardThumb name={playerFullName(p)} cardImageUrl={p.efhubCard?.cardImageUrl} size={52} />
                           {playerFullName(p)}
                         </span>
                       </td>
