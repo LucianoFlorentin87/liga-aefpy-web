@@ -88,7 +88,7 @@ export default async function EquiposPage() {
                             key={p.id}
                             name={playerFullName(p)}
                             cardImageUrl={p.efhubCard?.cardImageUrl}
-                            size={40}
+                            size={56}
                           />
                         ))}
                       </div>

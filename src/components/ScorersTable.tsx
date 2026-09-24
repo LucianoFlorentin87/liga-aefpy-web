@@ -28,7 +28,7 @@ export function ScorersTable({ rows, limit }: { rows: ScorerRow[]; limit?: numbe
               <td className="font-semibold text-[var(--color-gray-500)]">{index + 1}</td>
               <td className="font-semibold text-[var(--color-navy-900)]">
                 <span className="flex items-center gap-2">
-                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={24} />
+                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={36} />
                   {row.playerName}
                 </span>
               </td>

@@ -1,30 +1,35 @@
 import Image from "next/image";
 
+// Proporción ancho/alto aproximada de una carta real de eFootball (más
+// alta que ancha, como en eFHUB). Con object-contain nunca se recorta la
+// carta aunque el archivo original no calce exacto con esta proporción.
+const CARD_ASPECT_RATIO = 3 / 4;
+
 export function PlayerCardThumb({
   name,
   cardImageUrl,
-  size = 28,
+  size = 40,
 }: {
   name: string;
   cardImageUrl?: string | null;
   size?: number;
 }) {
+  const width = size;
+  const height = Math.round(size / CARD_ASPECT_RATIO);
+
   if (cardImageUrl) {
     return (
-      // unoptimized: la imagen la sirve directo el CDN de eFHUB (dominio
-      // externo, fuera de nuestro control) — igual que TeamCrest con los
-      // logos subidos por delegados, no hay nada que ganar optimizándola
-      // a este tamaño y evita que el decoder de Next rompa la página si
-      // el formato es raro.
-      <Image
-        src={cardImageUrl}
-        alt={name}
-        width={size}
-        height={size}
-        unoptimized
-        className="shrink-0 rounded-md object-cover"
-        style={{ width: size, height: size }}
-      />
+      <span
+        className="relative shrink-0 overflow-hidden rounded-md bg-[var(--color-gray-100)]"
+        style={{ width, height }}
+      >
+        {/* unoptimized: la imagen la sirve directo el CDN de eFHUB (dominio
+            externo, fuera de nuestro control) — igual que TeamCrest con los
+            logos subidos por delegados, no hay nada que ganar optimizándola
+            y evita que el decoder de Next rompa la página si el formato es
+            raro. */}
+        <Image src={cardImageUrl} alt={name} fill unoptimized sizes={`${width}px`} className="object-contain" />
+      </span>
     );
   }
 
@@ -39,7 +44,7 @@ export function PlayerCardThumb({
   return (
     <span
       className="flex shrink-0 items-center justify-center rounded-md bg-[var(--color-gray-100)] text-[var(--color-gray-500)]"
-      style={{ width: size, height: size, fontSize: size * 0.36 }}
+      style={{ width, height, fontSize: width * 0.36 }}
     >
       <span className="font-extrabold leading-none">{initials || "?"}</span>
     </span>

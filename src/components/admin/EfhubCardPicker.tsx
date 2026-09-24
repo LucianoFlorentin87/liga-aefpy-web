@@ -91,7 +91,7 @@ export function EfhubCardPicker({
 
       {selected && (
         <div className="mb-2 flex items-center gap-2 rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-gray-50)] px-3 py-2">
-          <PlayerCardThumb name={selected.name} cardImageUrl={selected.cardImageUrl} size={36} />
+          <PlayerCardThumb name={selected.name} cardImageUrl={selected.cardImageUrl} size={48} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-[var(--color-navy-900)]">{selected.name}</p>
             <p className="text-xs text-[var(--color-gray-500)]">
@@ -129,7 +129,7 @@ export function EfhubCardPicker({
       )}
 
       {results.length > 0 && (
-        <ul className="mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-lg border border-[var(--color-gray-200)] p-1">
+        <ul className="mt-2 flex max-h-80 flex-col gap-1 overflow-y-auto rounded-lg border border-[var(--color-gray-200)] p-1">
           {results.map((card) => (
             <li key={card.efhubId}>
               <button
@@ -138,7 +138,7 @@ export function EfhubCardPicker({
                 disabled={busy}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--color-gray-50)]"
               >
-                <PlayerCardThumb name={card.name} cardImageUrl={card.cardImageUrl} size={32} />
+                <PlayerCardThumb name={card.name} cardImageUrl={card.cardImageUrl} size={44} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-[var(--color-navy-900)]">{card.name}</span>
                   <span className="block text-xs text-[var(--color-gray-500)]">
