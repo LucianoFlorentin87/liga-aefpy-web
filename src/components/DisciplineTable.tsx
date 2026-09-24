@@ -27,7 +27,7 @@ export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?
             <tr key={row.playerId}>
               <td className="font-semibold text-[var(--color-navy-900)]">
                 <span className="flex items-center gap-2">
-                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={120} />
+                  <PlayerCardThumb name={row.playerName} cardImageUrl={row.cardImageUrl} size={136} />
                   {row.playerName}
                 </span>
               </td>
