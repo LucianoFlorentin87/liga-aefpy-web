@@ -97,7 +97,7 @@ export function SettingsForm({
       </div>
 
       {state.error && <p className="field-error">{state.error}</p>}
-      {state.success && <p className="text-sm font-medium text-[#197a44]">{state.success}</p>}
+      {state.success && <p className="text-sm font-medium text-[var(--color-green-text)]">{state.success}</p>}
 
       <button type="submit" disabled={pending} className="btn btn-primary w-fit">
         {pending ? "Guardando…" : "Guardar configuración"}

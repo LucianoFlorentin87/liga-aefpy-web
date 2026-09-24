@@ -49,7 +49,7 @@ export function UpcomingMatchesSlider({ matches }: { matches: UpcomingMatch[] })
         {matches.map((m) => (
           <div
             key={m.id}
-            className="flex w-60 shrink-0 snap-start flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-white to-[var(--color-gray-100)] p-4 shadow-sm"
+            className="flex w-60 shrink-0 snap-start flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-4 shadow-sm"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-gray-500)]">

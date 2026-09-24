@@ -19,7 +19,7 @@ export default async function ReglamentoPage() {
           <div className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-[var(--color-gray-200)] px-4 py-2.5">
               <span className="text-xs font-semibold text-[var(--color-gray-500)]">Documento oficial (PDF)</span>
-              <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-red-600)] hover:underline">
+              <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-red-accent)] hover:underline">
                 Abrir en una pestaña nueva ↗
               </a>
             </div>

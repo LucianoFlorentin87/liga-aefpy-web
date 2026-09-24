@@ -34,7 +34,7 @@ export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?
               <td>{row.teamName}</td>
               <td className="text-center">{row.matchesPlayed}</td>
               <td className="text-center font-semibold">{row.yellowCards}</td>
-              <td className="text-center font-semibold text-[var(--color-red-600)]">{row.redCards}</td>
+              <td className="text-center font-semibold text-[var(--color-red-accent)]">{row.redCards}</td>
               <td className="text-center">{row.sanctionsCount}</td>
             </tr>
           ))}

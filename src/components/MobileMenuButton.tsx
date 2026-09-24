@@ -31,7 +31,7 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-full z-40 border-t border-[var(--color-gray-200)] bg-white shadow-lg">
+        <div className="absolute inset-x-0 top-full z-40 border-t border-[var(--color-gray-200)] bg-[var(--color-surface)] shadow-lg">
           <nav className="container-page flex flex-col py-2">
             {PUBLIC_NAV_ITEMS.map((item) => (
               <Link
@@ -73,7 +73,7 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
                   <Link
                     href="/cuenta/registro"
                     onClick={() => setOpen(false)}
-                    className="rounded-lg px-2 py-3 text-[0.95rem] font-bold text-[var(--color-red-600)] hover:bg-[var(--color-gray-50)]"
+                    className="rounded-lg px-2 py-3 text-[0.95rem] font-bold text-[var(--color-red-accent)] hover:bg-[var(--color-gray-50)]"
                   >
                     Registrarme
                   </Link>

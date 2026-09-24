@@ -12,7 +12,7 @@ export default async function FanRegisterPage() {
 
   return (
     <div>
-      <div className="border-b border-[var(--color-gray-200)] bg-white">
+      <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-surface)]">
         <div className="container-page py-6">
           <h1 className="text-xl font-extrabold text-[var(--color-navy-900)] sm:text-2xl">Crear cuenta</h1>
           <p className="mt-1 text-sm text-[var(--color-gray-500)]">
@@ -25,7 +25,7 @@ export default async function FanRegisterPage() {
           <FanRegisterForm />
           <p className="mt-4 text-center text-xs text-[var(--color-gray-500)]">
             ¿Ya tenés cuenta?{" "}
-            <Link href="/cuenta/login" className="font-semibold text-[var(--color-red-600)] hover:underline">
+            <Link href="/cuenta/login" className="font-semibold text-[var(--color-red-accent)] hover:underline">
               Ingresá acá
             </Link>
           </p>

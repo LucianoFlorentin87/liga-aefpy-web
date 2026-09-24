@@ -135,7 +135,7 @@ export function PointAdjustmentsManager({
                 {adjustments.map((a) => (
                   <tr key={a.id}>
                     <td className="font-semibold text-[var(--color-navy-900)]">{a.team.name}</td>
-                    <td className="text-center font-bold" style={{ color: a.points < 0 ? "var(--color-red-600)" : "#197a44" }}>
+                    <td className="text-center font-bold" style={{ color: a.points < 0 ? "var(--color-red-accent)" : "var(--color-green-text)" }}>
                       {a.points > 0 ? `+${a.points}` : a.points}
                     </td>
                     <td>{a.reason}</td>

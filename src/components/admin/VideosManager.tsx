@@ -94,7 +94,7 @@ export function VideosManager({ videos }: { videos: Video[] }) {
                   <p className="text-xs text-[var(--color-gray-500)]">{VIDEO_PLATFORM_LABEL[detectVideoPlatform(v.url)]}</p>
                 </div>
                 {v.featured && (
-                  <span className="shrink-0 rounded-full bg-[var(--color-red-100)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-red-700)]">
+                  <span className="shrink-0 rounded-full bg-[var(--color-red-100)] px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-red-accent)]">
                     Destacado
                   </span>
                 )}

@@ -26,7 +26,7 @@ export function RulesEditor({
 
         {rulesPdfUrl ? (
           <div className="mb-3 flex items-center gap-3 rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
-            <a href={rulesPdfUrl} target="_blank" rel="noreferrer" className="font-semibold text-[var(--color-red-600)] hover:underline">
+            <a href={rulesPdfUrl} target="_blank" rel="noreferrer" className="font-semibold text-[var(--color-red-accent)] hover:underline">
               Ver PDF actual ↗
             </a>
             <form action={removeRulesPdfAction}>
@@ -51,7 +51,7 @@ export function RulesEditor({
           </div>
 
           {state.error && <p className="field-error">{state.error}</p>}
-          {state.success && <p className="text-sm font-medium text-[#197a44]">{state.success}</p>}
+          {state.success && <p className="text-sm font-medium text-[var(--color-green-text)]">{state.success}</p>}
 
           <button type="submit" disabled={pending} className="btn btn-primary w-fit">
             {pending ? "Guardando…" : "Guardar reglamento"}

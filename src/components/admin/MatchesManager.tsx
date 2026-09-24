@@ -231,7 +231,7 @@ export function MatchesManager({ matches, teams }: { matches: MatchRow[]; teams:
       </div>
 
       {teams.length < 2 && (
-        <p className="rounded-lg bg-[#fdf1d6] px-3 py-2 text-sm font-medium text-[#8a5a05]">
+        <p className="rounded-lg bg-[var(--color-amber-bg)] px-3 py-2 text-sm font-medium text-[var(--color-amber-text)]">
           Necesitás al menos 2 equipos activos para programar un partido.
         </p>
       )}

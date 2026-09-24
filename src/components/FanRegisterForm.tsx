@@ -45,7 +45,7 @@ export function FanRegisterForm() {
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-[var(--color-red-100)] px-3 py-2 text-sm font-medium text-[var(--color-red-700)]">
+        <p className="rounded-lg bg-[var(--color-red-100)] px-3 py-2 text-sm font-medium text-[var(--color-red-accent)]">
           {state.error}
         </p>
       )}

@@ -127,7 +127,7 @@ function CardForm({ matchId, teams }: { matchId: string; teams: TeamInfo[] }) {
       </button>
       {state.error && <p className="field-error col-span-2 sm:col-span-6">{state.error}</p>}
       {state.success && (
-        <p className="col-span-2 text-sm font-medium text-[#197a44] sm:col-span-6">{state.success}</p>
+        <p className="col-span-2 text-sm font-medium text-[var(--color-green-text)] sm:col-span-6">{state.success}</p>
       )}
     </form>
   );
@@ -217,7 +217,7 @@ export function MatchDetailClient({
                             <form action={removeParticipationAction}>
                               <input type="hidden" name="matchId" value={matchId} />
                               <input type="hidden" name="playerId" value={p.id} />
-                              <button type="submit" className="btn btn-ghost !px-2 !py-1 text-xs text-[var(--color-red-600)]">
+                              <button type="submit" className="btn btn-ghost !px-2 !py-1 text-xs text-[var(--color-red-accent)]">
                                 Quitar
                               </button>
                             </form>

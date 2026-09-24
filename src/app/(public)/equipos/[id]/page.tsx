@@ -30,7 +30,7 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div>
-      <div className="border-b border-[var(--color-gray-200)] bg-white">
+      <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-surface)]">
         <div className="container-page py-8">
           <Link href="/equipos" className="text-xs font-semibold text-[var(--color-gray-500)] hover:text-[var(--color-navy-900)]">
             ← Volver a equipos
@@ -82,7 +82,7 @@ export default async function EquipoDetailPage({ params }: { params: Promise<{ i
                         </span>
                       </td>
                       <td>{positionLabel(player.position)}</td>
-                      <td className="text-center font-bold text-[var(--color-red-600)]">{player.goals.length}</td>
+                      <td className="text-center font-bold text-[var(--color-red-accent)]">{player.goals.length}</td>
                       <td className="text-center">{player.cards.filter((c) => c.type === "AMARILLA").length}</td>
                       <td className="text-center">{player.cards.filter((c) => c.type === "ROJA").length}</td>
                     </tr>

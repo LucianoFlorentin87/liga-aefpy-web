@@ -32,7 +32,7 @@ export function PositionTrendIcon({ trend }: { trend: PositionTrend }) {
       aria-label={isUp ? "Sube en la tabla" : "Baja en la tabla"}
       title={isUp ? "Sube en la tabla" : "Baja en la tabla"}
       className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
-      style={{ background: isUp ? "#e3f5ea" : "var(--color-red-100)", color: isUp ? "#197a44" : "var(--color-red-700)" }}
+      style={{ background: isUp ? "var(--color-green-bg)" : "var(--color-red-100)", color: isUp ? "var(--color-green-text)" : "var(--color-red-accent)" }}
     >
       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
         <path d={isUp ? "M12 5L19.5 19H4.5Z" : "M12 19L4.5 5H19.5Z"} />

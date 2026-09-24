@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
 import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
 import { MobileMenuButton } from "@/components/MobileMenuButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getAccountVoter } from "@/lib/voter";
 import { logoutFanAction } from "@/app/(public)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
@@ -70,6 +71,7 @@ export async function PublicHeader() {
           >
             Administración
           </Link>
+          <ThemeToggle className="text-white/75 hover:bg-white/10 hover:text-white" />
           <MobileMenuButton voter={voter} />
         </div>
       </div>

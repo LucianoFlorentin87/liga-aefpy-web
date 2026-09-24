@@ -75,7 +75,7 @@ export function PredictionWidget({ matchId, tally }: { matchId: string; tally: P
           );
         })}
       </div>
-      {error && <p className="text-[0.7rem] font-medium text-[var(--color-red-600)]">{error}</p>}
+      {error && <p className="text-[0.7rem] font-medium text-[var(--color-red-accent)]">{error}</p>}
       {revealPercentages ? (
         <p className="text-[0.68rem] text-[var(--color-gray-400)]">
           {total} {total === 1 ? "voto" : "votos"} · la predicción no afecta el resultado oficial

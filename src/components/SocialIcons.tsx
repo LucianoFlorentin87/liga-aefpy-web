@@ -35,7 +35,7 @@ export function SocialIcons({ team, size = 26 }: { team: SocialLinksData; size?:
           title={label}
           aria-label={label}
           style={{ width: size, height: size }}
-          className="flex shrink-0 items-center justify-center rounded-full border border-[var(--color-gray-200)] text-[var(--color-gray-600)] hover:border-[var(--color-red-300)] hover:text-[var(--color-red-600)]"
+          className="flex shrink-0 items-center justify-center rounded-full border border-[var(--color-gray-200)] text-[var(--color-gray-600)] hover:border-[var(--color-red-300)] hover:text-[var(--color-red-accent)]"
         >
           <Icon size={size * 0.55} />
         </a>

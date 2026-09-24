@@ -12,7 +12,7 @@ export async function TeamLogosBar() {
   if (teams.length === 0) return null;
 
   return (
-    <div className="border-b border-[var(--color-gray-200)] bg-white">
+    <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-surface)]">
       <div className="mx-auto flex max-w-[82rem] items-center justify-evenly gap-5 overflow-x-auto px-4 py-2.5">
         {teams.map((team) => (
           <Link key={team.id} href={`/equipos/${team.id}`} title={team.name} className="shrink-0">

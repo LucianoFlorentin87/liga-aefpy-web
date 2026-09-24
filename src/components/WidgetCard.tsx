@@ -25,7 +25,7 @@ export function WidgetCard({
         <Link
           href={href}
           aria-label={ariaLabel}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-navy-900)] shadow hover:bg-[var(--color-gray-100)]"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-navy-950)] shadow hover:bg-white/80"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />

@@ -98,7 +98,7 @@ function TeamProfileForm({ team }: { team: Team }) {
       </div>
 
       {state.error && <p className="field-error sm:col-span-2">{state.error}</p>}
-      {state.success && <p className="text-sm font-medium text-emerald-600 sm:col-span-2">{state.success}</p>}
+      {state.success && <p className="text-sm font-medium text-[var(--color-green-text)] sm:col-span-2">{state.success}</p>}
 
       <div className="sm:col-span-2">
         <button type="submit" disabled={pending} className="btn btn-primary">

@@ -39,7 +39,7 @@ export function TeamCrest({
         width={size}
         height={size}
         unoptimized
-        className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-white" : ""} ${shadow ? "drop-shadow-[0_1px_3px_rgba(15,23,42,0.35)]" : ""}`}
+        className={`shrink-0 object-contain ${variant === "circle" ? "rounded-full border border-[var(--color-gray-200)] bg-[var(--color-surface)]" : ""} ${shadow ? "drop-shadow-[0_1px_3px_rgba(15,23,42,0.35)]" : ""}`}
         style={{ width: size, height: size }}
       />
     );

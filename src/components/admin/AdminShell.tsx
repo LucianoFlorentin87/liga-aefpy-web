@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { AdminNavGroup } from "@/lib/admin-nav";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/app/admin/actions";
 
 function SidebarNav({ groups, onNavigate }: { groups: AdminNavGroup[]; onNavigate?: () => void }) {
@@ -29,7 +30,7 @@ function SidebarNav({ groups, onNavigate }: { groups: AdminNavGroup[]; onNavigat
                   onClick={onNavigate}
                   className={`rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-[var(--color-navy-900)] text-white"
+                      ? "bg-[var(--color-navy-950)] text-white"
                       : "text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]"
                   }`}
                 >
@@ -63,7 +64,7 @@ export function AdminShell({
 
   return (
     <div className="min-h-screen bg-[var(--color-gray-50)]">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--color-gray-200)] bg-white px-4">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--color-gray-200)] bg-[var(--color-surface)] px-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -86,6 +87,7 @@ export function AdminShell({
             <p className="text-sm font-semibold text-[var(--color-navy-900)]">{userLabel}</p>
             <p className="text-xs text-[var(--color-gray-500)]">{roleLabel}</p>
           </div>
+          <ThemeToggle className="text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]" />
           <Link href="/admin/cuenta" className="btn btn-ghost !px-2.5 !py-1.5 text-xs">
             Mi cuenta
           </Link>
@@ -98,14 +100,14 @@ export function AdminShell({
       </header>
 
       <div className="mx-auto flex max-w-[100rem]">
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 overflow-y-auto border-r border-[var(--color-gray-200)] bg-white lg:block">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 overflow-y-auto border-r border-[var(--color-gray-200)] bg-[var(--color-surface)] lg:block">
           <SidebarNav groups={navGroups} />
         </aside>
 
         {mobileOpen && (
           <div className="fixed inset-0 top-16 z-20 lg:hidden">
             <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
-            <aside className="relative h-full w-64 overflow-y-auto bg-white shadow-xl">
+            <aside className="relative h-full w-64 overflow-y-auto bg-[var(--color-surface)] shadow-xl">
               <SidebarNav groups={navGroups} onNavigate={() => setMobileOpen(false)} />
             </aside>
           </div>

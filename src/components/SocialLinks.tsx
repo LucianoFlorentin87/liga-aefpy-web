@@ -29,7 +29,7 @@ export function SocialLinks({ team }: { team: SocialLinksData }) {
           href={team[p.key]!}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-full border border-[var(--color-gray-200)] px-3 py-1 text-xs font-semibold text-[var(--color-gray-700)] hover:border-[var(--color-red-300)] hover:text-[var(--color-red-600)]"
+          className="inline-flex items-center gap-1 rounded-full border border-[var(--color-gray-200)] px-3 py-1 text-xs font-semibold text-[var(--color-gray-700)] hover:border-[var(--color-red-300)] hover:text-[var(--color-red-accent)]"
         >
           {p.label}
           <span aria-hidden="true">↗</span>

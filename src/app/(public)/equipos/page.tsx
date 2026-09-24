@@ -60,7 +60,7 @@ export default async function EquiposPage() {
               return (
                 <div
                   key={team.id}
-                  className="flex flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-white to-[var(--color-gray-100)] p-5 shadow-sm transition-colors hover:border-[var(--color-navy-700)]"
+                  className="flex flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-5 shadow-sm transition-colors hover:border-[var(--color-navy-700)]"
                 >
                   <Link href={`/equipos/${team.id}`} className="flex flex-col gap-3">
                     <div className="flex items-center gap-3">
@@ -94,15 +94,15 @@ export default async function EquiposPage() {
                       </div>
                     )}
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-surface)] py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">PJ</p>
                         <p className="font-bold text-[var(--color-navy-900)]">{row?.pj ?? 0}</p>
                       </div>
-                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-surface)] py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">Pts</p>
                         <p className="font-bold text-[var(--color-navy-900)]">{row?.pts ?? 0}</p>
                       </div>
-                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-white py-2">
+                      <div className="rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-surface)] py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">GF</p>
                         <p className="font-bold text-[var(--color-navy-900)]">{row?.gf ?? 0}</p>
                       </div>

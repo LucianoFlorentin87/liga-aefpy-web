@@ -82,7 +82,7 @@ export function MatchScheduleForm({
       </div>
 
       {state.error && <p className="field-error sm:col-span-2 lg:col-span-3">{state.error}</p>}
-      {state.success && <p className="text-sm font-medium text-[#197a44] sm:col-span-2 lg:col-span-3">{state.success}</p>}
+      {state.success && <p className="text-sm font-medium text-[var(--color-green-text)] sm:col-span-2 lg:col-span-3">{state.success}</p>}
 
       <button type="submit" disabled={pending} className="btn btn-navy sm:col-span-2 lg:col-span-3">
         {pending ? "Guardando…" : "Guardar datos del partido"}

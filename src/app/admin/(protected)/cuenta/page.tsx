@@ -35,7 +35,7 @@ export default async function CuentaPage() {
       </div>
 
       {user.mustChangePassword && (
-        <p className="max-w-sm rounded-lg bg-[#fdf1d6] px-3 py-2 text-sm font-medium text-[#8a5a05]">
+        <p className="max-w-sm rounded-lg bg-[var(--color-amber-bg)] px-3 py-2 text-sm font-medium text-[var(--color-amber-text)]">
           Tenés una contraseña temporal. Te recomendamos cambiarla ahora.
         </p>
       )}

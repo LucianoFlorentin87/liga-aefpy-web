@@ -32,7 +32,7 @@ export function ChangePasswordForm() {
 
       {state.error && <p className="field-error">{state.error}</p>}
       {state.success && (
-        <p className="rounded-lg bg-[#e3f5ea] px-3 py-2 text-sm font-medium text-[#197a44]">
+        <p className="rounded-lg bg-[var(--color-green-bg)] px-3 py-2 text-sm font-medium text-[var(--color-green-text)]">
           Contraseña actualizada correctamente.
         </p>
       )}

@@ -33,7 +33,7 @@ export function ScorersTable({ rows, limit }: { rows: ScorerRow[]; limit?: numbe
                 </span>
               </td>
               <td>{row.teamName}</td>
-              <td className="text-center font-bold text-[var(--color-red-600)]">{row.goals}</td>
+              <td className="text-center font-bold text-[var(--color-red-accent)]">{row.goals}</td>
               <td className="text-center">{row.matchesPlayed}</td>
               <td className="text-center">{row.average.toFixed(2)}</td>
             </tr>
