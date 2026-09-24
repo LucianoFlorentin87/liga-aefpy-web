@@ -43,7 +43,10 @@ export function EfhubCardPicker({ playerId, initialCard }: { playerId: string; i
     try {
       const res = await fetch(`/admin/jugadores/efhub-search?q=${encodeURIComponent(query.trim())}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo consultar eFHUB.");
+      if (!res.ok) {
+        const base = data.error || "No se pudo consultar eFHUB.";
+        throw new Error(data.details ? `${base} (${data.details})` : base);
+      }
       setResults(data.cards ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo consultar eFHUB.");
