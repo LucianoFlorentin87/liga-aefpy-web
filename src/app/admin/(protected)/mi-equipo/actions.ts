@@ -6,7 +6,7 @@ import { requireDelegate } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { myTeamSchema, playerSchema } from "@/lib/validation";
 import { saveTeamLogo } from "@/lib/upload";
-import { playerFullName } from "@/lib/format";
+import { playerFullName, MAX_FEATURED_PLAYERS_PER_TEAM } from "@/lib/format";
 import { upsertEfhubCard, type EfhubCardInput } from "@/app/admin/(protected)/jugadores/actions";
 
 export type FormState = { error?: string; success?: string };
@@ -184,6 +184,35 @@ export async function toggleMyPlayerStatusAction(formData: FormData): Promise<vo
   await prisma.player.update({ where: { id }, data: { status: newStatus } });
   await logActivity(
     `${actor.firstName} ${actor.lastName} ${newStatus === "ACTIVO" ? "activó" : "desactivó"} el jugador "${playerFullName(target)}".`,
+    actor.id,
+  );
+  revalidatePath("/admin/mi-equipo");
+  revalidatePublic();
+}
+
+/**
+ * Prende/apaga a un jugador propio como "destacado" para la vista previa
+ * de cartas del equipo en /equipos (hasta MAX_FEATURED_PLAYERS_PER_TEAM).
+ * Si ya se llegó al tope, no hace nada (la UI ya deshabilita el botón en
+ * ese caso). Igual que el resto de las acciones acá, sólo puede tocar
+ * jugadores de su propio equipo.
+ */
+export async function toggleMyPlayerFeaturedAction(formData: FormData): Promise<void> {
+  const { user: actor, teamId } = await requireDelegate();
+  const id = String(formData.get("id"));
+
+  const target = await prisma.player.findUnique({ where: { id } });
+  if (!target || target.teamId !== teamId) return;
+
+  if (!target.featuredOnTeamCard) {
+    const featuredCount = await prisma.player.count({ where: { teamId, featuredOnTeamCard: true } });
+    if (featuredCount >= MAX_FEATURED_PLAYERS_PER_TEAM) return;
+  }
+
+  const featuredOnTeamCard = !target.featuredOnTeamCard;
+  await prisma.player.update({ where: { id }, data: { featuredOnTeamCard } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} ${featuredOnTeamCard ? "destacó" : "quitó de destacados"} a "${playerFullName(target)}" en la vista previa de su equipo.`,
     actor.id,
   );
   revalidatePath("/admin/mi-equipo");

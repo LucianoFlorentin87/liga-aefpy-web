@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { playerSchema } from "@/lib/validation";
-import { playerFullName } from "@/lib/format";
+import { playerFullName, MAX_FEATURED_PLAYERS_PER_TEAM } from "@/lib/format";
 
 export type FormState = { error?: string; success?: string };
 
@@ -163,6 +163,36 @@ export async function togglePlayerStatusAction(formData: FormData): Promise<void
     actor.id,
   );
   revalidatePath("/admin/jugadores");
+}
+
+/**
+ * Prende/apaga a un jugador como "destacado" para la vista previa de
+ * cartas de su equipo en /equipos (hasta MAX_FEATURED_PLAYERS_PER_TEAM).
+ * Si ya se llegó al tope, no hace nada (la UI ya deshabilita el botón en
+ * ese caso — esto es el resguardo del lado del servidor).
+ */
+export async function toggleFeaturedPlayerAction(formData: FormData): Promise<void> {
+  const { user: actor } = await requirePermission("jugadores");
+  const id = String(formData.get("id"));
+
+  const target = await prisma.player.findUnique({ where: { id } });
+  if (!target) return;
+
+  if (!target.featuredOnTeamCard) {
+    const featuredCount = await prisma.player.count({
+      where: { teamId: target.teamId, featuredOnTeamCard: true },
+    });
+    if (featuredCount >= MAX_FEATURED_PLAYERS_PER_TEAM) return;
+  }
+
+  const featuredOnTeamCard = !target.featuredOnTeamCard;
+  await prisma.player.update({ where: { id }, data: { featuredOnTeamCard } });
+  await logActivity(
+    `${actor.firstName} ${actor.lastName} ${featuredOnTeamCard ? "destacó" : "quitó de destacados"} a "${playerFullName(target)}" en la vista previa de su equipo.`,
+    actor.id,
+  );
+  revalidatePath("/admin/jugadores");
+  revalidatePath("/equipos");
 }
 
 export async function deletePlayerAction(formData: FormData): Promise<void> {

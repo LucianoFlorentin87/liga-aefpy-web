@@ -180,6 +180,14 @@ model Player {
   efhubCard   EfhubCard? @relation(fields: [efhubCardId], references: [id], onDelete: SetNull)
   efhubCardId String?
 
+  // Elegido a mano (admin o delegado) para la vista previa de hasta 4
+  // cartas en la tarjeta del equipo en /equipos — ver PLAYER_PREVIEW_COUNT
+  // en esa página. Si ningún jugador del equipo está marcado, esa página
+  // arma la vista previa sola (prioriza a los que ya tienen carta de
+  // eFHUB elegida) como respaldo. El máximo de 4 por equipo se controla en
+  // el server action, no acá.
+  featuredOnTeamCard Boolean @default(false)
+
   goals          MatchGoal[]
   cards          MatchCard[]
   sanctions      Sanction[]

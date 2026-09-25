@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import type { Team, PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName } from "@/lib/format";
+import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName, MAX_FEATURED_PLAYERS_PER_TEAM } from "@/lib/format";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
 import { Modal } from "@/components/admin/Modal";
@@ -14,6 +14,7 @@ import {
   createMyPlayerAction,
   updateMyPlayerAction,
   toggleMyPlayerStatusAction,
+  toggleMyPlayerFeaturedAction,
   setMyPlayerEfhubCardAction,
   clearMyPlayerEfhubCardAction,
   type FormState,
@@ -28,6 +29,7 @@ type PlayerRow = {
   position: PlayerPosition;
   status: PlayerStatus;
   birthDate: Date | null;
+  featuredOnTeamCard: boolean;
   efhubCard: { name: string; cardImageUrl: string | null; overall: number | null; position: string | null } | null;
   _count: { goals: number; cards: number; sanctions: number; participations: number };
 };
@@ -217,6 +219,7 @@ function PlayerForm({ mode, player, onDone }: { mode: "create" | "edit"; player?
 
 export function MyTeamManager({ team, players }: { team: Team; players: PlayerRow[] }) {
   const [panel, setPanel] = useState<{ mode: "create" | "edit"; player?: PlayerRow } | null>(null);
+  const featuredCount = useMemo(() => players.filter((p) => p.featuredOnTeamCard).length, [players]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -258,6 +261,7 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
                     <th>Jugador</th>
                     <th>Posición</th>
                     <th>Estado</th>
+                    <th className="text-center">Destacado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -274,6 +278,31 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
                       <td>{positionLabel(p.position)}</td>
                       <td>
                         <ActiveStatusBadge status={p.status} />
+                      </td>
+                      <td className="text-center">
+                        {(() => {
+                          const atLimit = featuredCount >= MAX_FEATURED_PLAYERS_PER_TEAM;
+                          const disabled = !p.featuredOnTeamCard && atLimit;
+                          return (
+                            <form action={toggleMyPlayerFeaturedAction}>
+                              <input type="hidden" name="id" value={p.id} />
+                              <button
+                                type="submit"
+                                disabled={disabled}
+                                title={
+                                  p.featuredOnTeamCard
+                                    ? "Quitar de destacados en Equipos"
+                                    : disabled
+                                      ? `Ya hay ${MAX_FEATURED_PLAYERS_PER_TEAM} jugadores destacados`
+                                      : "Destacar en la vista previa de Equipos"
+                                }
+                                className={`text-lg leading-none ${p.featuredOnTeamCard ? "text-[var(--color-amber-text)]" : "text-[var(--color-gray-300)] hover:text-[var(--color-gray-500)]"} ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                              >
+                                {p.featuredOnTeamCard ? "★" : "☆"}
+                              </button>
+                            </form>
+                          );
+                        })()}
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-1.5">

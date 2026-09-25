@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { PlayerPosition, PlayerStatus } from "@prisma/client";
-import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName } from "@/lib/format";
+import { positionLabel, playerFullName, mapEfhubPosition, splitEfhubName, MAX_FEATURED_PLAYERS_PER_TEAM } from "@/lib/format";
 import { Modal } from "@/components/admin/Modal";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
@@ -12,6 +12,7 @@ import {
   createPlayerAction,
   updatePlayerAction,
   togglePlayerStatusAction,
+  toggleFeaturedPlayerAction,
   deletePlayerAction,
   setPlayerEfhubCardAction,
   clearPlayerEfhubCardAction,
@@ -29,6 +30,7 @@ type PlayerRow = {
   birthDate: Date | null;
   teamId: string;
   team: { id: string; name: string };
+  featuredOnTeamCard: boolean;
   efhubCard: { name: string; cardImageUrl: string | null; overall: number | null; position: string | null } | null;
   _count: { goals: number; cards: number; sanctions: number; participations: number };
 };
@@ -181,6 +183,17 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
 
   const filtered = teamFilter ? players.filter((p) => p.teamId === teamFilter) : players;
 
+  // Sobre TODOS los jugadores (no filtered): el tope es por equipo, así que
+  // tiene que valer igual aunque el filtro de arriba esté mostrando sólo
+  // otro equipo en este momento.
+  const featuredCountByTeam = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of players) {
+      if (p.featuredOnTeamCard) counts.set(p.teamId, (counts.get(p.teamId) ?? 0) + 1);
+    }
+    return counts;
+  }, [players]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -237,6 +250,7 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                   <th>Equipo</th>
                   <th>Posición</th>
                   <th>Estado</th>
+                  <th className="text-center">Destacado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -257,6 +271,31 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
                       <td>{positionLabel(p.position)}</td>
                       <td>
                         <ActiveStatusBadge status={p.status} />
+                      </td>
+                      <td className="text-center">
+                        {(() => {
+                          const atLimit = (featuredCountByTeam.get(p.teamId) ?? 0) >= MAX_FEATURED_PLAYERS_PER_TEAM;
+                          const disabled = !p.featuredOnTeamCard && atLimit;
+                          return (
+                            <form action={toggleFeaturedPlayerAction}>
+                              <input type="hidden" name="id" value={p.id} />
+                              <button
+                                type="submit"
+                                disabled={disabled}
+                                title={
+                                  p.featuredOnTeamCard
+                                    ? "Quitar de destacados en Equipos"
+                                    : disabled
+                                      ? `Ya hay ${MAX_FEATURED_PLAYERS_PER_TEAM} jugadores destacados en este equipo`
+                                      : "Destacar en la vista previa de Equipos"
+                                }
+                                className={`text-lg leading-none ${p.featuredOnTeamCard ? "text-[var(--color-amber-text)]" : "text-[var(--color-gray-300)] hover:text-[var(--color-gray-500)]"} ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                              >
+                                {p.featuredOnTeamCard ? "★" : "☆"}
+                              </button>
+                            </form>
+                          );
+                        })()}
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-1.5">

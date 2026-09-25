@@ -1,5 +1,11 @@
 const FORFEIT_SCORE = 3;
 
+/** Tope de jugadores "destacados" por equipo para la vista previa de cartas
+ *  en /equipos (Player.featuredOnTeamCard) — compartido entre el server
+ *  action que lo hace cumplir y la UI que deshabilita el botón al llegar
+ *  al máximo. */
+export const MAX_FEATURED_PLAYERS_PER_TEAM = 4;
+
 /**
  * Goles de un partido, contemplando el caso de abandono (walkover): si el
  * partido se resolvió por abandono de un equipo, el resultado es fijo 3-0 en

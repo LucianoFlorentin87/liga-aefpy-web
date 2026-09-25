@@ -307,6 +307,15 @@ Sólo funciona si el build instaló el Chromium de Playwright (ver el Build
 Command en la sección de Render más abajo) — en desarrollo local ya viene
 con `npx playwright install chromium` (ver sección 4).
 
+**Jugadores destacados en la tarjeta de Equipos**: la vista previa de hasta
+4 cartas que se ve en `/equipos` (`Player.featuredOnTeamCard`) se puede
+elegir a mano — en Jugadores (admin) o Mi equipo (delegado), la columna
+"Destacado" tiene una estrella por jugador, hasta un máximo de 4 por
+equipo (`MAX_FEATURED_PLAYERS_PER_TEAM` en `src/lib/format.ts`; el botón
+se deshabilita al llegar al tope). Si un equipo no tiene ningún jugador
+marcado, esa página arma la vista previa sola (prioriza a los que ya
+tienen carta de eFHUB elegida) para no dejarla vacía.
+
 ### Modo oscuro
 
 Botón sol/luna en el header público y en el panel de administración

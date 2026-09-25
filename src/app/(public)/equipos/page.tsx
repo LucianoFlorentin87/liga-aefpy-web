@@ -8,16 +8,10 @@ import { SocialIcons } from "@/components/SocialIcons";
 import { TeamCrest } from "@/components/TeamCrest";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
-import { playerFullName } from "@/lib/format";
+import { playerFullName, MAX_FEATURED_PLAYERS_PER_TEAM } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Equipos" };
 export const dynamic = "force-dynamic";
-
-// Cuántas cartas de jugadores se muestran como preview en la tarjeta de
-// cada equipo — priorizando a los que ya tienen una carta de eFHUB
-// elegida, para no mostrar huecos vacíos mientras se van cargando de a
-// poco (ver PlayerCardThumb).
-const PLAYER_PREVIEW_COUNT = 4;
 
 export default async function EquiposPage() {
   const [teams, standings] = await Promise.all([
@@ -30,7 +24,13 @@ export default async function EquiposPage() {
         players: {
           where: { status: "ACTIVO" },
           orderBy: { jerseyNumber: "asc" },
-          select: { id: true, firstName: true, lastName: true, efhubCard: { select: { cardImageUrl: true } } },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            featuredOnTeamCard: true,
+            efhubCard: { select: { cardImageUrl: true } },
+          },
         },
       },
       orderBy: { name: "asc" },
@@ -54,9 +54,17 @@ export default async function EquiposPage() {
             {teams.map((team) => {
               const row = standingsByTeam.get(team.id);
               const position = positionByTeam.get(team.id);
-              const previewPlayers = [...team.players]
-                .sort((a, b) => (b.efhubCard?.cardImageUrl ? 1 : 0) - (a.efhubCard?.cardImageUrl ? 1 : 0))
-                .slice(0, PLAYER_PREVIEW_COUNT);
+              // Si el admin/delegado eligió jugadores destacados para este
+              // equipo, se muestran esos (en el orden de siempre, por
+              // dorsal). Si no eligió ninguno, se arma sola: prioriza a los
+              // que ya tienen carta de eFHUB, para no mostrar huecos vacíos.
+              const featured = team.players.filter((p) => p.featuredOnTeamCard);
+              const previewPlayers =
+                featured.length > 0
+                  ? featured.slice(0, MAX_FEATURED_PLAYERS_PER_TEAM)
+                  : [...team.players]
+                      .sort((a, b) => (b.efhubCard?.cardImageUrl ? 1 : 0) - (a.efhubCard?.cardImageUrl ? 1 : 0))
+                      .slice(0, MAX_FEATURED_PLAYERS_PER_TEAM);
               return (
                 <div
                   key={team.id}
