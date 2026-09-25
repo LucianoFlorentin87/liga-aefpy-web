@@ -4,7 +4,7 @@ const FORFEIT_SCORE = 3;
  *  en /equipos (Player.featuredOnTeamCard) — compartido entre el server
  *  action que lo hace cumplir y la UI que deshabilita el botón al llegar
  *  al máximo. */
-export const MAX_FEATURED_PLAYERS_PER_TEAM = 4;
+export const MAX_FEATURED_PLAYERS_PER_TEAM = 5;
 
 /**
  * Goles de un partido, contemplando el caso de abandono (walkover): si el
