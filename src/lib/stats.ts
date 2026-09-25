@@ -315,6 +315,7 @@ export type DisciplineRow = {
   yellowCards: number;
   redCards: number;
   sanctionsCount: number;
+  hasActiveSanction: boolean;
 };
 
 /** Disciplina calculada a partir de las tarjetas registradas en partidos finalizados. */
@@ -333,11 +334,13 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
     matchesPlayedByPlayer.get(p.playerId)!.add(p.matchId);
   }
 
-  const sanctionCounts = await prisma.sanction.groupBy({
-    by: ["playerId"],
-    _count: { _all: true },
-  });
-  const sanctionCountByPlayer = new Map(sanctionCounts.map((s) => [s.playerId, s._count._all]));
+  const allSanctions = await prisma.sanction.findMany({ select: { playerId: true, status: true } });
+  const sanctionCountByPlayer = new Map<string, number>();
+  const activeSanctionByPlayer = new Map<string, boolean>();
+  for (const s of allSanctions) {
+    sanctionCountByPlayer.set(s.playerId, (sanctionCountByPlayer.get(s.playerId) ?? 0) + 1);
+    if (s.status === "ACTIVA") activeSanctionByPlayer.set(s.playerId, true);
+  }
 
   const byPlayer = new Map<string, DisciplineRow>();
   for (const c of cards) {
@@ -353,6 +356,7 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
         yellowCards: 0,
         redCards: 0,
         sanctionsCount: sanctionCountByPlayer.get(c.playerId) ?? 0,
+        hasActiveSanction: activeSanctionByPlayer.get(c.playerId) ?? false,
       };
       byPlayer.set(c.playerId, row);
     }

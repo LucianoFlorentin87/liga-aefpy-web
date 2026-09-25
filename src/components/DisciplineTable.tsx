@@ -35,7 +35,18 @@ export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?
               <td className="text-center">{row.matchesPlayed}</td>
               <td className="text-center font-semibold">{row.yellowCards}</td>
               <td className="text-center font-semibold text-[var(--color-red-accent)]">{row.redCards}</td>
-              <td className="text-center">{row.sanctionsCount}</td>
+              <td className="text-center">
+                {row.sanctionsCount === 0 ? (
+                  row.sanctionsCount
+                ) : (
+                  <span className="inline-flex items-center gap-1.5">
+                    {row.sanctionsCount}
+                    <span className={`badge ${row.hasActiveSanction ? "badge-red" : "badge-green"}`}>
+                      {row.hasActiveSanction ? "Sancionado" : "Cumplida"}
+                    </span>
+                  </span>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
