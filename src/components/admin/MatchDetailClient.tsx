@@ -154,6 +154,7 @@ export function MatchDetailClient({
 }) {
   const suspendedSet = useMemo(() => new Set(suspendedPlayerIds), [suspendedPlayerIds]);
   const participationByPlayer = useMemo(() => new Map(participations.map((p) => [p.playerId, p])), [participations]);
+  const teamNameById = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams]);
 
   if (!canLoadResults) return null;
 
@@ -242,6 +243,7 @@ export function MatchDetailClient({
             <li key={g.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
               <span>
                 {g.minute}&apos; · {playerFullName(g.player)}
+                <span className="text-[var(--color-gray-500)]"> ({teamNameById.get(g.teamId) ?? "?"})</span>
               </span>
               <form action={deleteGoalAction}>
                 <input type="hidden" name="id" value={g.id} />
@@ -264,6 +266,7 @@ export function MatchDetailClient({
             <li key={c.id} className="flex items-center justify-between rounded-lg bg-[var(--color-gray-50)] px-3 py-2 text-sm">
               <span>
                 {c.type === "AMARILLA" ? "🟨" : "🟥"} {c.minute}&apos; · {playerFullName(c.player)}
+                <span className="text-[var(--color-gray-500)]"> ({teamNameById.get(c.teamId) ?? "?"})</span>
                 {c.note ? ` — ${c.note}` : ""}
               </span>
               <form action={deleteCardAction}>

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireAuth, can } from "@/lib/permissions";
+import { getMatchScore } from "@/lib/format";
 import { MatchScheduleForm } from "@/components/admin/MatchScheduleForm";
 import { MatchDetailClient } from "@/components/admin/MatchDetailClient";
 
@@ -44,6 +45,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     select: { playerId: true },
   });
   const suspendedPlayerIds = new Set(activeSanctions.map((s) => s.playerId));
+  const score = getMatchScore(match);
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,10 +53,17 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
         <Link href="/admin/partidos" className="text-xs font-semibold text-[var(--color-gray-500)] hover:text-[var(--color-navy-900)]">
           ← Volver a partidos
         </Link>
-        <h1 className="mt-1 text-xl font-extrabold text-[var(--color-navy-900)]">
-          {match.homeTeam.name} vs {match.awayTeam.name}
+        <h1 className="mt-1 flex flex-wrap items-baseline gap-2 text-xl font-extrabold text-[var(--color-navy-900)]">
+          <span>{match.homeTeam.name}</span>
+          <span className="text-[var(--color-gray-500)]">
+            {score.home} - {score.away}
+          </span>
+          <span>{match.awayTeam.name}</span>
         </h1>
-        <p className="text-sm text-[var(--color-gray-500)]">Jornada {match.matchday}</p>
+        <p className="text-sm text-[var(--color-gray-500)]">
+          Jornada {match.matchday}
+          {match.forfeitedTeamId && <span className="badge badge-amber ml-2 align-middle">Por abandono</span>}
+        </p>
       </div>
 
       {canEditSchedule && (
