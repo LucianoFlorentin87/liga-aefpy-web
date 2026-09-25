@@ -177,20 +177,14 @@ export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend
   // Se agrupa por día calendario (UTC) de la última modificación del
   // partido, no por el instante exacto — varios resultados cargados uno
   // atrás del otro en la misma sesión de carga deben quedar en el mismo
-  // "lote de hoy".
+  // "lote de hoy". Los partidos resueltos por abandono (forfeitedTeamId)
+  // cuentan igual que cualquier otro: cuando un equipo se retira, el 3-0
+  // que reparte a sus rivales es un cambio real en la tabla (puede
+  // hacerlos subir de puesto), así que tiene que mover la flechita de
+  // tendencia de esos rivales igual que un resultado cargado a mano.
   const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
-  // Los partidos resueltos por abandono (forfeitedTeamId) se actualizan en
-  // bloque cuando se retira un equipo de la liga — eso pisa su updatedAt
-  // sin que sea realmente "una carga de resultados nueva" de un partido
-  // jugado. Si se los dejara entrar en este cálculo, retirar un equipo que
-  // jugó contra casi toda la liga haría que todos los rivales pierdan su
-  // flechita de un saque. Para la tendencia sólo cuentan los partidos con
-  // resultado real cargado; los de abandono se consideran parte del
-  // "antes" siempre, sin afectar el cálculo de qué es lo nuevo.
-  const realMatches = finishedMatches.filter((m) => !m.forfeitedTeamId);
-
-  const latestUpdateDay = realMatches.reduce<string | null>((max, m) => {
+  const latestUpdateDay = finishedMatches.reduce<string | null>((max, m) => {
     const key = dayKey(m.updatedAt);
     return max === null || key > max ? key : max;
   }, null);
@@ -198,9 +192,7 @@ export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend
     return current.map((row) => ({ ...row, trend: null }));
   }
 
-  const previousMatches = finishedMatches.filter(
-    (m) => m.forfeitedTeamId || dayKey(m.updatedAt) < latestUpdateDay,
-  );
+  const previousMatches = finishedMatches.filter((m) => dayKey(m.updatedAt) < latestUpdateDay);
   const previous = buildStandingsRows(teams, previousMatches, pointAdjustments, criteria);
   const previousIndexByTeam = new Map(previous.map((row, i) => [row.teamId, i]));
   const previousRowByTeam = new Map(previous.map((row) => [row.teamId, row]));
