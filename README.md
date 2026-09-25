@@ -330,6 +330,40 @@ fijos como fondo de botón (el texto blanco de encima ya contrasta bien en
 cualquier fondo), pero como texto suelto sobre la página usan
 `--color-red-accent`, que sí se aclara en oscuro.
 
+### Recuperar contraseña por correo
+
+En `/admin/login`, el link "¿Olvidaste tu contraseña?" lleva a
+`/admin/recuperar-contrasena`: se ingresa el correo de la cuenta (no el
+usuario) y, si existe, se manda un correo con un link de un solo uso
+(válido 1 hora) a `/admin/restablecer-contrasena?token=...` para elegir
+una contraseña nueva. El mensaje que se muestra es siempre el mismo
+exista o no esa cuenta, para no revelar qué correos están registrados.
+Sólo se guarda el hash SHA-256 del token (nunca el valor real que viaja
+en el link) en la tabla `password_reset_tokens`; un mismo link no se
+puede volver a usar (`usedAt`) ni usar vencido (`expiresAt`). Estas dos
+rutas son las únicas de `/admin/**` accesibles sin sesión además de
+`/admin/login` — ver `PUBLIC_ADMIN_PATHS` en `src/proxy.ts` — porque
+justamente están pensadas para alguien que no puede iniciar sesión.
+
+El envío en sí usa [Resend](https://resend.com) (`src/lib/email.ts`):
+
+1. Creá una cuenta en resend.com y andá a **API Keys** → **Create API
+   Key**.
+2. Cargá esa clave en Render como variable de entorno `RESEND_API_KEY`.
+3. **Sin un dominio propio verificado en Resend**, sólo se puede mandar
+   correos a la cuenta con la que te registraste ahí — restricción de
+   ellos, para evitar spam. Sirve para probar o para que el Superadmin
+   se pueda recuperar a sí mismo, pero no para que cualquier
+   admin/delegado reciba su propio correo de recuperación.
+4. Para que le llegue a cualquiera, hay que verificar un dominio propio
+   en Resend (Dominios → Add Domain → agregar los registros DNS que
+   piden en el proveedor donde está el dominio) y después setear
+   `EMAIL_FROM="Liga AEFPY <noreply@tudominio.com>"` en Render.
+
+Sin `RESEND_API_KEY` configurada, el botón de recuperar contraseña sigue
+funcionando (no rompe nada), pero ningún correo sale — queda logueado en
+el servidor (`[email] RESEND_API_KEY no está configurada...`).
+
 ---
 
 ## 3. Roles y permisos

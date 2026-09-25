@@ -5,6 +5,21 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Ingresá tu contraseña"),
 });
 
+export const requestPasswordResetSchema = z.object({
+  email: z.string().trim().email("Ingresá un correo válido"),
+});
+
+export const completePasswordResetSchema = z
+  .object({
+    token: z.string().min(1),
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
+  });
+
 const roleEnum = z.enum(["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS", "DELEGADO"]);
 const statusEnum = z.enum(["ACTIVO", "INACTIVO"]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { loginAction, type LoginState } from "@/app/admin/login/actions";
 import { PasswordInput } from "@/components/PasswordInput";
 
@@ -18,9 +19,14 @@ export function LoginForm() {
         <input id="identifier" name="identifier" type="text" autoComplete="username" required className="input" />
       </div>
       <div>
-        <label className="field-label" htmlFor="password">
-          Contraseña
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="field-label" htmlFor="password">
+            Contraseña
+          </label>
+          <Link href="/admin/recuperar-contrasena" className="text-xs font-semibold text-[var(--color-red-accent)] hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
         <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </div>
 

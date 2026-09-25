@@ -67,8 +67,27 @@ model User {
   // Sólo la usan los DELEGADO: pueden votar en las predicciones públicas
   // con su misma cuenta de staff, sin necesitar además una cuenta de hincha.
   predictions   Prediction[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+// Token de un solo uso para "olvidé mi contraseña" (/admin/recuperar-contrasena).
+// Se guarda el hash SHA-256 del token, nunca el valor real que va en el
+// link del correo — igual que las contraseñas, si alguien lee la base no
+// puede reconstruir un link válido a partir de una fila. Expira a la hora;
+// usedAt evita que el mismo link se pueda usar dos veces.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // ---------------------------------------------------------------------------
@@ -93,8 +112,9 @@ model Team {
   logoUrl       String?
   delegateName  String?
   delegatePhone String?
-  // Correo de contacto del delegado. Es sólo un dato de contacto por ahora:
-  // todavía no hay un flujo de "recuperar contraseña" automático por correo.
+  // Correo de contacto del delegado — sólo un dato informativo de la ficha
+  // del equipo, distinto de users.email (la cuenta con la que el delegado
+  // inicia sesión, y a la que le llega el correo de "olvidé mi contraseña").
   delegateEmail String?
   // Cancha/estadio informativo del equipo (distinto de la cancha de cada
   // partido puntual, que puede variar). Lo puede editar el propio delegado.

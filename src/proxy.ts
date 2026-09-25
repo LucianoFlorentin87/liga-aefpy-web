@@ -21,7 +21,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname === "/admin/login") {
+  // "Olvidé mi contraseña": tienen que ser accesibles sin sesión (es
+  // justamente el caso de alguien que no puede iniciar sesión).
+  const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/recuperar-contrasena", "/admin/restablecer-contrasena"];
+  if (PUBLIC_ADMIN_PATHS.includes(pathname)) {
     return NextResponse.next();
   }
 
