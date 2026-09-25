@@ -158,11 +158,13 @@ const RETIREMENT_BONUS_REASON_PREFIX = "Bonificación por partido anulado contra
 /**
  * Retira un equipo de la liga a mitad de temporada (Art. 9): pasa a
  * RETIRADO (sigue en la tabla) y resuelve TODOS sus partidos contra el
- * resto de la liga —ya jugados o pendientes— como 3-0 en contra suyo por
- * abandono (forfeitedTeamId), igual que un partido normal ganado: cuenta
- * como PJ, PG y 3 puntos para el rival en las columnas de siempre, sin
- * bonificación aparte ni resultado invisible. El resultado real (si el
- * partido se había jugado) queda en la base pero deja de mostrarse — ver
+ * resto de la liga —ya jugados o pendientes— por abandono
+ * (forfeitedTeamId): 3-0 en contra suyo si el rival sigue activo (cuenta
+ * como PJ, PG y 3 puntos para el rival, igual que un partido normal
+ * ganado), pero **0-0 si el rival también está retirado** — no tendría
+ * sentido darle una victoria a cualquiera de los dos sólo porque a éste le
+ * tocó retirarse antes o después. El resultado real (si el partido se
+ * había jugado) queda en la base pero deja de mostrarse — ver
  * getMatchScore en lib/format.ts.
  */
 export async function retireTeamAction(formData: FormData): Promise<void> {
@@ -177,21 +179,37 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
       OR: [{ homeTeamId: id }, { awayTeamId: id }],
       forfeitedTeamId: null,
     },
-    select: { id: true },
+    select: {
+      id: true,
+      homeTeamId: true,
+      homeTeam: { select: { status: true } },
+      awayTeam: { select: { status: true } },
+    },
   });
+
+  const withOpponentStatus = matchesToForfeit.map((m) => ({
+    id: m.id,
+    opponentAlsoRetired: (m.homeTeamId === id ? m.awayTeam.status : m.homeTeam.status) === "RETIRADO",
+  }));
+  const mutualCount = withOpponentStatus.filter((m) => m.opponentAlsoRetired).length;
+  const forfeitCount = withOpponentStatus.length - mutualCount;
 
   await prisma.$transaction([
     prisma.team.update({ where: { id }, data: { status: "RETIRADO" } }),
-    ...matchesToForfeit.map((m) =>
-      prisma.match.update({ where: { id: m.id }, data: { status: "FINALIZADO", forfeitedTeamId: id } }),
+    ...withOpponentStatus.map((m) =>
+      prisma.match.update({
+        where: { id: m.id },
+        data: { status: "FINALIZADO", forfeitedTeamId: m.opponentAlsoRetired ? null : id },
+      }),
     ),
   ]);
 
+  const parts: string[] = [];
+  if (forfeitCount > 0) parts.push(`${forfeitCount} partido(s) se resolvieron 3-0 en contra por abandono`);
+  if (mutualCount > 0) parts.push(`${mutualCount} contra otro(s) equipo(s) también retirado(s) quedaron 0-0`);
   await logActivity(
     `${actor.firstName} ${actor.lastName} retiró al equipo "${target.name}" de la liga` +
-      (matchesToForfeit.length > 0
-        ? ` — ${matchesToForfeit.length} partido(s) se resolvieron 3-0 en contra por abandono.`
-        : "."),
+      (parts.length > 0 ? ` — ${parts.join("; ")}.` : "."),
     actor.id,
   );
   revalidatePath("/admin/equipos");
@@ -206,14 +224,19 @@ export async function retireTeamAction(formData: FormData): Promise<void> {
 }
 
 /**
- * Corrige a un equipo YA retirado cuyos partidos quedaron procesados con
- * una versión anterior de esta lógica (anulados con una bonificación de
- * puntos aparte, en vez de contar como un 3-0 ganado normal) —
- * retireTeamAction no se puede volver a ejecutar sobre un equipo que ya
- * está en RETIRADO, así que esto recorre sus partidos sueltos, los pasa a
- * forfeitedTeamId (3-0 walkover, cuenta como PJ/PG normal) y borra
- * cualquier PointAdjustment de la bonificación vieja que ya no corresponde
- * (evita duplicar puntos). Es seguro ejecutarlo más de una vez.
+ * Corrige a un equipo YA retirado cuyos partidos quedaron mal resueltos —
+ * ya sea por una versión anterior de esta lógica (anulados con una
+ * bonificación de puntos aparte, en vez de contar como un 3-0 ganado
+ * normal), o porque un cruce contra OTRO equipo que también terminó
+ * retirado le quedó con un 3-0 a favor de uno de los dos en vez de 0-0
+ * (pasa cuando ese partido todavía no existía o seguía pendiente cuando
+ * el primero de los dos se retiró, y recién el segundo retiro lo
+ * resolvió — ver retireTeamAction). retireTeamAction no se puede volver a
+ * ejecutar sobre un equipo que ya está en RETIRADO, así que esto recorre
+ * sus partidos sueltos y los deja en el estado que corresponde según el
+ * estado actual del rival, y borra cualquier PointAdjustment de la
+ * bonificación vieja que ya no corresponde (evita duplicar puntos). Es
+ * seguro ejecutarlo más de una vez.
  */
 export async function reconcileRetiredTeamAction(formData: FormData): Promise<void> {
   const { user: actor } = await requirePermission("equipos");
@@ -224,28 +247,34 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
 
   const matches = await prisma.match.findMany({
     where: { OR: [{ homeTeamId: id }, { awayTeamId: id }] },
-    include: { pointAdjustments: true },
+    include: {
+      pointAdjustments: true,
+      homeTeam: { select: { status: true } },
+      awayTeam: { select: { status: true } },
+    },
   });
 
   const pending = matches
     .map((m) => {
       const opponentId = m.homeTeamId === id ? m.awayTeamId : m.homeTeamId;
-      const needsForfeit = m.forfeitedTeamId !== id;
+      const opponentAlsoRetired = (m.homeTeamId === id ? m.awayTeam.status : m.homeTeam.status) === "RETIRADO";
+      const correctForfeitedTeamId = opponentAlsoRetired ? null : id;
+      const needsFix = m.forfeitedTeamId !== correctForfeitedTeamId;
       const staleBonuses = m.pointAdjustments.filter(
         (pa) => pa.teamId === opponentId && pa.reason.startsWith(RETIREMENT_BONUS_REASON_PREFIX),
       );
-      return { match: m, needsForfeit, staleBonuses };
+      return { match: m, needsFix, correctForfeitedTeamId, staleBonuses };
     })
-    .filter((x) => x.needsForfeit || x.staleBonuses.length > 0);
+    .filter((x) => x.needsFix || x.staleBonuses.length > 0);
 
   if (pending.length > 0) {
     await prisma.$transaction(
-      pending.flatMap(({ match: m, needsForfeit, staleBonuses }) => [
-        ...(needsForfeit
+      pending.flatMap(({ match: m, needsFix, correctForfeitedTeamId, staleBonuses }) => [
+        ...(needsFix
           ? [
               prisma.match.update({
                 where: { id: m.id },
-                data: { status: "FINALIZADO", forfeitedTeamId: id },
+                data: { status: "FINALIZADO", forfeitedTeamId: correctForfeitedTeamId },
               }),
             ]
           : []),
@@ -254,10 +283,11 @@ export async function reconcileRetiredTeamAction(formData: FormData): Promise<vo
     );
   }
 
+  const fixedCount = pending.filter((x) => x.needsFix).length;
   await logActivity(
     `${actor.firstName} ${actor.lastName} reconcilió los partidos del equipo retirado "${target.name}"` +
-      (pending.length > 0
-        ? ` — ${pending.length} partido(s) corregido(s) a 3-0 walkover, sin bonificación aparte.`
+      (fixedCount > 0
+        ? ` — ${fixedCount} partido(s) corregido(s) (3-0 walkover contra rivales activos, 0-0 contra rivales también retirados).`
         : " — no había nada para corregir."),
     actor.id,
   );
