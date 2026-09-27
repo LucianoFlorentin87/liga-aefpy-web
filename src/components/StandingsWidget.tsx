@@ -19,9 +19,14 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRowWithTre
             <tr className="border-b border-[var(--color-gray-200)] text-[0.68rem] uppercase tracking-wide text-[var(--color-gray-500)]">
               <th className="py-2 pl-4 text-left font-semibold">Pos</th>
               <th className="py-2 text-left font-semibold">Club</th>
-              <th className="py-2 text-center font-semibold">Pts</th>
               <th className="py-2 text-center font-semibold">PJ</th>
-              <th className="py-2 pr-4 text-center font-semibold">DG</th>
+              <th className="py-2 text-center font-semibold">PG</th>
+              <th className="hidden py-2 text-center font-semibold sm:table-cell">PE</th>
+              <th className="hidden py-2 text-center font-semibold sm:table-cell">PP</th>
+              <th className="hidden py-2 text-center font-semibold sm:table-cell">GF</th>
+              <th className="hidden py-2 text-center font-semibold sm:table-cell">GC</th>
+              <th className="py-2 text-center font-semibold">DG</th>
+              <th className="py-2 pr-4 text-center font-semibold">Pts</th>
             </tr>
           </thead>
           <tbody>
@@ -39,11 +44,16 @@ export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRowWithTre
                     {row.teamShortName}
                   </span>
                 </td>
-                <td className="py-2 text-center font-extrabold text-[var(--color-navy-900)]">{row.pts}</td>
                 <td className="py-2 text-center text-[var(--color-gray-600)]">{row.pj}</td>
-                <td className="py-2 pr-4 text-center text-[var(--color-gray-600)]">
+                <td className="py-2 text-center text-[var(--color-gray-600)]">{row.pg}</td>
+                <td className="hidden py-2 text-center text-[var(--color-gray-600)] sm:table-cell">{row.pe}</td>
+                <td className="hidden py-2 text-center text-[var(--color-gray-600)] sm:table-cell">{row.pp}</td>
+                <td className="hidden py-2 text-center text-[var(--color-gray-600)] sm:table-cell">{row.gf}</td>
+                <td className="hidden py-2 text-center text-[var(--color-gray-600)] sm:table-cell">{row.gc}</td>
+                <td className="py-2 text-center text-[var(--color-gray-600)]">
                   {row.dg > 0 ? `+${row.dg}` : row.dg}
                 </td>
+                <td className="py-2 pr-4 text-center font-extrabold text-[var(--color-navy-900)]">{row.pts}</td>
               </tr>
             ))}
           </tbody>
