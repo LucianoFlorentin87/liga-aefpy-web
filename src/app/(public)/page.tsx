@@ -11,8 +11,8 @@ import {
 import { NextMatchCard } from "@/components/NextMatchCard";
 import { ResultsList } from "@/components/ResultsList";
 import { StandingsWidget } from "@/components/StandingsWidget";
-import { ScorersTable } from "@/components/ScorersTable";
-import { DisciplineTable } from "@/components/DisciplineTable";
+import { ScorersWidget } from "@/components/ScorersWidget";
+import { DisciplineWidget } from "@/components/DisciplineWidget";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { UpcomingMatchesSlider } from "@/components/UpcomingMatchesSlider";
 import { TeamsCardSlider } from "@/components/TeamsCardSlider";
@@ -127,13 +127,9 @@ export default async function HomePage() {
           </WidgetCard>
         )}
 
-        <WidgetCard title="Máximos goleadores" href="/goleadores" ariaLabel="Ver todos los goleadores">
-          <ScorersTable rows={scorers} limit={5} />
-        </WidgetCard>
+        <ScorersWidget rows={scorers} limit={5} />
 
-        <WidgetCard title="Resumen de disciplina" href="/disciplina" ariaLabel="Ver todo el resumen de disciplina">
-          <DisciplineTable rows={discipline} limit={5} />
-        </WidgetCard>
+        <DisciplineWidget rows={discipline} limit={5} />
       </section>
 
       {teams.length > 0 && (
