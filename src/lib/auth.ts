@@ -71,6 +71,18 @@ export async function getSession(): Promise<SessionPayload | null> {
 /**
  * Vuelve a validar contra la base de datos (no confía solo en el JWT) que el
  * usuario sigue existiendo y activo. Usar en acciones sensibles.
+ *
+ * También detecta si el rol cambió después de que se firmó este JWT (un
+ * SUPERADMIN le cambió el rol a alguien con una sesión ya abierta, que dura
+ * hasta 8hs): en vez de "parchear" el rol al vuelo, se trata la sesión vieja
+ * como inválida y se fuerza a volver a iniciar sesión. Un parche al vuelo
+ * quedaría desincronizado con proxy.ts (la barrera de borde, que sólo puede
+ * leer el rol del JWT, nunca de la base) y podía terminar en un bucle de
+ * redirects entre esa barrera y esta. Forzar el re-login es más simple y
+ * evita ese problema de raíz: no se puede destruir la cookie acá porque esta
+ * función también se llama desde Server Components (sólo se puede escribir
+ * cookies desde Server Actions/Route Handlers) — alcanza con no confiar en
+ * ella; se pisa sola con una válida en el próximo login.
  */
 export async function requireActiveUser() {
   const session = await getSession();
@@ -82,6 +94,7 @@ export async function requireActiveUser() {
   });
 
   if (!user || user.status !== "ACTIVO") return null;
+  if (session.role !== user.role.key) return null;
 
   return { session, user };
 }

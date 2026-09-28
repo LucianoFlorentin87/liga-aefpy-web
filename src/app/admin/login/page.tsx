@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
 import { LoginForm } from "@/components/admin/LoginForm";
@@ -9,8 +9,14 @@ import { LoginForm } from "@/components/admin/LoginForm";
 export const metadata: Metadata = { title: "Ingresar al panel" };
 
 export default async function AdminLoginPage() {
-  const session = await getSession();
-  if (session) redirect(session.role === "DELEGADO" ? "/admin/mi-equipo" : "/admin/dashboard");
+  // requireActiveUser (no getSession crudo): si el rol de esta sesión ya no
+  // coincide con el de la base (se lo cambiaron mientras tenía la sesión
+  // abierta), no la tratamos como "ya logueado" — dejamos ver el formulario
+  // para que inicie sesión de nuevo y le quede el rol nuevo. Si no, un JWT
+  // viejo con un rol que ya no existe redirigía en bucle contra la página
+  // que sí valida el rol contra la base (ver requireActiveUser en auth.ts).
+  const result = await requireActiveUser();
+  if (result) redirect(result.session.role === "DELEGADO" ? "/admin/mi-equipo" : "/admin/dashboard");
 
   const settings = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
 
