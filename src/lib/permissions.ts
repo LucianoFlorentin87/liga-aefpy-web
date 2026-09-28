@@ -11,7 +11,11 @@ import { requireActiveUser } from "@/lib/auth";
 export const PERMISSIONS = {
   usuarios: ["SUPERADMIN"],
   equipos: ["SUPERADMIN", "ADMINISTRADOR"],
-  jugadores: ["SUPERADMIN", "ADMINISTRADOR"],
+  // CARGA_DATOS necesita poder dar de alta un jugador que debuta y todavía
+  // no está en el plantel — si no, queda trabado al cargar resultados: el
+  // selector de goles/tarjetas en /admin/partidos/[id] sólo ofrece
+  // jugadores ya existentes, no permite crear uno ahí mismo.
+  jugadores: ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"],
   partidos: ["SUPERADMIN", "ADMINISTRADOR"],
   resultados: ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"],
   goles: ["SUPERADMIN", "ADMINISTRADOR", "CARGA_DATOS"],
