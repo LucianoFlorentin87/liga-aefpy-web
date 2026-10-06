@@ -112,7 +112,7 @@ export default async function HomePage() {
           <ResultsList matches={recentResults} />
         </WidgetCard>
 
-        <StandingsWidget rows={standings} limit={6} />
+        <StandingsWidget rows={standings} limit={10} />
 
         {videos.length > 0 && (
           <WidgetCard title="Videos" href="/videos" ariaLabel="Ver todos los videos" className="lg:col-span-2">

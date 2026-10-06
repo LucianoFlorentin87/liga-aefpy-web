@@ -4,7 +4,7 @@ import { TeamCrest } from "@/components/TeamCrest";
 import { WidgetCard } from "@/components/WidgetCard";
 import { PositionTrendIcon } from "@/components/PositionTrendIcon";
 
-export function StandingsWidget({ rows, limit = 6 }: { rows: StandingsRowWithTrend[]; limit?: number }) {
+export function StandingsWidget({ rows, limit = 10 }: { rows: StandingsRowWithTrend[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   return (
