@@ -19,14 +19,19 @@ export function SettingsForm({
   heroSubtitle,
   footerDescription,
   standingsCriteria,
+  maintenanceMode,
+  maintenanceMessage,
 }: {
   orgName: string;
   orgTagline: string;
   heroSubtitle: string;
   footerDescription: string;
   standingsCriteria: string;
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
 }) {
   const [state, formAction, pending] = useActionState(updateSettingsAction, emptyState);
+  const [maintenance, setMaintenance] = useState(maintenanceMode);
   const initial = standingsCriteria.split(",").filter(Boolean);
   const [criteria, setCriteria] = useState<[string, string, string]>([
     initial[0] ?? "PTS",
@@ -94,6 +99,37 @@ export function SettingsForm({
           ))}
         </div>
         <input type="hidden" name="standingsCriteria" value={criteria.join(",")} />
+      </div>
+
+      <div>
+        <p className="field-label mb-2">Modo mantenimiento</p>
+        <div className="flex flex-col gap-3 rounded-lg border border-[var(--color-gray-200)] p-3">
+          <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-navy-900)]">
+            <input
+              type="checkbox"
+              name="maintenanceMode"
+              checked={maintenance}
+              onChange={(e) => setMaintenance(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Suspender el sitio público temporalmente
+          </label>
+          <p className="text-xs text-[var(--color-gray-500)]">
+            Mientras esté activo, cualquier visitante del sitio (fuera del panel de administración) ve el mensaje de
+            abajo en vez del contenido normal. El panel de administración sigue funcionando como siempre.
+          </p>
+          <div>
+            <label className="field-label">Mensaje para los visitantes</label>
+            <textarea
+              name="maintenanceMessage"
+              required
+              maxLength={300}
+              defaultValue={maintenanceMessage}
+              rows={2}
+              className="input"
+            />
+          </div>
+        </div>
       </div>
 
       {state.error && <p className="field-error">{state.error}</p>}

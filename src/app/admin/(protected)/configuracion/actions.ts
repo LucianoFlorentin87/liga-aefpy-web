@@ -17,16 +17,29 @@ export async function updateSettingsAction(_prevState: FormState, formData: Form
     heroSubtitle: formData.get("heroSubtitle"),
     footerDescription: formData.get("footerDescription"),
     standingsCriteria: formData.get("standingsCriteria"),
+    maintenanceMessage: formData.get("maintenanceMessage"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
 
+  // Checkbox: ausente en el FormData cuando está destildado, no llega "false".
+  const maintenanceMode = formData.get("maintenanceMode") === "on";
+
+  const previous = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
+
   await prisma.tournamentSettings.upsert({
     where: { id: "settings" },
-    update: parsed.data,
-    create: { id: "settings", ...parsed.data },
+    update: { ...parsed.data, maintenanceMode },
+    create: { id: "settings", ...parsed.data, maintenanceMode },
   });
 
-  await logActivity(`${actor.firstName} ${actor.lastName} actualizó la configuración del torneo.`, actor.id);
+  if (maintenanceMode !== (previous?.maintenanceMode ?? false)) {
+    await logActivity(
+      `${actor.firstName} ${actor.lastName} ${maintenanceMode ? "activó" : "desactivó"} el modo mantenimiento del sitio.`,
+      actor.id,
+    );
+  } else {
+    await logActivity(`${actor.firstName} ${actor.lastName} actualizó la configuración del torneo.`, actor.id);
+  }
   revalidatePath("/admin/configuracion");
   revalidatePath("/", "layout");
   revalidatePath("/admin", "layout");

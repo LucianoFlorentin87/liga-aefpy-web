@@ -29,6 +29,10 @@ export default async function ConfiguracionPage() {
             settings?.footerDescription ?? "Torneo oficial organizado por la Liga AEFPY (Asociación de Efootball Paraguay)."
           }
           standingsCriteria={settings?.standingsCriteria ?? "PTS,DG,GF"}
+          maintenanceMode={settings?.maintenanceMode ?? false}
+          maintenanceMessage={
+            settings?.maintenanceMessage ?? "Estamos haciendo tareas de mantenimiento. Volvemos pronto."
+          }
         />
       </div>
     </div>

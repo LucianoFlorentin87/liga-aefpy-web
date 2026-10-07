@@ -210,6 +210,7 @@ export const settingsSchema = z.object({
     .trim()
     .min(1)
     .regex(/^(PTS|DG|GF|PG)(,(PTS|DG|GF|PG))*$/, "Criterio inválido"),
+  maintenanceMessage: z.string().trim().min(1, "El mensaje es obligatorio").max(300, "Máximo 300 caracteres"),
 });
 
 // ---------------------------------------------------------------------------

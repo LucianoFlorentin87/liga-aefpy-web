@@ -386,6 +386,14 @@ model TournamentSettings {
   standingsCriteria String   @default("PTS,DG,GF")
   rulesContent      String   @default("")
   rulesPdfUrl       String?
+
+  // Modo mantenimiento: mientras está activo, todo el sitio público (fuera
+  // de /admin) muestra maintenanceMessage en vez del contenido normal — ver
+  // src/app/(public)/layout.tsx. El panel de administración sigue
+  // funcionando normalmente para poder seguir trabajando mientras tanto.
+  maintenanceMode    Boolean @default(false)
+  maintenanceMessage String  @default("Estamos haciendo tareas de mantenimiento. Volvemos pronto.")
+
   updatedAt         DateTime @updatedAt
 
   @@map("tournament_settings")
