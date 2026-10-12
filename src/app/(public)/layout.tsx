@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { InfoBar } from "@/components/InfoBar";
 import { PublicHeader } from "@/components/PublicHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 import { TeamLogosBar } from "@/components/TeamLogosBar";
@@ -25,6 +26,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <>
+      <InfoBar />
       <TeamLogosBar />
       <PublicHeader />
       <main className="flex-1 bg-[var(--background)]">{children}</main>
