@@ -484,3 +484,28 @@ model Video {
 
   @@map("videos")
 }
+
+// Noticias de la liga y del mundo eFootball — se cargan a mano desde
+// /admin/noticias, redactadas por completo o importadas como tarjeta
+// (título + resumen + imagen + link a la fuente) desde un buscador de
+// fuentes externas (por ahora, notas de actualización oficiales de
+// Konami). sourceName/sourceUrl quedan null en una noticia 100% propia de
+// la liga; body es opcional porque una tarjeta importada puede no tener
+// cuerpo completo, sólo resumen + link "Leer en [fuente]".
+model News {
+  id          String   @id @default(cuid())
+  title       String
+  excerpt     String
+  body        String?
+  imageUrl    String?
+  sourceName  String?
+  sourceUrl   String?
+  publishedAt DateTime @default(now())
+  // Mismo criterio que Video.featured: elegido a mano para aparecer en el
+  // inicio, no automático por fecha.
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("news")
+}

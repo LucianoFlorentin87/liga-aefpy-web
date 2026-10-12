@@ -200,6 +200,33 @@ export const videoSchema = z.object({
   url: z.string().trim().url("Ingresá un link completo (empezando con https://)"),
 });
 
+export const newsSchema = z.object({
+  title: z.string().trim().min(2, "El título es obligatorio").max(150, "Máximo 150 caracteres"),
+  excerpt: z.string().trim().min(2, "El resumen es obligatorio").max(300, "Máximo 300 caracteres"),
+  body: z
+    .string()
+    .trim()
+    .max(20000, "Máximo 20000 caracteres")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v : null)),
+  sourceName: z
+    .string()
+    .trim()
+    .max(60, "Máximo 60 caracteres")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v : null)),
+  sourceUrl: z
+    .string()
+    .trim()
+    .url("Ingresá un link completo (empezando con https://)")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v : null)),
+  publishedAt: z.coerce.date({ message: "Fecha inválida" }),
+});
+
 export const settingsSchema = z.object({
   orgName: z.string().trim().min(1, "El nombre de la organización es obligatorio").max(60, "Máximo 60 caracteres"),
   orgTagline: z.string().trim().min(1, "La bajada es obligatoria").max(80, "Máximo 80 caracteres"),

@@ -25,7 +25,9 @@ export async function InfoBar() {
       <div className="mx-auto flex max-w-[82rem] items-center justify-end gap-3 px-3 py-1.5 text-[0.72rem] font-semibold text-white/60 sm:gap-4 sm:px-4">
         <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <FaLocationDot className="shrink-0" />
-          Asunción<span className="hidden sm:inline">, Paraguay</span>
+          <span>
+            Asunción<span className="hidden sm:inline">, Paraguay</span>
+          </span>
         </span>
         <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <FaRegClock className="shrink-0" />
@@ -34,7 +36,9 @@ export async function InfoBar() {
         {weather && WeatherIcon && (
           <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
             <WeatherIcon className="shrink-0" />
-            {weather.temperatureC}°C<span className="hidden sm:inline"> · {weather.label}</span>
+            <span>
+              {weather.temperatureC}°C<span className="hidden sm:inline"> · {weather.label}</span>
+            </span>
           </span>
         )}
       </div>

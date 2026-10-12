@@ -24,6 +24,27 @@ export async function saveTeamLogo(file: File | null, teamId: string): Promise<s
   return uploadToStorage(fileName, file);
 }
 
+/**
+ * Sube la imagen de portada de una noticia a Supabase Storage (bucket
+ * "uploads", carpeta "news/") y devuelve su URL pública, o null si no se
+ * subió ningún archivo válido. Sólo para noticias redactadas a mano — las
+ * importadas desde una fuente externa (ej. Konami) guardan directo la URL
+ * de la imagen original en vez de resubirla, igual que EfhubCard.cardImageUrl.
+ */
+export async function saveNewsImage(file: File | null): Promise<string | null> {
+  if (!file || file.size === 0) return null;
+  if (!ALLOWED_TYPES.has(file.type)) {
+    throw new Error("Formato de imagen no soportado (usá PNG, JPG, WEBP o SVG).");
+  }
+  if (file.size > MAX_SIZE_BYTES) {
+    throw new Error("La imagen no puede superar los 2MB.");
+  }
+
+  const ext = file.type === "image/svg+xml" ? "svg" : file.type.split("/")[1];
+  const fileName = `news/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  return uploadToStorage(fileName, file);
+}
+
 const MAX_PDF_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
 
 /**

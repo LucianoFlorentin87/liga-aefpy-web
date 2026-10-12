@@ -25,6 +25,7 @@ export const PERMISSIONS = {
   reglamento: ["SUPERADMIN", "ADMINISTRADOR"],
   configuracion: ["SUPERADMIN", "ADMINISTRADOR"],
   videos: ["SUPERADMIN", "ADMINISTRADOR"],
+  noticias: ["SUPERADMIN", "ADMINISTRADOR"],
   auditoria: ["SUPERADMIN"],
 } as const satisfies Record<string, RoleKey[]>;
 
