@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
+import { AuthScreen, AuthCard } from "@/components/AuthScreen";
 import { LoginForm } from "@/components/admin/LoginForm";
 
 export const metadata: Metadata = { title: "Ingresar al panel" };
@@ -21,30 +22,28 @@ export default async function AdminLoginPage() {
   const settings = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy-950)] px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex justify-center">
-          <Logo
-            size={44}
-            variant="light"
-            name={settings?.orgName ?? "Liga AEFPY"}
-            tagline={settings?.orgTagline ?? "Asociación de Efootball Paraguay"}
-          />
-        </div>
-        <div className="card p-6">
-          <p className="eyebrow">Panel de administración</p>
-          <h1 className="mt-1 text-lg font-extrabold text-[var(--color-navy-900)]">Ingresar</h1>
-          <p className="mt-1 mb-5 text-sm text-[var(--color-gray-500)]">
-            Acceso exclusivo para personal autorizado del torneo.
-          </p>
-          <LoginForm />
-        </div>
-        <p className="mt-4 text-center text-xs text-white/60">
-          <Link href="/" className="hover:text-white">
-            ← Volver al sitio público
-          </Link>
-        </p>
+    <AuthScreen>
+      <div className="mb-6 flex justify-center">
+        <Logo
+          size={44}
+          variant="light"
+          name={settings?.orgName ?? "Liga AEFPY"}
+          tagline={settings?.orgTagline ?? "Asociación de Efootball Paraguay"}
+        />
       </div>
-    </div>
+      <AuthCard>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-red-300)]">
+          Panel de administración
+        </p>
+        <h1 className="mt-1 text-2xl font-extrabold text-white">Bienvenido de nuevo</h1>
+        <p className="mt-1 mb-6 text-sm text-white/60">Acceso exclusivo para personal autorizado del torneo.</p>
+        <LoginForm />
+      </AuthCard>
+      <p className="mt-5 text-center text-xs text-white/50">
+        <Link href="/" className="hover:text-white">
+          ← Volver al sitio público
+        </Link>
+      </p>
+    </AuthScreen>
   );
 }

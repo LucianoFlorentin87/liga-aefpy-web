@@ -2,10 +2,13 @@
 
 import { useState, type InputHTMLAttributes } from "react";
 
-type PasswordInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type">;
+type PasswordInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
+  /** Color del ícono de mostrar/ocultar — por defecto pensado para fondos claros. Las pantallas de login (fondo oscuro/vidrio) pasan una variante clara. */
+  toggleClassName?: string;
+};
 
 /** Campo de contraseña con botón para mostrar/ocultar el texto. */
-export function PasswordInput({ className = "", ...props }: PasswordInputProps) {
+export function PasswordInput({ className = "", toggleClassName, ...props }: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -16,7 +19,10 @@ export function PasswordInput({ className = "", ...props }: PasswordInputProps) 
         tabIndex={-1}
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-        className="absolute inset-y-0 right-0 flex items-center px-2.5 text-[var(--color-gray-400)] hover:text-[var(--color-gray-700)]"
+        className={
+          toggleClassName ??
+          "absolute inset-y-0 right-0 flex items-center px-2.5 text-[var(--color-gray-400)] hover:text-[var(--color-gray-700)]"
+        }
       >
         {visible ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

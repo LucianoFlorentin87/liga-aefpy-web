@@ -347,3 +347,29 @@ table.data-table tbody tr:hover {
   font-size: 0.95rem;
   margin-bottom: 0.25rem;
 }
+
+/* Blobs de fondo animados en las pantallas de login — ver
+   AnimatedAuthBackground.tsx. Cada blob usa esta misma animación con un
+   animation-delay distinto (clase .animation-delay-*) para que no se
+   muevan todos en sincro — look orgánico, no mecánico. */
+@keyframes blob-move {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(5%, -8%) scale(1.15);
+  }
+  66% {
+    transform: translate(-6%, 6%) scale(0.92);
+  }
+}
+.animate-blob {
+  animation: blob-move 14s infinite ease-in-out;
+}
+.animation-delay-2000 {
+  animation-delay: -4s;
+}
+.animation-delay-4000 {
+  animation-delay: -9s;
+}
