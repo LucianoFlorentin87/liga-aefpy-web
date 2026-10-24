@@ -4,6 +4,8 @@ import { requireAuth } from "@/lib/permissions";
 import { can } from "@/lib/permissions";
 import { StatCard } from "@/components/admin/StatCard";
 import { EmptyState } from "@/components/EmptyState";
+import { AdminToolCard } from "@/components/admin/AdminToolCard";
+import { ADMIN_NAV, DELEGADO_NAV } from "@/lib/admin-nav";
 
 export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -47,11 +49,25 @@ export default async function DashboardPage() {
     ...(users !== null ? [{ label: "Usuarios", value: users }] : []),
   ];
 
+  const navGroups =
+    session.role === "DELEGADO"
+      ? DELEGADO_NAV
+      : ADMIN_NAV.map((group) => ({
+          ...group,
+          items: group.items.filter((item) => !item.resource || can(session.role, item.resource)),
+        })).filter((group) => group.items.length > 0);
+
+  const quickAccess = navGroups.flatMap((group) =>
+    group.items
+      .filter((item) => item.href !== "/admin/dashboard")
+      .map((item) => ({ ...item, icon: group.icon, category: group.title || "General" })),
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">
-          Hola, {session.firstName} 👋
+          Hola, {session.firstName}
         </h1>
         <p className="text-sm text-[var(--color-gray-500)]">Resumen general del torneo.</p>
       </div>
@@ -61,6 +77,17 @@ export default async function DashboardPage() {
           <StatCard key={c.label} label={c.label} value={c.value} />
         ))}
       </div>
+
+      {quickAccess.length > 0 && (
+        <div>
+          <h2 className="section-title mb-3">Accesos rápidos</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {quickAccess.map((item) => (
+              <AdminToolCard key={item.href} href={item.href} label={item.label} icon={item.icon} category={item.category} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card p-5">
         <h2 className="section-title mb-3">Actividad reciente</h2>

@@ -6,18 +6,24 @@ export type AdminNavItem = {
   resource?: PermissionResource; // si falta, visible para cualquier usuario autenticado
 };
 
+/** Ícono representativo del grupo — uno por categoría (no por ítem), ver AdminNavIcon. */
+export type AdminNavIconKey = "home" | "torneo" | "estadisticas" | "configuracion";
+
 export type AdminNavGroup = {
   title: string;
+  icon: AdminNavIconKey;
   items: AdminNavItem[];
 };
 
 export const ADMIN_NAV: AdminNavGroup[] = [
   {
     title: "",
+    icon: "home",
     items: [{ href: "/admin/dashboard", label: "Dashboard" }],
   },
   {
     title: "Torneo",
+    icon: "torneo",
     items: [
       { href: "/admin/equipos", label: "Equipos", resource: "equipos" },
       { href: "/admin/jugadores", label: "Jugadores", resource: "jugadores" },
@@ -28,6 +34,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   },
   {
     title: "Estadísticas",
+    icon: "estadisticas",
     items: [
       { href: "/admin/goleadores", label: "Goleadores" },
       { href: "/admin/disciplina", label: "Disciplina" },
@@ -37,6 +44,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   },
   {
     title: "Configuración",
+    icon: "configuracion",
     items: [
       { href: "/admin/usuarios", label: "Usuarios", resource: "usuarios" },
       { href: "/admin/auditoria", label: "Auditoría", resource: "auditoria" },
@@ -52,6 +60,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
 export const DELEGADO_NAV: AdminNavGroup[] = [
   {
     title: "",
+    icon: "home",
     items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }],
   },
 ];
