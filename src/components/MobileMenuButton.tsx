@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
-import { logoutFanAction } from "@/app/(public)/cuenta/actions";
+import { usePathname } from "next/navigation";
+import { PUBLIC_NAV_GROUPS } from "@/components/PublicNav";
+import { logoutFanAction } from "@/app/(public)/(with-crests)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
 import type { AccountVoterIdentity } from "@/lib/voter";
 
+function isActive(pathname: string, href: string) {
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+}
+
 export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="xl:hidden">
@@ -17,7 +23,7 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 text-white"
+        className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 text-white"
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -33,16 +39,40 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
       {open && (
         <div className="absolute inset-x-0 top-full z-40 border-t border-[var(--color-gray-200)] bg-[var(--color-surface)] shadow-lg">
           <nav className="container-page flex flex-col py-2">
-            {PUBLIC_NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-3 text-[0.95rem] font-medium text-[var(--color-gray-900)] hover:bg-[var(--color-gray-50)]"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {PUBLIC_NAV_GROUPS.map((entry) =>
+              "items" in entry ? (
+                <div key={entry.label} className="py-1">
+                  <p className="px-2 pb-1 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--color-gray-400)]">
+                    {entry.label}
+                  </p>
+                  {entry.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      aria-current={isActive(pathname, item.href) ? "page" : undefined}
+                      className={`block rounded-lg px-4 py-3 text-[0.95rem] font-medium hover:bg-[var(--color-gray-50)] ${
+                        isActive(pathname, item.href) ? "text-[var(--color-red-accent)]" : "text-[var(--color-gray-900)]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={entry.href}
+                  href={entry.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(pathname, entry.href) ? "page" : undefined}
+                  className={`rounded-lg px-2 py-3 text-[0.95rem] font-medium hover:bg-[var(--color-gray-50)] ${
+                    isActive(pathname, entry.href) ? "text-[var(--color-red-accent)]" : "text-[var(--color-gray-900)]"
+                  }`}
+                >
+                  {entry.label}
+                </Link>
+              ),
+            )}
 
             <div className="mt-1 flex flex-col border-t border-[var(--color-gray-100)] pt-1">
               {voter ? (

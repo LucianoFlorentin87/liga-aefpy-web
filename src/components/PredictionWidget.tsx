@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { castPredictionAction } from "@/app/(public)/fixture/prediction-actions";
+import { castPredictionAction } from "@/app/(public)/(with-crests)/fixture/prediction-actions";
 
 export type PredictionChoice = "LOCAL" | "EMPATE" | "VISITANTE";
 

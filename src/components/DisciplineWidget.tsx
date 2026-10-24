@@ -2,6 +2,7 @@ import type { DisciplineRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 import { WidgetCard } from "@/components/WidgetCard";
+import { CardIcon } from "@/components/CardIcon";
 
 /**
  * Versión compacta de DisciplineTable para la portada — ver ScorersWidget,
@@ -22,7 +23,12 @@ export function DisciplineWidget({ rows, limit = 5 }: { rows: DisciplineRow[]; l
           <thead>
             <tr className="border-b border-[var(--color-gray-200)] text-[0.68rem] uppercase tracking-wide text-[var(--color-gray-500)]">
               <th className="py-2 pl-4 text-left font-semibold">Jugador</th>
-              <th className="py-2 text-center font-semibold">🟨🟥</th>
+              <th className="py-2 text-center font-semibold">
+                <span className="inline-flex items-center gap-1">
+                  <CardIcon color="yellow" />
+                  <CardIcon color="red" />
+                </span>
+              </th>
               <th className="py-2 pr-4 text-center font-semibold">Sanción</th>
             </tr>
           </thead>

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
-import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
+import { PublicNavMenu } from "@/components/PublicNavMenu";
 import { MobileMenuButton } from "@/components/MobileMenuButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getAccountVoter } from "@/lib/voter";
-import { logoutFanAction } from "@/app/(public)/cuenta/actions";
+import { logoutFanAction } from "@/app/(public)/(with-crests)/cuenta/actions";
 import { logoutAction as logoutStaffAction } from "@/app/admin/actions";
 
 export async function PublicHeader() {
@@ -21,17 +21,7 @@ export async function PublicHeader() {
           <Logo size={38} variant="light" showTagline={false} name={settings?.orgName ?? "Liga AEFPY"} />
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-1">
-          {PUBLIC_NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-2.5 py-2 text-[0.8rem] font-semibold text-white/75 hover:bg-white/10 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <PublicNavMenu />
 
         <div className="flex items-center gap-2">
           {voter ? (

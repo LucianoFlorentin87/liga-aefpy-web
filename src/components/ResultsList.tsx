@@ -25,14 +25,23 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
               <div className="flex items-center gap-3">
                 <span className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right text-sm font-semibold text-[var(--color-navy-900)]">
                   <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={20} />
-                  <span className="truncate">{match.homeTeam.name}</span>
+                  {/* shortName siempre, no truncate: este componente se renderiza tanto en
+                      la página completa de /resultados como en una tarjeta angosta del
+                      inicio, así que un breakpoint de viewport no sirve acá — ver la nota
+                      de CLAUDE.md sobre este mismo problema. El nombre completo queda en
+                      title= para quien pase el mouse o use lector de pantalla. */}
+                  <span className="truncate" title={match.homeTeam.name}>
+                    {match.homeTeam.shortName}
+                  </span>
                 </span>
                 <span className="shrink-0 whitespace-nowrap rounded-md bg-[var(--color-gray-100)] px-2.5 py-1 text-sm font-extrabold text-[var(--color-navy-900)]">
                   {homeGoals} - {awayGoals}
                 </span>
                 <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold text-[var(--color-navy-900)]">
                   <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={20} />
-                  <span className="truncate">{match.awayTeam.name}</span>
+                  <span className="truncate" title={match.awayTeam.name}>
+                    {match.awayTeam.shortName}
+                  </span>
                 </span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--color-gray-500)]">

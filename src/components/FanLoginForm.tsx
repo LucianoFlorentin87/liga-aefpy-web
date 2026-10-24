@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { FaRegEnvelope, FaLock, FaArrowRight } from "react-icons/fa6";
-import { loginFanAction, type FanFormState } from "@/app/(public)/cuenta/actions";
+import { loginFanAction, type FanFormState } from "@/app/(public)/(with-crests)/cuenta/actions";
 import { PasswordInput } from "@/components/PasswordInput";
 import { GLASS_INPUT_CLASSES } from "@/components/AuthScreen";
 

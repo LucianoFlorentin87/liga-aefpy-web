@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Logo } from "@/components/Logo";
-import { PUBLIC_NAV_ITEMS } from "@/components/PublicNav";
+import { PUBLIC_NAV_FLAT } from "@/components/PublicNav";
 
 export async function PublicFooter() {
   const settings = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
@@ -19,7 +19,7 @@ export async function PublicFooter() {
         </div>
 
         <nav className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[0.8rem] sm:grid-cols-3">
-          {PUBLIC_NAV_ITEMS.map((item) => (
+          {PUBLIC_NAV_FLAT.map((item) => (
             <Link key={item.href} href={item.href} className="text-white/60 hover:text-white">
               {item.label}
             </Link>

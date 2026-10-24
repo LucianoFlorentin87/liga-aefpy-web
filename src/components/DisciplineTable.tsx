@@ -1,6 +1,7 @@
 import type { DisciplineRow } from "@/lib/stats";
 import { EmptyState } from "@/components/EmptyState";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
+import { CardIcon } from "@/components/CardIcon";
 
 export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?: number }) {
   const data = limit ? rows.slice(0, limit) : rows;
@@ -17,8 +18,12 @@ export function DisciplineTable({ rows, limit }: { rows: DisciplineRow[]; limit?
             <th>Jugador</th>
             <th>Equipo</th>
             <th className="text-center">PJ</th>
-            <th className="text-center">🟨</th>
-            <th className="text-center">🟥</th>
+            <th className="text-center">
+              <CardIcon color="yellow" />
+            </th>
+            <th className="text-center">
+              <CardIcon color="red" />
+            </th>
             <th className="text-center">Sanciones</th>
           </tr>
         </thead>

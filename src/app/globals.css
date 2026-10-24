@@ -373,3 +373,14 @@ table.data-table tbody tr:hover {
 .animation-delay-4000 {
   animation-delay: -9s;
 }
+
+/* No apagamos TODAS las transiciones con un 0.01ms global — eso se lleva
+   puesto feedback útil (hover, foco, el pulso de "cargando" del video). Acá
+   sólo se frena la animación continua y puramente decorativa del fondo de
+   login, que es la que de verdad puede molestar a alguien sensible al
+   movimiento; el resto de las transiciones breves de la UI quedan igual. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob {
+    animation: none;
+  }
+}

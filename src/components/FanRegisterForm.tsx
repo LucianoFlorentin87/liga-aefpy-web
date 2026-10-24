@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { registerFanAction, type FanFormState } from "@/app/(public)/cuenta/actions";
+import { registerFanAction, type FanFormState } from "@/app/(public)/(with-crests)/cuenta/actions";
 import { PasswordInput } from "@/components/PasswordInput";
 
 const emptyState: FanFormState = {};
