@@ -22,7 +22,7 @@ export default async function GoleadoresPage() {
               <p className="truncate text-sm font-bold text-[var(--color-navy-900)]">{top.playerName}</p>
               <p className="text-xs text-[var(--color-gray-500)]">{top.teamName}</p>
             </div>
-            <span className="stat-figure ml-auto shrink-0 text-5xl text-[var(--color-navy-900)]">{top.goals}</span>
+            <span className="stat-figure ml-auto shrink-0 text-7xl text-[var(--color-navy-900)]">{top.goals}</span>
           </div>
         )}
         <div className="card p-3 sm:p-5">

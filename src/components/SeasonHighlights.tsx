@@ -24,10 +24,10 @@ export function SeasonHighlights({ data }: { data: SeasonHighlightsData }) {
             className="animate-rise rounded-xl border border-[var(--color-gray-200)] bg-[var(--color-surface)] px-4 py-5 text-center @lg:text-left"
             style={{ animationDelay: `${i * 70}ms` }}
           >
-            <p className="stat-figure text-[2.5rem] text-[var(--color-navy-900)] @lg:text-5xl">
+            <p className="stat-figure text-6xl text-[var(--color-navy-900)] @lg:text-7xl">
               {item.format ? item.format(data[item.key]) : data[item.key]}
             </p>
-            <p className="mt-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--color-gray-500)]">
+            <p className="mt-1.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--color-gray-500)]">
               {item.label}
             </p>
           </div>

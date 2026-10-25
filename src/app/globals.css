@@ -443,16 +443,17 @@ table.data-table tbody tr:hover {
    queda fuera de este rediseño) — clase nueva, de uso explícito. */
 .heading-heavy {
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.04;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
 }
 
-/* Número grande como protagonista (jornada, goles, equipos…), mismo peso y
-   tracking que .heading-heavy pero pensado para una sola cifra corta. */
+/* Número grande como protagonista (jornada, goles, equipos…) — el peso 900 +
+   tracking bien negativo es intencional, para que la cifra pese tanto como
+   en la referencia (no un simple font-extrabold de más). */
 .stat-figure {
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
   font-variant-numeric: tabular-nums;
 }
 

@@ -10,6 +10,7 @@ import {
   getSeasonHighlights,
 } from "@/lib/stats";
 import { NextMatchCard } from "@/components/NextMatchCard";
+import { TeamLogosBar } from "@/components/TeamLogosBar";
 import { SeasonHighlights } from "@/components/SeasonHighlights";
 import { ResultsList } from "@/components/ResultsList";
 import { StandingsWidget } from "@/components/StandingsWidget";
@@ -47,6 +48,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <TeamLogosBar />
       {/* via-[#0b1b3f] (no var(--color-navy-900)): este degradé siempre tiene
           que quedar oscuro — esa variable ahora es el color de texto
           principal y se aclara en modo oscuro, así que reusarla acá
@@ -62,18 +64,22 @@ export default async function HomePage() {
                 (la variable sí cambia con el tema y en oscuro queda sin
                 contraste contra un fondo que no se aclaró). */}
             <p className="eyebrow !text-red-300">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl italic tracking-tight text-white sm:text-5xl">
-              {settings?.orgName || "Liga AEFPY"} <span className="text-[var(--color-red-500)]">2026</span>
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl italic tracking-tight text-white sm:text-4xl">
+              {settings?.orgName || "Liga AEFPY"}
             </h1>
-            <p className="mt-2 text-base font-medium text-white/70">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
+            {/* El año como número protagonista, no como palabra más del
+                título — misma idea que el "#102" de la referencia, en
+                nuestra escala navy/rojo. */}
+            <p className="stat-figure mt-1 text-7xl text-[var(--color-red-500)] sm:text-8xl">2026</p>
+            <p className="mt-3 text-base font-medium text-white/70">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
           </div>
           <NextMatchCard match={nextMatch} />
         </div>
       </section>
 
       <section className="container-page py-10">
-        <h2 className="heading-heavy text-2xl text-[var(--color-navy-900)] sm:text-3xl">Temporada 2026</h2>
-        <div className="mt-4">
+        <h2 className="heading-heavy text-3xl text-[var(--color-navy-900)] sm:text-4xl">Temporada 2026</h2>
+        <div className="mt-5">
           <SeasonHighlights data={seasonHighlights} />
         </div>
       </section>

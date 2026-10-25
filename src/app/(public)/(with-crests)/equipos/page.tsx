@@ -73,7 +73,7 @@ export default async function EquiposPage() {
                   {/* Posición como número protagonista, no texto chico — ver
                       "cifras grandes" del rediseño. */}
                   {position && (
-                    <span className="stat-figure absolute right-4 top-4 text-3xl text-[var(--color-gray-200)]">
+                    <span className="stat-figure pointer-events-none absolute -right-1 -top-2 text-7xl text-[var(--color-gray-300)]">
                       #{position}
                     </span>
                   )}

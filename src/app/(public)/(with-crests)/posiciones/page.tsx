@@ -20,7 +20,7 @@ export default async function PosicionesPage() {
       <div className="container-page py-8">
         {leader && (
           <div className="animate-rise mb-6 flex items-center gap-4 rounded-xl border border-[var(--color-gray-200)] bg-[var(--color-surface)] p-5">
-            <span className="stat-figure shrink-0 text-5xl text-[var(--color-navy-900)]">#1</span>
+            <span className="stat-figure shrink-0 text-7xl text-[var(--color-navy-900)]">#1</span>
             <TeamCrest name={leader.teamName} shortName={leader.teamShortName} logoUrl={leader.logoUrl} size={40} />
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-[var(--color-navy-900)]">{leader.teamName}</p>
