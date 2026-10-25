@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      className="h-full antialiased"
       // El script de abajo le agrega data-theme al <html> antes de que
       // React hidrate (necesario para que no haya parpadeo de tema) — eso
       // hace que el DOM real no coincida con lo que React renderizó acá,

@@ -19,7 +19,12 @@ export function WidgetCard({
   children: ReactNode;
 }) {
   return (
-    <div className={`card overflow-hidden ${className ?? ""}`}>
+    // @container (no viewport breakpoints adentro): esta misma tarjeta vive
+    // angosta en la grilla de 2 columnas del inicio y después, reusada en
+    // otra página, puede terminar a lo ancho completo — los hijos que
+    // necesitan reaccionar al espacio disponible miran el ancho de ESTE
+    // contenedor (variantes @sm/@md/…), no el de la ventana.
+    <div className={`card @container overflow-hidden ${className ?? ""}`}>
       <div className="flex items-center justify-between bg-gradient-to-br from-[var(--color-navy-700)] via-[var(--color-navy-800)] to-[var(--color-navy-950)] px-4 py-3">
         <h2 className="text-sm font-extrabold uppercase tracking-wide text-white">{title}</h2>
         <Link

@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Tipografías como archivos locales (@fontsource), no next/font/google: así
+   el build no necesita red hacia Google Fonts (falla en entornos con salida
+   restringida, como CI o ciertos sandboxes). wght.css trae todo el eje de
+   pesos (100-900) en un solo variable font — cubre desde el texto de cuerpo
+   hasta los títulos extra-bold del rediseño sin declarar un @font-face por
+   peso. */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/playfair-display/wght.css";
+@import "@fontsource-variable/playfair-display/wght-italic.css";
+
 /* ------------------------------------------------------------------------ */
 /* Modo oscuro                                                               */
 /* ------------------------------------------------------------------------ */
@@ -23,6 +33,9 @@
    todavía (:not([data-theme="light"])). */
 
 :root {
+  --font-body: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Playfair Display Variable", Georgia, serif;
+
   --background: #f5f6f8;
   --foreground: #1b2333;
   --color-surface: #ffffff;
@@ -417,6 +430,51 @@ table.data-table tbody tr:hover {
    movimiento; el resto de las transiciones breves de la UI quedan igual. */
 @media (prefers-reduced-motion: reduce) {
   .animate-blob {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Rediseño del sitio público — tipografía pesada + entrada en CSS         */
+/* ---------------------------------------------------------------------- */
+
+/* Título con peso extra y tracking negativo, para los H2 del sitio público
+   rediseñado. No toca .section-title (la usa también el panel de admin, que
+   queda fuera de este rediseño) — clase nueva, de uso explícito. */
+.heading-heavy {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+/* Número grande como protagonista (jornada, goles, equipos…), mismo peso y
+   tracking que .heading-heavy pero pensado para una sola cifra corta. */
+.stat-figure {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Entrada suave sólo con CSS (sin IntersectionObserver): se dispara una vez
+   al montar, no en cada scroll — por eso alcanza con una animación simple
+   en vez de un observer. Respeta prefers-reduced-motion como el resto de
+   las animaciones del sitio. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
     animation: none;
   }
 }

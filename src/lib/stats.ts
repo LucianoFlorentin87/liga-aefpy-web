@@ -400,3 +400,21 @@ export async function getRecentResults(limit = 5) {
     include: { homeTeam: true, awayTeam: true, goals: true },
   });
 }
+
+export type SeasonHighlights = {
+  matchday: number;
+  teams: number;
+  matchesPlayed: number;
+  goals: number;
+};
+
+/** Cifras grandes de la temporada para el inicio — ver sección "Temporada 2026" en page.tsx. */
+export async function getSeasonHighlights(): Promise<SeasonHighlights> {
+  const [teams, matchesPlayed, goals, latestMatchday] = await Promise.all([
+    prisma.team.count({ where: { status: "ACTIVO" } }),
+    prisma.match.count({ where: { status: "FINALIZADO" } }),
+    prisma.matchGoal.count(),
+    prisma.match.aggregate({ _max: { matchday: true } }),
+  ]);
+  return { matchday: latestMatchday._max.matchday ?? 1, teams, matchesPlayed, goals };
+}

@@ -7,8 +7,10 @@ import {
   getNextMatch,
   getRecentResults,
   getUpcomingMatches,
+  getSeasonHighlights,
 } from "@/lib/stats";
 import { NextMatchCard } from "@/components/NextMatchCard";
+import { SeasonHighlights } from "@/components/SeasonHighlights";
 import { ResultsList } from "@/components/ResultsList";
 import { StandingsWidget } from "@/components/StandingsWidget";
 import { ScorersWidget } from "@/components/ScorersWidget";
@@ -22,7 +24,7 @@ import { formatDateShort } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [nextMatch, upcomingMatches, recentResults, standings, scorers, discipline, settings, featuredVideos, teams] =
+  const [nextMatch, upcomingMatches, recentResults, standings, scorers, discipline, settings, featuredVideos, teams, seasonHighlights] =
     await Promise.all([
       getNextMatch(),
       getUpcomingMatches(8),
@@ -37,6 +39,7 @@ export default async function HomePage() {
         orderBy: { name: "asc" },
         select: { id: true, name: true, shortName: true, logoUrl: true },
       }),
+      getSeasonHighlights(),
     ]);
   // El destacado más reciente se ve grande arriba de todo; el resto (si hay
   // más de uno) va en la franja más chica, más abajo.
@@ -65,6 +68,13 @@ export default async function HomePage() {
             <p className="mt-2 text-base font-medium text-white/70">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
           </div>
           <NextMatchCard match={nextMatch} />
+        </div>
+      </section>
+
+      <section className="container-page py-10">
+        <h2 className="heading-heavy text-2xl text-[var(--color-navy-900)] sm:text-3xl">Temporada 2026</h2>
+        <div className="mt-4">
+          <SeasonHighlights data={seasonHighlights} />
         </div>
       </section>
 
@@ -102,7 +112,7 @@ export default async function HomePage() {
               <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/90">
                 {formatDateShort(primaryVideo.createdAt)}
               </p>
-              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{primaryVideo.title}</h2>
+              <h2 className="heading-heavy mt-2 text-2xl text-white sm:text-3xl">{primaryVideo.title}</h2>
               <Link
                 href="/videos"
                 className="mt-5 inline-flex items-center rounded-full border border-white/30 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-white/10"
