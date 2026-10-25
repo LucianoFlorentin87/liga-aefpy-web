@@ -42,7 +42,7 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
             {PUBLIC_NAV_GROUPS.map((entry) =>
               "items" in entry ? (
                 <div key={entry.label} className="py-1">
-                  <p className="px-2 pb-1 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--color-gray-400)]">
+                  <p className="px-2 pb-1 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--color-gray-500)]">
                     {entry.label}
                   </p>
                   {entry.items.map((item) => (

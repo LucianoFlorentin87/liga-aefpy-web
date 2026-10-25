@@ -85,7 +85,7 @@ export default async function EquiposPage() {
                         </p>
                         <p className="text-xs text-[var(--color-gray-500)]">
                           {team._count.players} jugadores
-                          {team.gamertag && <span className="text-[var(--color-gray-400)]"> · 🎮 {team.gamertag}</span>}
+                          {team.gamertag && <span className="text-[var(--color-gray-500)]"> · 🎮 {team.gamertag}</span>}
                         </p>
                       </div>
                     </div>

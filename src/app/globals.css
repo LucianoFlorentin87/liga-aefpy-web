@@ -233,9 +233,30 @@ body {
   filter: brightness(0.92);
 }
 
+/* Para acciones graves pero recuperables (ej. "Retirar de la liga", que no
+   borra nada) — distinta de .btn-danger (irreversible, ej. "Eliminar"), así
+   un admin escaneando la columna de acciones tiene una señal de color
+   distinta antes de la más grave de las dos. */
+.btn-caution {
+  background: var(--color-amber-bg);
+  color: var(--color-amber-text);
+}
+.btn-caution:hover {
+  filter: brightness(0.92);
+}
+
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* En touch, .btn (incl. las variantes compactas !px-2 !py-1 de las tablas de
+   admin) sube al mínimo de 44px recomendado — con mouse/trackpad la densidad
+   original se mantiene, así las tablas de admin no se agrandan en desktop. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 2.75rem;
+  }
 }
 
 .input {
@@ -331,9 +352,24 @@ table.data-table th.text-center {
 table.data-table tbody tr:hover {
   background: var(--color-gray-50);
 }
+/* "Scroll shadows": en vez de agregar JS para detectar si hay más contenido
+   para el costado, dos gradientes "attachment: local" (se mueven con el
+   contenido) muestran una sombra sólo cuando efectivamente hay más tabla
+   para scrollear a ese lado, y desaparece sola al llegar al borde. Así la
+   columna Acciones de /admin/equipos ya no queda escondida sin ningún
+   indicio en mobile. */
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, var(--color-surface) 30%, transparent),
+    linear-gradient(to left, var(--color-surface) 30%, transparent),
+    linear-gradient(to right, rgba(11, 27, 63, 0.12), transparent),
+    linear-gradient(to left, rgba(11, 27, 63, 0.12), transparent);
+  background-position: left, right, left, right;
+  background-repeat: no-repeat;
+  background-size: 24px 100%, 24px 100%, 10px 100%, 10px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .empty-state {

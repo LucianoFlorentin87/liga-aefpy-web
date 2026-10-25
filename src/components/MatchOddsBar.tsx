@@ -11,7 +11,7 @@ export function MatchOddsBar({ odds }: { odds: MatchOdds | null }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-gray-400)]">
+      <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-gray-500)]">
         Favorito según rendimiento en la liga
       </p>
       <div className="flex h-2 overflow-hidden rounded-full bg-[var(--color-gray-100)]">

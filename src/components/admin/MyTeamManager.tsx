@@ -51,7 +51,7 @@ function TeamProfileForm({ team }: { team: Team }) {
         {team.logoUrl ? (
           <Image src={team.logoUrl} alt={team.name} width={56} height={56} unoptimized className="rounded-lg object-contain" />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--color-gray-100)] text-xs font-bold text-[var(--color-gray-400)]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--color-gray-100)] text-xs font-bold text-[var(--color-gray-500)]">
             {team.shortName}
           </div>
         )}

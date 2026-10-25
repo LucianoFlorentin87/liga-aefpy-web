@@ -154,7 +154,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                   return (
                     <tr key={t.id}>
                       <td className="font-semibold text-[var(--color-navy-900)]">
-                        {t.name} <span className="text-[var(--color-gray-400)]">({t.shortName})</span>
+                        {t.name} <span className="text-[var(--color-gray-500)]">({t.shortName})</span>
                       </td>
                       <td>{t.delegateName || "—"}</td>
                       <td>{t.delegatePhone || "—"}</td>
@@ -189,7 +189,12 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                               }}
                             >
                               <input type="hidden" name="id" value={t.id} />
-                              <button className="btn btn-danger !px-2 !py-1 text-xs">Retirar de la liga</button>
+                              {/* .btn-caution (ámbar), no .btn-danger: afecta toda la
+                                  temporada pero no borra nada — .btn-danger queda
+                                  reservado para lo irreversible ("Eliminar" abajo),
+                                  así hay una señal de color distinta antes de la
+                                  acción más grave. */}
+                              <button className="btn btn-caution !px-2 !py-1 text-xs">Retirar de la liga</button>
                             </form>
                           )}
                           {t.status === "RETIRADO" && (

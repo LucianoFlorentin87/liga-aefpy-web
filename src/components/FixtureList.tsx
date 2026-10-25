@@ -69,7 +69,7 @@ export function FixtureList({
                             {homeGoals} - {awayGoals}
                           </span>
                         ) : (
-                          <span className="shrink-0 px-1 text-xs font-semibold text-[var(--color-gray-400)]">vs</span>
+                          <span className="shrink-0 px-1 text-xs font-semibold text-[var(--color-gray-500)]">vs</span>
                         )}
                         <span className="flex w-20 items-center gap-1.5 truncate text-sm font-semibold text-[var(--color-navy-900)] sm:w-32 md:w-40">
                           <TeamCrest

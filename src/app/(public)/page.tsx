@@ -51,7 +51,14 @@ export default async function HomePage() {
       <section className="bg-gradient-to-br from-[var(--color-navy-800)] via-[#0b1b3f] to-[var(--color-navy-950)]">
         <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
           <div>
-            <p className="eyebrow">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
+            {/* !text-red-300 (fijo, no var(--color-red-300)): .eyebrow por
+                defecto usa red-accent, pensado para ir sobre fondos claros —
+                acá va directo sobre el degradé navy del hero, que se mantiene
+                oscuro en los dos temas, así que necesita el mismo rojo claro
+                y fijo que ya usa NextMatchCard al lado para el mismo caso
+                (la variable sí cambia con el tema y en oscuro queda sin
+                contraste contra un fondo que no se aclaró). */}
+            <p className="eyebrow !text-red-300">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
             <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl italic tracking-tight text-white sm:text-5xl">
               {settings?.orgName || "Liga AEFPY"} <span className="text-[var(--color-red-500)]">2026</span>
             </h1>
@@ -92,7 +99,7 @@ export default async function HomePage() {
               <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--color-red-700)]">
                 Video destacado
               </span>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/70">
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/90">
                 {formatDateShort(primaryVideo.createdAt)}
               </p>
               <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{primaryVideo.title}</h2>

@@ -36,7 +36,7 @@ export function RulesEditor({
             </form>
           </div>
         ) : (
-          <p className="mb-3 text-sm text-[var(--color-gray-400)]">Todavía no se subió ningún PDF.</p>
+          <p className="mb-3 text-sm text-[var(--color-gray-500)]">Todavía no se subió ningún PDF.</p>
         )}
 
         <form action={formAction} className="flex flex-col gap-3">

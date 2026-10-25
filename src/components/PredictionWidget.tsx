@@ -63,7 +63,7 @@ export function PredictionWidget({ matchId, tally }: { matchId: string; tally: P
               type="button"
               disabled={pending}
               onClick={() => vote(value)}
-              className={`rounded-full border px-2.5 py-1 text-[0.7rem] font-semibold transition ${
+              className={`min-h-[44px] rounded-full border px-3.5 py-2 text-[0.7rem] font-semibold transition ${
                 selected
                   ? "border-[var(--color-red-600)] bg-[var(--color-red-600)] text-white"
                   : "border-[var(--color-gray-200)] text-[var(--color-gray-600)] hover:border-[var(--color-red-300)]"
@@ -77,11 +77,11 @@ export function PredictionWidget({ matchId, tally }: { matchId: string; tally: P
       </div>
       {error && <p className="text-[0.7rem] font-medium text-[var(--color-red-accent)]">{error}</p>}
       {revealPercentages ? (
-        <p className="text-[0.68rem] text-[var(--color-gray-400)]">
+        <p className="text-[0.68rem] text-[var(--color-gray-500)]">
           {total} {total === 1 ? "voto" : "votos"} · la predicción no afecta el resultado oficial
         </p>
       ) : (
-        <p className="text-[0.68rem] text-[var(--color-gray-400)]">Votá para ver qué eligió el resto.</p>
+        <p className="text-[0.68rem] text-[var(--color-gray-500)]">Votá para ver qué eligió el resto.</p>
       )}
     </div>
   );

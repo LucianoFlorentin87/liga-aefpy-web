@@ -98,7 +98,7 @@ export default async function DashboardPage() {
             {recentActivity.map((entry) => (
               <li key={entry.id} className="flex items-center justify-between gap-4 py-2.5 text-sm">
                 <span className="text-[var(--color-gray-800)]">{entry.message}</span>
-                <span className="shrink-0 text-xs text-[var(--color-gray-400)]">
+                <span className="shrink-0 text-xs text-[var(--color-gray-500)]">
                   {new Intl.DateTimeFormat("es-PY", { dateStyle: "short", timeStyle: "short" }).format(entry.createdAt)}
                 </span>
               </li>

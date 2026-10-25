@@ -48,7 +48,7 @@ export function FanLoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-red-600)] to-[var(--color-red-500)] py-2.5 text-sm font-bold text-white transition hover:from-[var(--color-red-700)] hover:to-[var(--color-red-600)] disabled:opacity-55"
+        className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-red-600)] py-2.5 text-sm font-bold text-white transition hover:bg-[var(--color-red-700)] disabled:opacity-55"
       >
         {pending ? "Ingresando…" : "Ingresar"}
         {!pending && <FaArrowRight className="text-xs" />}

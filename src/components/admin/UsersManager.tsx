@@ -209,7 +209,7 @@ export function UsersManager({ users, actorId, teams }: { users: UserRow[]; acto
                   <tr key={u.id}>
                     <td className="font-semibold text-[var(--color-navy-900)]">
                       {u.firstName} {u.lastName}
-                      {u.id === actorId && <span className="ml-1.5 text-xs text-[var(--color-gray-400)]">(vos)</span>}
+                      {u.id === actorId && <span className="ml-1.5 text-xs text-[var(--color-gray-500)]">(vos)</span>}
                     </td>
                     <td>{u.username}</td>
                     <td>{u.email}</td>

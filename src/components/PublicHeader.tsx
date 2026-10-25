@@ -55,9 +55,14 @@ export async function PublicHeader() {
               </Link>
             </div>
           )}
+          {/* text-red-300 fijo (no var(--color-red-300)): el header se
+              mantiene navy-950 en los dos temas, y la variable de red-300
+              se oscurece en modo oscuro pensada para fondos que sí se
+              aclaran ahí — sobre un fondo que no cambia, necesita el mismo
+              rojo claro fijo que ya usa NextMatchCard. */}
           <Link
             href="/admin"
-            className="hidden xl:inline-flex items-center rounded-full border border-[var(--color-red-500)]/50 px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-[var(--color-red-500)] hover:bg-[var(--color-red-500)]/10"
+            className="hidden xl:inline-flex items-center rounded-full border border-red-300/50 px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-red-300 hover:bg-[var(--color-red-500)]/10"
           >
             Administración
           </Link>

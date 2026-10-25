@@ -51,7 +51,7 @@ export function DisciplineWidget({ rows, limit = 5 }: { rows: DisciplineRow[]; l
                 </td>
                 <td className="py-2 pr-4 text-center">
                   {row.sanctionsCount === 0 ? (
-                    <span className="text-[var(--color-gray-400)]">—</span>
+                    <span className="text-[var(--color-gray-500)]">—</span>
                   ) : (
                     <span className={`badge ${row.hasActiveSanction ? "badge-red" : "badge-green"}`}>
                       {row.hasActiveSanction ? "Sancionado" : "Cumplida"}
