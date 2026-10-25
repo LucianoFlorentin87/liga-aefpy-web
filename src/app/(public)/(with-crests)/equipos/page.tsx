@@ -68,24 +68,35 @@ export default async function EquiposPage() {
               return (
                 <div
                   key={team.id}
-                  className="flex flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-5 shadow-sm transition-colors hover:border-[var(--color-navy-700)]"
+                  className="relative flex flex-col gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-5 shadow-sm transition-colors hover:border-[var(--color-navy-700)]"
                 >
+                  {/* Posición como número protagonista, no texto chico — ver
+                      "cifras grandes" del rediseño. */}
+                  {position && (
+                    <span className="stat-figure absolute right-4 top-4 text-3xl text-[var(--color-gray-200)]">
+                      #{position}
+                    </span>
+                  )}
                   <Link href={`/equipos/${team.id}`} className="flex flex-col gap-3">
                     <div className="flex items-center gap-3">
                       <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={44} variant="clean" />
                       <div className="min-w-0">
-                        {position && (
-                          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-[var(--color-gray-500)]">
-                            #{position} en la tabla
-                          </p>
-                        )}
                         <p className="flex min-w-0 items-center gap-1.5 text-base font-extrabold uppercase text-[var(--color-navy-900)]">
                           <span className="truncate">{team.name}</span>
                           {team.status === "RETIRADO" && <span className="shrink-0"><ActiveStatusBadge status="RETIRADO" /></span>}
                         </p>
-                        <p className="text-xs text-[var(--color-gray-500)]">
+                        <p className="flex items-center gap-1 text-xs text-[var(--color-gray-500)]">
                           {team._count.players} jugadores
-                          {team.gamertag && <span className="text-[var(--color-gray-500)]"> · 🎮 {team.gamertag}</span>}
+                          {team.gamertag && (
+                            <span className="inline-flex items-center gap-1">
+                              ·
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                <rect x="2" y="7" width="20" height="10" rx="4" />
+                                <path d="M7 10v4M5 12h4M16 11h.01M18.5 13h.01" strokeLinecap="round" />
+                              </svg>
+                              {team.gamertag}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -108,7 +119,7 @@ export default async function EquiposPage() {
                       </div>
                       <div className="rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-surface)] py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">Pts</p>
-                        <p className="font-bold text-[var(--color-navy-900)]">{row?.pts ?? 0}</p>
+                        <p className="stat-figure text-lg text-[var(--color-navy-900)]">{row?.pts ?? 0}</p>
                       </div>
                       <div className="rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-surface)] py-2">
                         <p className="text-[0.65rem] text-[var(--color-gray-500)]">GF</p>

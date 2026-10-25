@@ -14,7 +14,7 @@ export default async function FanRegisterPage() {
     <div>
       <div className="border-b border-[var(--color-gray-200)] bg-[var(--color-surface)]">
         <div className="container-page py-6">
-          <h1 className="text-xl font-extrabold text-[var(--color-navy-900)] sm:text-2xl">Crear cuenta</h1>
+          <h1 className="heading-heavy text-2xl text-[var(--color-navy-900)] sm:text-3xl">Crear cuenta</h1>
           <p className="mt-1 text-sm text-[var(--color-gray-500)]">
             Registrate para votar quién creés que gana cada partido de la jornada.
           </p>

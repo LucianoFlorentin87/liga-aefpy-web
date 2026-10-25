@@ -55,6 +55,23 @@ export function formatDateBadge(date: Date | string): string {
   return `${get("weekday")}, ${get("day")} ${get("month")}`.replace(/\./g, "").toUpperCase();
 }
 
+/** Día/mes/día-de-semana por separado — para el bloque de fecha apilado del fixture (día grande + mes chico). */
+export function formatDateBlock(date: Date | string): { day: string; month: string; weekday: string } {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const parts = new Intl.DateTimeFormat("es-PY", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    day: get("day"),
+    month: get("month").replace(/\./g, "").toUpperCase(),
+    weekday: get("weekday").replace(/\./g, "").toUpperCase(),
+  };
+}
+
 export function formatDateShort(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("es-PY", {
