@@ -420,3 +420,19 @@ table.data-table tbody tr:hover {
     animation: none;
   }
 }
+
+/* Los accesos siempre usan una superficie oscura, independientemente del tema. */
+.auth-screen { color-scheme: dark; --color-red-300: #f2a6ad; }
+.input.password-input { padding-right: 2.75rem; }
+.auth-input, .input.auth-input {
+  width: 100%; min-height: 44px; border: 0; border-bottom: 1px solid rgb(255 255 255 / .35);
+  border-radius: 0; padding: .65rem 2.75rem .65rem 2.25rem;
+  background: transparent; color: #fff; font-size: 16px;
+}
+.auth-input:focus { border-bottom-color: #fff; outline: 2px solid #f2a6ad; outline-offset: 2px; }
+.auth-input::placeholder { color: rgb(255 255 255 / .6); }
+.auth-input:-webkit-autofill, .auth-input:-webkit-autofill:hover, .auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff; caret-color: #fff;
+  box-shadow: 0 0 0 1000px #24334f inset;
+}
+.password-input::-ms-reveal, .password-input::-ms-clear { display: none; }

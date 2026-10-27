@@ -19,7 +19,7 @@ export function LoginForm() {
           Usuario
         </label>
         <div className="relative">
-          <FaRegUser className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-white/40" />
+          <FaRegUser className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-white/40" />
           <input
             id="identifier"
             name="identifier"
@@ -31,7 +31,7 @@ export function LoginForm() {
         </div>
       </div>
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <label className="mb-1.5 block text-xs font-semibold text-white/70" htmlFor="password">
             Contraseña
           </label>
@@ -40,14 +40,14 @@ export function LoginForm() {
           </Link>
         </div>
         <div className="relative">
-          <FaLock className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-white/40" />
+          <FaLock className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-white/40" />
           <PasswordInput
             id="password"
             name="password"
             autoComplete="current-password"
             required
-            className={`${GLASS_INPUT_CLASSES} !pr-10`}
-            toggleClassName="absolute inset-y-0 right-0 flex items-center px-2.5 text-white/40 hover:text-white"
+            className={GLASS_INPUT_CLASSES}
+            toggleClassName="absolute inset-y-0 right-0 z-10 flex w-11 items-center justify-center text-white/70 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
           />
         </div>
       </div>
