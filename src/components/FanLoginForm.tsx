@@ -18,7 +18,7 @@ export function FanLoginForm() {
           Correo
         </label>
         <div className="relative">
-          <FaRegEnvelope className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-white/40" />
+          <FaRegEnvelope className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-white/40" />
           <input id="email" name="email" type="email" autoComplete="email" required className={GLASS_INPUT_CLASSES} />
         </div>
       </div>
@@ -27,14 +27,14 @@ export function FanLoginForm() {
           Contraseña
         </label>
         <div className="relative">
-          <FaLock className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-white/40" />
+          <FaLock className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-white/40" />
           <PasswordInput
             id="password"
             name="password"
             autoComplete="current-password"
             required
-            className={`${GLASS_INPUT_CLASSES} !pr-10`}
-            toggleClassName="absolute inset-y-0 right-0 flex items-center px-2.5 text-white/40 hover:text-white"
+            className={GLASS_INPUT_CLASSES}
+            toggleClassName="absolute inset-y-0 right-0 z-10 flex w-11 items-center justify-center text-white/70 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
           />
         </div>
       </div>
