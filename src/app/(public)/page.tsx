@@ -38,19 +38,13 @@ export default async function HomePage() {
         select: { id: true, name: true, shortName: true, logoUrl: true },
       }),
     ]);
-  // El destacado más reciente se ve grande arriba de todo; el resto (si hay
-  // más de uno) va en la franja más chica, más abajo.
   const [primaryVideo, ...videos] = featuredVideos;
 
   return (
     <div>
-      {/* via-[#0b1b3f] (no var(--color-navy-900)): este degradé siempre tiene
-          que quedar oscuro — esa variable ahora es el color de texto
-          principal y se aclara en modo oscuro, así que reusarla acá
-          dejaba una franja clara cruzando el degradé. */}
-      <section className="bg-gradient-to-br from-[var(--color-navy-800)] via-[#0b1b3f] to-[var(--color-navy-950)]">
-        <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-16">
-          <div>
+      <section className="league-hero bg-[var(--color-navy-950)]">
+        <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-20">
+          <div className="league-enter min-w-0">
             {/* !text-red-300 (fijo, no var(--color-red-300)): .eyebrow por
                 defecto usa red-accent, pensado para ir sobre fondos claros —
                 acá va directo sobre el degradé navy del hero, que se mantiene
@@ -59,12 +53,17 @@ export default async function HomePage() {
                 (la variable sí cambia con el tema y en oscuro queda sin
                 contraste contra un fondo que no se aclaró). */}
             <p className="eyebrow !text-red-300">{settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl italic tracking-tight text-white sm:text-5xl">
-              {settings?.orgName || "Liga AEFPY"} <span className="text-[var(--color-red-500)]">2026</span>
+            <h1 className="mt-4 max-w-xl text-4xl font-black leading-[1.04] tracking-[-0.045em] text-balance text-white sm:text-6xl">
+              {settings?.orgName || "Liga AEFPY"}
             </h1>
-            <p className="mt-2 text-base font-medium text-white/70">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-white/75">{settings?.heroSubtitle || "Torneo de Fútbol"}</p>
+            <nav aria-label="Accesos rápidos del torneo" className="mt-7 flex flex-wrap gap-2">
+              <Link className="league-quick-link league-quick-link-primary" href="/fixture">Ver fixture <span aria-hidden="true">↗</span></Link>
+              <Link className="league-quick-link" href="/resultados">Resultados</Link>
+              <Link className="league-quick-link" href="/posiciones">Posiciones</Link>
+            </nav>
           </div>
-          <NextMatchCard match={nextMatch} />
+          <div className="league-enter league-enter-delayed min-w-0"><NextMatchCard match={nextMatch} /></div>
         </div>
       </section>
 
@@ -75,6 +74,15 @@ export default async function HomePage() {
           </WidgetCard>
         </section>
       )}
+
+      <section className="container-page grid gap-6 py-10 lg:grid-cols-2">
+        <WidgetCard title="Últimos resultados" href="/resultados" ariaLabel="Ver todos los resultados">
+          <ResultsList matches={recentResults} />
+        </WidgetCard>
+
+        <StandingsWidget rows={standings} limit={10} />
+
+      </section>
 
       {primaryVideo && (
         <section className="bg-gradient-to-br from-[var(--color-red-500)] via-[var(--color-red-600)] to-[var(--color-red-700)]">
@@ -114,13 +122,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="container-page grid gap-6 py-10 lg:grid-cols-2">
-        <WidgetCard title="Últimos resultados" href="/resultados" ariaLabel="Ver todos los resultados">
-          <ResultsList matches={recentResults} />
-        </WidgetCard>
-
-        <StandingsWidget rows={standings} limit={10} />
-
+      <section className="container-page grid gap-6 pb-10 lg:grid-cols-2">
         {videos.length > 0 && (
           <WidgetCard title="Videos" href="/videos" ariaLabel="Ver todos los videos" className="lg:col-span-2">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

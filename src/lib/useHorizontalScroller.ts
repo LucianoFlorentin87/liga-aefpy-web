@@ -21,10 +21,16 @@ export function useHorizontalScroller<T>(items: T[]) {
   // Recalcula cuando cambia la cantidad de items (ej. termina de cargar la data).
   useEffect(() => {
     update();
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    for (const child of el.children) observer.observe(child);
+    return () => observer.disconnect();
   }, [items, update]);
 
   function scroll(dir: 1 | -1) {
-    ref.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
+    ref.current?.scrollBy({ left: dir * 280, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }
 
   return { ref, canScrollLeft, canScrollRight, progress, onScroll: update, scroll };

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatDate } from "@/lib/format";
 import { TeamCrest } from "@/components/TeamCrest";
 
@@ -27,22 +28,15 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
         <span className="eyebrow !text-red-300">Próximo partido</span>
         <span className="badge badge-navy !bg-white/10 !text-white">Jornada {match.matchday}</span>
       </div>
-      {/* items-start: si el nombre de un equipo pasa a dos líneas (ej. "Bayer
-          Leverkusen") y el otro no, items-center desalinearía los escudos
-          verticalmente porque cada columna se centra según su propia altura.
-          Con items-start ambos escudos quedan a la misma altura sin importar
-          cuánto ocupe el nombre debajo; el "vs" se centra dentro de un
-          bloque de la misma altura que el escudo (h-10 = size 40) para
-          quedar a la altura de los escudos en vez de la del texto. */}
-      <div className="grid grid-cols-3 items-start gap-3 px-5 py-6 text-center">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-5 px-5 py-8 text-center">
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={40} />
-          <span className="text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
+          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={64} />
+          <span className="break-words text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
         </div>
-        <div className="flex h-10 items-center justify-center text-sm font-semibold text-white/70">vs</div>
+        <div className="flex h-16 items-center justify-center text-sm font-semibold text-white/70">vs</div>
         <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={40} />
-          <span className="text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
+          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={64} />
+          <span className="break-words text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 px-5 py-3 text-xs text-white/80">
@@ -50,6 +44,7 @@ export function NextMatchCard({ match }: { match: NextMatch }) {
         <span>{match.time} hs</span>
         <span>{match.venue}</span>
       </div>
+      <Link href="/fixture" className="league-match-link">Ver fixture completo <span aria-hidden="true">→</span></Link>
     </div>
   );
 }

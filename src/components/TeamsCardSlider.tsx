@@ -31,14 +31,14 @@ export function TeamsCardSlider({ teams }: { teams: TeamLite[] }) {
                 }
               : undefined
           }
-          className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth py-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {teams.map((team) => (
             <Link
               key={team.id}
               href={`/equipos/${team.id}`}
               title={team.name}
-              className="flex w-36 shrink-0 snap-start flex-col items-center gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-4 text-center shadow-sm transition-colors hover:border-[var(--color-red-500)]"
+              className="league-team-card flex w-36 shrink-0 snap-start flex-col items-center gap-3 rounded-xl border border-[var(--color-gray-200)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-gray-100)] p-4 text-center shadow-sm hover:border-[var(--color-red-500)]"
             >
               <TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={56} />
               <span className="line-clamp-2 text-xs font-extrabold uppercase leading-tight text-[var(--color-navy-900)]">
