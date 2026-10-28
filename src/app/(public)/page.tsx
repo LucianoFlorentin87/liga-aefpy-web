@@ -81,7 +81,6 @@ export default async function HomePage() {
         </WidgetCard>
 
         <StandingsWidget rows={standings} limit={10} />
-
       </section>
 
       {primaryVideo && (
@@ -122,7 +121,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="container-page grid gap-6 pb-10 lg:grid-cols-2">
+      <section className={`container-page grid gap-6 lg:grid-cols-2 ${primaryVideo ? "py-10" : "pb-10"}`}>
         {videos.length > 0 && (
           <WidgetCard title="Videos" href="/videos" ariaLabel="Ver todos los videos" className="lg:col-span-2">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
