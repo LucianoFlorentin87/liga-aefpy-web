@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PUBLIC_NAV_GROUPS } from "@/components/PublicNav";
@@ -15,10 +15,34 @@ function isActive(pathname: string, href: string) {
 export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const menuId = useId();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    }
+    function onPointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
 
   return (
-    <div className="xl:hidden">
+    <div ref={containerRef} className="xl:hidden">
       <button
+        ref={buttonRef}
+        aria-controls={menuId}
         type="button"
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
@@ -37,8 +61,8 @@ export function MobileMenuButton({ voter }: { voter: AccountVoterIdentity | null
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-full z-40 border-t border-[var(--color-gray-200)] bg-[var(--color-surface)] shadow-lg">
-          <nav className="container-page flex flex-col py-2">
+        <div id={menuId} className="league-mobile-menu absolute inset-x-0 top-full z-40 border-t border-[var(--color-gray-200)] bg-[var(--color-surface)] shadow-lg">
+          <nav aria-label="Navegación principal móvil" className="container-page flex flex-col py-2">
             {PUBLIC_NAV_GROUPS.map((entry) =>
               "items" in entry ? (
                 <div key={entry.label} className="py-1">

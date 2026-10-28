@@ -14,7 +14,7 @@ export function StandingsWidget({ rows, limit = 10 }: { rows: StandingsRowWithTr
           <EmptyState title="Sin datos registrados" hint="Todavía no hay partidos finalizados para calcular la tabla." />
         </div>
       ) : (
-        <table className="w-full text-sm">
+        <table className="w-full text-sm tabular-nums">
           <thead>
             <tr className="border-b border-[var(--color-gray-200)] text-[0.68rem] uppercase tracking-wide text-[var(--color-gray-500)]">
               <th className="py-2 pl-4 text-left font-semibold">Pos</th>
@@ -31,7 +31,7 @@ export function StandingsWidget({ rows, limit = 10 }: { rows: StandingsRowWithTr
           </thead>
           <tbody>
             {data.map((row, index) => (
-              <tr key={row.teamId} className="border-b border-[var(--color-gray-100)] last:border-0">
+              <tr key={row.teamId} className={`border-b border-[var(--color-gray-100)] last:border-0 ${index === 0 ? "bg-[var(--color-gray-50)]" : ""}`}>
                 <td className="py-2 pl-4 font-semibold text-[var(--color-gray-500)]">
                   <span className="flex items-center gap-1.5">
                     {index + 1}
