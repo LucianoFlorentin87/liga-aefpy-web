@@ -10,7 +10,7 @@ export function RequestPasswordResetForm() {
 
   if (state.success) {
     return (
-      <p className="rounded-lg bg-[var(--color-green-bg)] px-3 py-2 text-sm font-medium text-[var(--color-green-text)]">
+      <p role="status" className="auth-form-success">
         {state.success}
       </p>
     );
@@ -26,7 +26,7 @@ export function RequestPasswordResetForm() {
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-[var(--color-red-100)] px-3 py-2 text-sm font-medium text-[var(--color-red-accent)]">
+        <p role="alert" className="auth-form-error">
           {state.error}
         </p>
       )}
