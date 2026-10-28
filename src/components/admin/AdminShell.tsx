@@ -10,15 +10,20 @@ import { logoutAction } from "@/app/admin/actions";
 
 function SidebarNav({ groups, onNavigate }: { groups: AdminNavGroup[]; onNavigate?: () => void }) {
   const pathname = usePathname();
-  return <nav aria-label="Navegación del panel" className="admin-sidebar-nav">
-    {groups.map((group, index) => <section key={group.title || index}>
+  const [search, setSearch] = useState("");
+  const normalize = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const term = normalize(search.trim());
+  const filtered = groups.map(group => ({ ...group, items: group.items.filter(item => !term || normalize(item.label + " " + group.title).includes(term)) })).filter(group => group.items.length > 0);
+  return <><label className="admin-nav-search"><span className="sr-only">Buscar en el menú</span><input type="search" placeholder="Buscar sección…" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => { if (event.key === "Escape" && search) { setSearch(""); event.stopPropagation(); } }} /></label><nav aria-label="Navegación del panel" className="admin-sidebar-nav">
+    {filtered.map((group, index) => <section key={group.title || index}>
       {group.title && <h2><AdminNavIcon icon={group.icon} /><span>{group.title}</span></h2>}
       {group.items.map(item => {
         const active = pathname === item.href || pathname.startsWith(item.href + "/");
-        return <Link key={item.href} href={item.href} onClick={onNavigate} aria-current={active ? "page" : undefined}><span>{item.label}</span><span aria-hidden="true">↗</span></Link>;
+        return <Link key={item.href} href={item.href} onClick={() => { setSearch(""); onNavigate?.(); }} aria-current={active ? "page" : undefined}><span>{item.label}</span><span aria-hidden="true">↗</span></Link>;
       })}
     </section>)}
-  </nav>;
+    {!filtered.length && <p role="status" className="px-3 text-xs text-white/60">No se encontraron secciones.</p>}
+  </nav></>;
 }
 function SidebarBrand({ roleLabel, orgTagline }: { roleLabel: string; orgTagline: string }) {
   return <div className="admin-sidebar-brand"><span className="admin-brand-mark">AEFPY<span> / CONTROL</span></span><p>{roleLabel}</p><small>{orgTagline}</small></div>;
@@ -35,7 +40,7 @@ export function AdminShell({ navGroups, userLabel, roleLabel, orgName, orgTaglin
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const drawer = drawerRef.current;
-    const focusables = () => Array.from(drawer?.querySelectorAll<HTMLElement>('a[href],button:not([disabled])') || []);
+    const focusables = () => Array.from(drawer?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled])') || []);
     focusables()[0]?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") { setMobileOpen(false); toggleRef.current?.focus(); }
