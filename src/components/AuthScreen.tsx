@@ -1,32 +1,34 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
-/** Estilo de acceso aislado de los campos generales del panel. */
-export const GLASS_INPUT_CLASSES =
-  "auth-input";
+type AuthMode = "staff" | "fan" | "recovery";
+const COPY = {
+  staff: { eyebrow: "Centro de control", first: "Tu liga.", second: "Bajo control.", description: "Equipos, planteles y cada fecha del torneo. Todo empieza desde tu panel.", footer: "Administradores / Delegados" },
+  fan: { eyebrow: "La comunidad de la liga", first: "Tu liga.", second: "Tu pasión.", description: "Seguí a los protagonistas y participá con tus predicciones en cada jornada.", footer: "Comunidad / eFootball" },
+  recovery: { eyebrow: "Recuperá tu acceso", first: "Volvé.", second: "Al juego.", description: "Recuperá el acceso a tu cuenta y seguí gestionando tu lugar en la liga.", footer: "Acceso al panel / eFootball" },
+};
 
-/**
- * Pantalla completa para login (admin y de hinchas): fondo navy con blobs
- * degradé animados (movimiento lento, look orgánico) y una tarjeta de
- * vidrio esmerilado centrada. Las keyframes de los blobs viven en
- * globals.css (.animate-blob) — acá sólo se posicionan y colorean con la
- * paleta de la marca (rojo/navy) en vez del azul genérico de referencia.
- */
-export function AuthScreen({ children }: { children: ReactNode }) {
-  return (
-    <div className="auth-screen relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-navy-950)] px-4 py-10">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="animate-blob absolute -top-32 -left-24 h-96 w-96 rounded-full bg-[var(--color-red-600)] opacity-30 blur-3xl" />
-        <div className="animate-blob animation-delay-2000 absolute top-1/4 -right-32 h-[26rem] w-[26rem] rounded-full bg-[var(--color-red-500)] opacity-20 blur-3xl" />
-        <div className="animate-blob animation-delay-4000 absolute -bottom-40 left-1/4 h-[28rem] w-[28rem] rounded-full bg-[var(--color-navy-700)] opacity-50 blur-3xl" />
-      </div>
-      <div className="relative z-10 w-full max-w-sm">{children}</div>
+/** Shared visual shell; authentication and redirect decisions stay in each page. */
+export function AuthScreen({ children, orgName = "Liga AEFPY", orgTagline = "Asociación de Efootball Paraguay", mode = "staff" }: {
+  children: ReactNode; orgName?: string; orgTagline?: string; mode?: AuthMode;
+}) {
+  const copy = COPY[mode];
+  return <div className="auth-screen auth-palette">
+    <header className="auth-topbar"><Link href="/" aria-label={orgName + " · inicio"}><Logo size={38} variant="light" showTagline={false} name={orgName} /></Link><Link href="/" className="auth-back-link"><span aria-hidden="true">↖</span> Volver a la liga</Link></header>
+    <div className="auth-layout">
+      <aside className="auth-story">
+        <div aria-hidden="true" className="auth-pitch"><span /><span /></div>
+        <p className="auth-eyebrow"><i aria-hidden="true" />{copy.eyebrow}</p>
+        <p className="auth-display">{copy.first}<br /><em>{copy.second}</em></p>
+        <p className="auth-story-description">{copy.description}</p>
+        <p className="auth-story-tagline">{orgTagline}</p>
+      </aside>
+      <main className="auth-main">{children}</main>
     </div>
-  );
+    <footer className="auth-footer"><span>{orgName} / eFootball Paraguay</span><span>{copy.footer}</span></footer>
+  </div>;
 }
-
-/** Tarjeta de vidrio esmerilado usada dentro de AuthScreen. */
 export function AuthCard({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">{children}</div>
-  );
+  return <div className="auth-card auth-palette">{children}</div>;
 }

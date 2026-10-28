@@ -13,7 +13,7 @@ export function CompletePasswordResetForm({ token }: { token: string }) {
   if (state.success) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="rounded-lg bg-[var(--color-green-bg)] px-3 py-2 text-sm font-medium text-[var(--color-green-text)]">
+        <p role="status" className="auth-form-success">
           {state.success}
         </p>
         <Link href="/admin/login" className="btn btn-primary w-full">
@@ -40,7 +40,7 @@ export function CompletePasswordResetForm({ token }: { token: string }) {
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-[var(--color-red-100)] px-3 py-2 text-sm font-medium text-[var(--color-red-accent)]">
+        <p role="alert" className="auth-form-error">
           {state.error}
         </p>
       )}
