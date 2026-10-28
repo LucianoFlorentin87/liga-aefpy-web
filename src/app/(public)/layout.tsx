@@ -24,12 +24,12 @@ export default async function PublicLayout({ children }: { children: React.React
   }
 
   return (
-    <>
+    <div className="league-site flex min-h-screen flex-1 flex-col">
       <a href="#main-content" className="league-skip-link">Saltar al contenido</a>
       <InfoBar />
       <PublicHeader />
       <main id="main-content" tabIndex={-1} className="flex-1 bg-[var(--background)]">{children}</main>
       <PublicFooter />
-    </>
+    </div>
   );
 }

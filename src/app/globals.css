@@ -464,3 +464,107 @@ table.data-table tbody tr:hover {
   .league-team-card:hover, .league-team-card:active, .league-quick-link:active { transform: none; }
   #main-content .scroll-smooth { scroll-behavior: auto; }
 }
+
+/* Arena: public identity, isolated from administration and authentication. */
+.league-site { --color-navy-950:#101512; --color-navy-800:#222d27; --color-navy-700:#36443b; --color-red-accent:#526c00; --arena-accent:#d1ff3b; --arena-ink:#101512; }
+:root[data-theme="dark"] .league-site { --background:#0e1210; --foreground:#edf1e9; --color-surface:#171d19; --color-navy-900:#f0f3eb; --color-navy-100:#283629; --color-red-accent:#d1ff3b; --color-gray-50:#1d251e; --color-gray-100:#242d25; --color-gray-200:#354036; --color-gray-500:#a4afa4; --color-gray-600:#b5bfb4; --color-gray-900:#f0f3eb; }
+@media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) .league-site { --background:#0e1210; --foreground:#edf1e9; --color-surface:#171d19; --color-navy-900:#f0f3eb; --color-navy-100:#283629; --color-red-accent:#d1ff3b; --color-gray-50:#1d251e; --color-gray-100:#242d25; --color-gray-200:#354036; --color-gray-500:#a4afa4; --color-gray-600:#b5bfb4; --color-gray-900:#f0f3eb; } }
+.league-header { border-bottom-color:#ffffff20; }
+.league-header a[href="/cuenta/registro"] { background:var(--arena-accent); color:var(--arena-ink); border-radius:.35rem; }
+.league-header a[href="/admin"] { color:#d7dfd7; }
+.league-header [aria-current="page"] { background:#ffffff12; color:var(--arena-accent); }
+.league-site .league-mobile-menu [aria-current="page"] { color:var(--color-red-accent); }
+.league-site :is(a,button):focus-visible { outline:3px solid #83a600; outline-offset:4px; }
+.league-home { overflow:clip; }
+.arena-hero { position:relative; isolation:isolate; color:#f5f7ef; background:#101512; overflow:hidden; }
+.arena-hero-grid { position:relative; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:4rem; align-items:center; padding-top:4.5rem; padding-bottom:4.5rem; }
+.arena-pitch { position:absolute; z-index:-1; top:-25%; right:-15%; width:65%; height:150%; transform:rotate(-16deg); background:repeating-linear-gradient(90deg,transparent,transparent 109px,#d1ff3b08 110px,#d1ff3b08 111px); border-left:1px solid #d1ff3b20; }
+.arena-pitch span:first-child { position:absolute; width:55%; aspect-ratio:1; border:1px solid #d1ff3b20; border-radius:50%; top:30%; left:20%; }
+.arena-pitch span:nth-child(2) { position:absolute; top:50%; width:100%; border-top:1px solid #d1ff3b20; }
+.arena-pitch span:last-child { position:absolute; top:30%; right:0; width:25%; height:40%; border:1px solid #d1ff3b20; }
+.arena-kicker { display:flex; align-items:center; gap:.65rem; max-width:28rem; color:#c1cbbf; font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em; line-height:1.7; }
+.arena-kicker>span { width:.45rem; height:.45rem; background:var(--arena-accent); flex-shrink:0; border-radius:50%; }
+.arena-edition { margin-top:2.25rem; color:var(--arena-accent); font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.15em; }
+.arena-headline { margin-top:1rem; font-family:Impact,"Arial Narrow",sans-serif; font-size:clamp(4.5rem,7.7vw,7.8rem); text-transform:uppercase; font-weight:900; line-height:.93; letter-spacing:-.025em; }
+.arena-headline em { font-style:normal; color:var(--arena-accent); }
+.arena-description { max-width:24rem; margin-top:1.75rem; color:#b8c3b8; font-size:1rem; line-height:1.7; }
+.arena-actions { display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center; margin-top:2rem; }
+.arena-button { display:inline-flex; min-height:50px; justify-content:space-between; align-items:center; gap:2rem; background:var(--arena-accent); color:var(--arena-ink); padding:.9rem 1.25rem; font-weight:800; font-size:.8rem; border-radius:.25rem; transition:transform 180ms,background-color 180ms; }
+.arena-button:hover { background:#e3ff8c; transform:translateY(-2px); }
+.arena-button:active { transform:translateY(0); }
+.arena-text-link { display:inline-flex; min-height:44px; align-items:center; gap:.75rem; color:#fff; font-size:.8rem; font-weight:700; }
+.arena-text-link:hover { color:var(--arena-accent); }
+.arena-bottomline { display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem; padding-top:1.2rem; padding-bottom:1.2rem; border-top:1px solid #ffffff20; color:#aebbad; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; }
+.arena-bottomline b { color:#fff; } .arena-bottomline i { margin:0 .75rem; color:#5a695b; font-style:normal; }
+.arena-match { background:#1b231e; border:1px solid #ffffff24; border-radius:.4rem; overflow:hidden; box-shadow:0 24px 70px #00000035; }
+.arena-match-heading { display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:1.1rem 1.5rem; font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; border-bottom:1px solid #ffffff15; }
+.arena-match-heading>span:first-child { color:var(--arena-accent); }
+.arena-match-heading>span:last-child { color:#bac7b9; }
+.arena-match-teams { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:1.25rem; padding:2.5rem 1.25rem; align-items:start; }
+.arena-match-teams>div { display:flex; min-width:0; flex-direction:column; align-items:center; text-align:center; }
+.arena-match-teams h2 { font-size:1rem; font-weight:800; margin-top:1rem; overflow-wrap:anywhere; }
+.arena-match-teams>div>span:last-child { margin-top:.3rem; font-size:.65rem; color:#9ead9c; }
+.arena-versus { display:flex; height:88px; align-items:center; font-size:1.3rem; font-weight:900; font-style:italic; color:#6e806d; }
+.arena-match-time { display:flex; align-items:center; gap:1.5rem; border-top:1px solid #ffffff15; padding:1.1rem 1.5rem; }
+.arena-match-time>b { font-size:1.9rem; font-variant-numeric:tabular-nums; letter-spacing:-.05em; }
+.arena-match-time small { font-size:.8rem; color:var(--arena-accent); }
+.arena-match-time>div { display:flex; flex-direction:column; gap:.25rem; font-size:.7rem; color:#b9c6b7; line-height:1.5; }
+.arena-match-footer { display:flex; min-height:50px; justify-content:space-between; align-items:center; padding:.9rem 1.5rem; background:#ffffff06; border-top:1px solid #ffffff15; font-size:.72rem; font-weight:700; }
+.arena-match-footer:hover { background:#d1ff3b12; color:var(--arena-accent); }
+.arena-match-empty { padding:2rem 1.5rem; }
+.arena-match-empty>span { color:var(--arena-accent); font-size:3rem; }
+.arena-match-empty h2 { font-size:2rem; font-weight:800; line-height:1.1; letter-spacing:-.04em; }
+.arena-match-empty p { margin-top:1rem; color:#acbba9; font-size:.8rem; line-height:1.7; }
+.arena-section { padding-top:3.5rem; padding-bottom:3.5rem; }
+.arena-schedule { padding:2.5rem 0; border-bottom:1px solid var(--color-gray-200); background:var(--color-surface); }
+.arena-section-heading { display:flex; justify-content:space-between; align-items:end; flex-wrap:wrap; gap:1rem; margin-bottom:1.75rem; }
+.arena-overline { display:block; color:var(--color-red-accent); text-transform:uppercase; font-size:.6rem; font-weight:800; letter-spacing:.16em; }
+.arena-section-heading h2 { font-size:clamp(1.75rem,3vw,2.7rem); font-weight:900; letter-spacing:-.055em; line-height:1.15; margin-top:.45rem; color:var(--color-navy-900); }
+.arena-section-link { display:inline-flex; min-height:44px; align-items:center; gap:1rem; font-size:.73rem; font-weight:700; color:var(--color-navy-900); border-bottom:1px solid var(--color-gray-300); }
+.arena-section-link:hover { color:var(--color-red-accent); border-color:currentColor; }
+.arena-podium { display:grid; grid-template-columns:1.15fr 1fr 1fr; gap:1rem; margin-bottom:2rem; }
+.arena-leader { position:relative; background:var(--color-surface); border:1px solid var(--color-gray-200); border-radius:.35rem; overflow:hidden; transition:transform 220ms; }
+.arena-leader>a { display:block; padding:1.5rem; position:relative; height:100%; }
+.arena-leader-first { background:var(--arena-accent); color:var(--arena-ink); border-color:var(--arena-accent); }
+.arena-leader-first .arena-leader-label { color:#3c5011; }
+.arena-rank { position:absolute; top:.25rem; right:.75rem; font-size:6rem; line-height:1; font-weight:900; letter-spacing:-.08em; opacity:.07; pointer-events:none; }
+.arena-leader-label { position:relative; font-size:.6rem; text-transform:uppercase; font-weight:800; letter-spacing:.1em; color:var(--color-gray-500); }
+.arena-leader-team { display:flex; align-items:center; gap:1rem; margin-top:1.5rem; }
+.arena-leader-team h3 { font-size:1.2rem; font-weight:800; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.arena-leader-stats { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:.75rem; margin-top:1.5rem; font-size:.65rem; font-weight:700; font-variant-numeric:tabular-nums; }
+.arena-leader-stats b { font-size:2.6rem; letter-spacing:-.07em; margin-right:.3rem; line-height:1; }
+.arena-leader-stats i { margin:0 .35rem; font-style:normal; opacity:.4; }
+.arena-data-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+.league-home .card { box-shadow:none; border-radius:.35rem; }
+.league-home .card>div:first-child h2 { text-transform:uppercase; font-size:.72rem; letter-spacing:.06em; }
+.league-home .card>div:last-child>ul>li>a>div:first-child>span:nth-child(2) { font-size:1.2rem; min-width:5rem; text-align:center; font-variant-numeric:tabular-nums; }
+.arena-scorers-section { border-block:1px solid var(--color-gray-200); background:var(--color-surface); }
+.arena-scorer-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; }
+.arena-scorer { border:1px solid var(--color-gray-200); background:var(--background); border-radius:.35rem; overflow:hidden; }
+.arena-scorer-top { display:flex; justify-content:space-between; padding:1rem; color:var(--color-gray-500); font-size:.58rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; }
+.arena-scorer-top>span:first-child { color:var(--color-red-accent); }
+.arena-player-art { display:flex; justify-content:center; align-items:end; height:190px; position:relative; padding:1rem; }
+.arena-player-art>span:first-child { position:absolute; font-family:Impact,"Arial Narrow",sans-serif; font-size:10rem; line-height:1; font-weight:900; color:var(--color-gray-200); top:.5rem; left:50%; transform:translateX(-50%); letter-spacing:-.06em; }
+.arena-player-art>span:last-child { z-index:1; transform:rotate(-5deg); transition:transform 250ms; box-shadow:8px 12px 16px #00000018; }
+.arena-player-info { padding:1.25rem; border-top:1px solid var(--color-gray-200); }
+.arena-player-info h3 { font-size:.95rem; font-weight:800; letter-spacing:-.03em; }
+.arena-player-info p { margin-top:.2rem; font-size:.65rem; color:var(--color-gray-500); }
+.arena-player-info strong { display:block; margin-top:.75rem; font-size:2rem; font-variant-numeric:tabular-nums; color:var(--color-red-accent); letter-spacing:-.05em; }
+.arena-player-info strong span { font-size:.65rem; font-weight:600; letter-spacing:0; }
+.arena-media-grid { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); align-items:start; gap:2rem; }
+.arena-featured-video>div:last-child { padding-top:1.25rem; }
+.arena-featured-video h3 { margin-top:.5rem; font-size:1.5rem; font-weight:800; letter-spacing:-.04em; }
+.arena-video-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.arena-video-list h3 { font-size:.75rem; font-weight:700; margin-top:.6rem; }
+.arena-video-cover { display:flex; position:relative; align-items:center; justify-content:center; aspect-ratio:16/9; width:100%; overflow:hidden; border-radius:.35rem; background:#101512; color:#fff; cursor:pointer; }
+.arena-video-cover>img { width:100%; height:100%; object-fit:cover; opacity:.7; transition:transform 350ms,opacity 350ms; }
+.arena-video-play { display:flex; align-items:center; justify-content:center; position:absolute; width:3.3rem; height:3.3rem; padding-left:.15rem; background:var(--arena-accent,#d1ff3b); color:#101512; border-radius:50%; font-size:1rem; box-shadow:0 0 0 8px #00000025; transition:transform 200ms; }
+.arena-video-caption { position:absolute; bottom:.75rem; left:1rem; right:1rem; display:flex; justify-content:space-between; font-size:.6rem; font-weight:700; text-shadow:0 1px 4px #000; }
+.arena-video-fallback { flex-direction:column; gap:1rem; padding:1.5rem; text-align:center; font-size:.8rem; }
+.arena-final-grid { border-top:1px solid var(--color-gray-200); display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:2rem; align-items:start; }
+.league-home .league-team-card { background:var(--color-surface); border-radius:.35rem; box-shadow:none; }
+@media(hover:hover) { .arena-leader:hover { transform:translateY(-4px); } .arena-scorer:hover .arena-player-art>span:last-child { transform:rotate(0) translateY(-5px); } .arena-video-cover:hover>img { transform:scale(1.035); opacity:.9; } .arena-video-cover:hover .arena-video-play { transform:scale(1.08); } }
+@media(min-width:1440px) { .league-home .container-page { max-width:80rem; } }
+@media(max-width:900px) { .arena-hero-grid { gap:2rem; padding-top:3rem; padding-bottom:3rem; } .arena-headline { font-size:5rem; } .arena-match-teams { gap:.75rem; padding:1.75rem .75rem; } .arena-match-teams img { max-width:64px; max-height:64px; } .arena-versus { height:64px; } .arena-match-time { gap:1rem; padding:1rem; } .arena-podium { grid-template-columns:repeat(3,minmax(0,1fr)); } .arena-leader>a { padding:1rem; } .arena-leader-team { flex-direction:column; align-items:start; } .arena-scorer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .arena-media-grid { grid-template-columns:minmax(0,1fr); } .arena-video-list { grid-template-columns:repeat(3,minmax(0,1fr)); } .arena-final-grid { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:640px) { .arena-hero-grid { grid-template-columns:minmax(0,1fr); gap:2.5rem; padding-top:2.5rem; padding-bottom:2rem; } .arena-headline { font-size:clamp(4.1rem,18vw,6rem); } .arena-edition { margin-top:1.75rem; } .arena-description { margin-top:1.25rem; } .arena-kicker { font-size:.55rem; } .arena-actions { gap:1rem; } .arena-bottomline { font-size:.55rem; line-height:1.7; } .arena-pitch { right:-30%; width:100%; } .arena-section { padding-block:2.5rem; } .arena-section-heading { align-items:start; gap:.5rem; margin-bottom:1.25rem; } .arena-section-link { font-size:.65rem; } .arena-podium { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; } .arena-leader-first { grid-column:1/-1; } .arena-leader-first .arena-leader-team { flex-direction:row; align-items:center; } .arena-leader-team h3 { font-size:1rem; } .arena-leader-stats { margin-top:1rem; } .arena-rank { font-size:5rem; } .arena-data-grid { grid-template-columns:minmax(0,1fr); } .arena-player-info { padding:1rem; } .arena-player-info h3 { font-size:.8rem; } .arena-player-art { height:170px; } .arena-player-art>span:first-child { font-size:8rem; } .arena-video-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(prefers-reduced-motion:reduce) { .arena-button,.arena-leader,.arena-player-art>span:last-child,.arena-video-play,.arena-video-cover>img { transition:none; } .arena-button:hover,.arena-leader:hover,.arena-scorer:hover .arena-player-art>span:last-child,.arena-video-cover:hover>img,.arena-video-cover:hover .arena-video-play { transform:none; } }
