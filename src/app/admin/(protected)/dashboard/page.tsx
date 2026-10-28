@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { AdminToolCard } from "@/components/admin/AdminToolCard";
 import { ADMIN_NAV, DELEGADO_NAV } from "@/lib/admin-nav";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Resumen" };
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
@@ -59,11 +59,17 @@ export default async function DashboardPage() {
           items: group.items.filter((item) => !item.resource || can(session.role, item.resource)),
         })).filter((group) => group.items.length > 0);
 
-  const quickAccess = navGroups.flatMap((group) =>
+  const availableAccess = navGroups.flatMap((group) =>
     group.items
       .filter((item) => item.href !== "/admin/dashboard")
       .map((item) => ({ ...item, icon: group.icon, category: group.title || "General" })),
   );
+
+  const priority = season.status === "INSCRIPCION"
+    ? ["/admin/inscripciones", "/admin/ligas", "/admin/equipos", "/admin/jugadores", "/admin/partidos", "/admin/resultados"]
+    : ["/admin/resultados", "/admin/partidos", "/admin/equipos", "/admin/jugadores", "/admin/sanciones", "/admin/ligas", "/admin/inscripciones"];
+  const rank = (href: string) => { const index = priority.indexOf(href); return index < 0 ? priority.length : index; };
+  const quickAccess = availableAccess.sort((a, b) => rank(a.href) - rank(b.href)).slice(0, 6);
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,8 +91,9 @@ export default async function DashboardPage() {
 
       {quickAccess.length > 0 && (
         <div>
-          <h2 className="section-title mb-3">Accesos rápidos</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <h2 className="section-title mb-2">Accesos rápidos</h2>
+          <p className="mb-4 text-xs text-[var(--color-gray-500)]">Prioridades de esta etapa. El menú lateral contiene todas las secciones disponibles para tu rol.</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {quickAccess.map((item) => (
               <AdminToolCard key={item.href} href={item.href} label={item.label} icon={item.icon} category={item.category} />
             ))}
