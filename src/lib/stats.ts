@@ -1,6 +1,6 @@
 import "server-only";
 import { upcomingScheduleFilter } from "@/lib/matchSchedule";
-import { prisma } from "@/lib/db";
+import { prisma, prismaForSeason } from "@/lib/db";
 import { playerFullName, getMatchScore } from "@/lib/format";
 
 export type StandingsRow = {
@@ -50,8 +50,9 @@ type TeamLite = { id: string; name: string; shortName: string; logoUrl: string |
 type FinishedMatch = Awaited<ReturnType<typeof fetchFinishedMatches>>[number];
 type PointAdjustmentRow = Awaited<ReturnType<typeof prisma.pointAdjustment.findMany>>[number];
 
-function fetchFinishedMatches() {
-  return prisma.match.findMany({ where: { status: "FINALIZADO" }, include: { goals: true } });
+function fetchFinishedMatches(seasonId?: string) {
+  const db = seasonId ? prismaForSeason(seasonId) : prisma;
+  return db.match.findMany({ where: { status: "FINALIZADO" }, include: { goals: true } });
 }
 
 function buildStandingsRows(
@@ -125,15 +126,16 @@ function buildStandingsRows(
 }
 
 /** Calcula la tabla de posiciones a partir de los partidos finalizados. */
-export async function computeStandings(): Promise<StandingsRow[]> {
+export async function computeStandings(seasonId?: string): Promise<StandingsRow[]> {
+  const db = seasonId ? prismaForSeason(seasonId) : prisma;
   const [teams, settings] = await Promise.all([
-    prisma.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
-    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+    db.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
+    seasonId ? db.season.findUnique({ where: { id: seasonId } }) : db.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 
   const [finishedMatches, pointAdjustments] = await Promise.all([
-    fetchFinishedMatches(),
-    prisma.pointAdjustment.findMany(),
+    fetchFinishedMatches(seasonId),
+    db.pointAdjustment.findMany(),
   ]);
 
   const criteria = parseCriteria(settings?.standingsCriteria);
@@ -161,15 +163,16 @@ export type StandingsRowWithTrend = StandingsRow & { trend: PositionTrend };
  * tiempo, así que se aplican igual en el cálculo "antes" y "ahora" — una
  * simplificación razonable para un caso que es raro de por sí.
  */
-export async function computeStandingsWithTrend(): Promise<StandingsRowWithTrend[]> {
+export async function computeStandingsWithTrend(seasonId?: string): Promise<StandingsRowWithTrend[]> {
+  const db = seasonId ? prismaForSeason(seasonId) : prisma;
   const [teams, settings] = await Promise.all([
-    prisma.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
-    prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+    db.team.findMany({ where: { status: { in: STANDINGS_TEAM_STATUSES } } }),
+    seasonId ? db.season.findUnique({ where: { id: seasonId } }) : db.tournamentSettings.findUnique({ where: { id: "settings" } }),
   ]);
 
   const [finishedMatches, pointAdjustments] = await Promise.all([
-    fetchFinishedMatches(),
-    prisma.pointAdjustment.findMany(),
+    fetchFinishedMatches(seasonId),
+    db.pointAdjustment.findMany(),
   ]);
 
   const criteria = parseCriteria(settings?.standingsCriteria);
@@ -259,13 +262,14 @@ export type ScorerRow = {
 };
 
 /** Goleadores calculados a partir de los goles registrados en partidos finalizados. */
-export async function computeScorers(): Promise<ScorerRow[]> {
-  const goals = await prisma.matchGoal.findMany({
+export async function computeScorers(seasonId?: string): Promise<ScorerRow[]> {
+  const db = seasonId ? prismaForSeason(seasonId) : prisma;
+  const goals = await db.matchGoal.findMany({
     where: { match: { status: "FINALIZADO" } },
     include: { player: { include: { team: true, efhubCard: true } } },
   });
 
-  const participations = await prisma.matchParticipation.findMany({
+  const participations = await db.matchParticipation.findMany({
     where: { match: { status: "FINALIZADO" } },
   });
 
@@ -320,13 +324,14 @@ export type DisciplineRow = {
 };
 
 /** Disciplina calculada a partir de las tarjetas registradas en partidos finalizados. */
-export async function computeDiscipline(): Promise<DisciplineRow[]> {
-  const cards = await prisma.matchCard.findMany({
+export async function computeDiscipline(seasonId?: string): Promise<DisciplineRow[]> {
+  const db = seasonId ? prismaForSeason(seasonId) : prisma;
+  const cards = await db.matchCard.findMany({
     where: { match: { status: "FINALIZADO" } },
     include: { player: { include: { team: true, efhubCard: true } } },
   });
 
-  const participations = await prisma.matchParticipation.findMany({
+  const participations = await db.matchParticipation.findMany({
     where: { match: { status: "FINALIZADO" } },
   });
   const matchesPlayedByPlayer = new Map<string, Set<string>>();
@@ -335,7 +340,7 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
     matchesPlayedByPlayer.get(p.playerId)!.add(p.matchId);
   }
 
-  const allSanctions = await prisma.sanction.findMany({ select: { playerId: true, status: true } });
+  const allSanctions = await db.sanction.findMany({ select: { playerId: true, status: true } });
   const sanctionCountByPlayer = new Map<string, number>();
   const activeSanctionByPlayer = new Map<string, boolean>();
   for (const s of allSanctions) {

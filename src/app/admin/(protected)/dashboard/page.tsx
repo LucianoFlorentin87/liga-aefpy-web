@@ -1,5 +1,6 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { prisma } from "@/lib/db";
+import { prisma, getCurrentSeason } from "@/lib/db";
 import { requireAuth } from "@/lib/permissions";
 import { can } from "@/lib/permissions";
 import { StatCard } from "@/components/admin/StatCard";
@@ -12,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const { session } = await requireAuth();
+  const season = await getCurrentSeason();
 
   const [
     teams,
@@ -42,7 +44,7 @@ export default async function DashboardPage() {
     { label: "Jugadores", value: players },
     { label: "Partidos", value: matches },
     { label: "Partidos jugados", value: playedMatches },
-    { label: "Próximos partidos", value: upcomingMatches },
+    { label: "Partidos pendientes", value: upcomingMatches },
     { label: "Goles", value: goals },
     { label: "Tarjetas amarillas", value: yellowCards },
     { label: "Tarjetas rojas", value: redCards },
@@ -65,12 +67,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="admin-page-heading">
+        <p className="arena-overline">Centro de control / {season.name}</p>
         <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">
           Hola, {session.firstName}
         </h1>
-        <p className="text-sm text-[var(--color-gray-500)]">Resumen general del torneo.</p>
+        <p className="text-sm text-[var(--color-gray-500)]">Tu liga, de un vistazo. Gestioná equipos, resultados y próximas fechas.</p>
       </div>
+
+      <div className="admin-season-strip"><div><span>Competición actual</span><h2>{season.name}</h2><div className="admin-progress"><progress value={playedMatches} max={matches || 1} aria-label="Progreso de partidos finalizados" /><span>{playedMatches} de {matches} partidos finalizados</span></div></div><strong>{season.status === "INSCRIPCION" ? "Inscripciones" : "En curso"}</strong>{can(session.role, "temporadas") ? <Link href="/admin/ligas">Gestionar liga ↗</Link> : <Link href="/">Ver competición ↗</Link>}</div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => (

@@ -1,6 +1,7 @@
 import "server-only";
 import type { RoleKey } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
 import { requireActiveUser } from "@/lib/auth";
 
 /**
@@ -10,6 +11,8 @@ import { requireActiveUser } from "@/lib/auth";
  */
 export const PERMISSIONS = {
   usuarios: ["SUPERADMIN"],
+  temporadas: ["SUPERADMIN"],
+  inscripciones: ["SUPERADMIN", "ADMINISTRADOR"],
   equipos: ["SUPERADMIN", "ADMINISTRADOR"],
   // CARGA_DATOS necesita poder dar de alta un jugador que debuta y todavía
   // no está en el plantel — si no, queda trabado al cargar resultados: el
@@ -88,8 +91,11 @@ export async function requireEfhubSearchAccess() {
  */
 export async function requireDelegate() {
   const { session, user } = await requireAuth();
-  if (session.role !== "DELEGADO" || !user.teamId) {
+  if (session.role !== "DELEGADO") {
     redirect("/admin/dashboard");
   }
+  if (!user.teamId) redirect("/inscripcion");
+  const team = await prisma.team.findUnique({ where: { id: user.teamId }, select: { id: true } });
+  if (!team) redirect("/inscripcion?estado=renovar");
   return { session, user, teamId: user.teamId };
 }

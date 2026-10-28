@@ -1,5 +1,6 @@
+import { registrationIsOpen } from "@/lib/league-validation";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { prisma, getCurrentSeason } from "@/lib/db";
 import { computeStandingsWithTrend, computeScorers, computeDiscipline, getNextMatch, getRecentResults, getUpcomingMatches } from "@/lib/stats";
 import { NextMatchCard } from "@/components/NextMatchCard";
 import { ResultsList } from "@/components/ResultsList";
@@ -22,17 +23,19 @@ export default async function HomePage() {
     prisma.video.findMany({ where: { featured: true }, orderBy: { createdAt: "desc" }, take: 4 }),
     prisma.team.findMany({ where: { status: "ACTIVO" }, orderBy: { name: "asc" }, select: { id: true, name: true, shortName: true, logoUrl: true } }),
   ]);
+  const season = await getCurrentSeason();
   const [primaryVideo, ...videos] = featuredVideos;
   const leaders = standings.slice(0, 3);
 
   return (
     <div className="league-home">
+      {season.status === "INSCRIPCION" && <div className="bg-[var(--color-surface)] border-b border-[var(--color-gray-200)]"><div className="container-page flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="arena-overline">{registrationIsOpen(season) ? "Inscripciones abiertas" : "Inscripciones en revisión"}</p><strong className="text-sm">{season.name}</strong></div><Link href={"/inscripcion/" + season.slug} className="arena-section-link">Inscribí tu equipo ↗</Link></div></div>}
       <section className="arena-hero">
         <div aria-hidden="true" className="arena-pitch"><span /><span /><span /></div>
         <div className="container-page arena-hero-grid">
           <div className="league-enter arena-intro">
             <p className="arena-kicker"><span /> {settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>
-            <p className="arena-edition">{settings?.orgName || "Liga AEFPY"} / eFootball</p>
+            <p className="arena-edition">{settings?.orgName || "Liga AEFPY"} / {season.name}</p>
             <h1 className="arena-headline">La liga.<br /><em>Tu juego.</em></h1>
             <p className="arena-description">{settings?.heroSubtitle || "Cada fecha cuenta. Seguí los partidos, los protagonistas y la carrera por el título."}</p>
             <nav aria-label="Accesos rápidos del torneo" className="arena-actions">

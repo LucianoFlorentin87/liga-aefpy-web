@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,193 +8,68 @@ import { AdminNavIcon } from "@/components/admin/AdminNavIcon";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/app/admin/actions";
 
-function isGroupActive(pathname: string, group: AdminNavGroup) {
-  return group.items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/"));
-}
-
-/**
- * Cabecera de marca del sidebar: degradado navy con acento rojo y el
- * divisor de color debajo del título — mismo patrón que el "hero" de
- * cabecera de IT Tools, llevado a la paleta navy/rojo propia en vez del
- * verde de la referencia.
- */
-function SidebarBrandHero({ orgTagline }: { orgTagline: string }) {
-  return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-[var(--color-navy-950)] via-[var(--color-navy-900)] to-[var(--color-navy-800)] px-4 py-6 text-center">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-50"
-        style={{ background: "radial-gradient(circle at 25% 15%, var(--color-red-accent), transparent 55%)" }}
-      />
-      <div className="relative">
-        <Image
-          src="/logo-liga-aefpy.png"
-          alt=""
-          width={40}
-          height={40}
-          className="mx-auto shrink-0 rounded-lg"
-        />
-        <p className="mt-2.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white">
-          Panel de Administración
-        </p>
-        <div className="mx-auto mt-2 h-[3px] w-10 rounded-full bg-[var(--color-red-accent)]" />
-        <p className="mt-2 text-[0.65rem] text-white/60">{orgTagline}</p>
-      </div>
-    </div>
-  );
-}
-
-function NavLink({ item, pathname, onNavigate }: { item: AdminNavGroup["items"][number]; pathname: string; onNavigate?: () => void }) {
-  const active = pathname === item.href || pathname.startsWith(item.href + "/");
-  return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      aria-current={active ? "page" : undefined}
-      className={`rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
-        active
-          ? "bg-[var(--color-navy-950)] text-white"
-          : "text-[var(--color-gray-700)] hover:bg-[var(--color-gray-100)]"
-      }`}
-    >
-      {item.label}
-    </Link>
-  );
-}
-
-/** Categoría colapsable del menú — chevron + línea de acento, igual patrón que el árbol de herramientas de IT Tools. */
-function NavGroupSection({ group, pathname, onNavigate }: { group: AdminNavGroup; pathname: string; onNavigate?: () => void }) {
-  const [open, setOpen] = useState(true);
-
-  if (!group.title) {
-    return (
-      <div className="flex flex-col gap-0.5">
-        {group.items.map((item) => (
-          <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
-        ))}
-      </div>
-    );
-  }
-
-  const active = isGroupActive(pathname, group);
-
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-[var(--color-gray-500)] hover:text-[var(--color-gray-700)]"
-      >
-        <AdminNavIcon icon={group.icon} className={active ? "text-[var(--color-red-accent)]" : "text-[var(--color-gray-400)]"} />
-        <span className="flex-1 text-left">{group.title}</span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
-        >
-          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="ml-[0.95rem] mt-1 flex flex-col gap-0.5 border-l border-[var(--color-gray-200)] pl-2.5">
-          {group.items.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function SidebarNav({ groups, onNavigate }: { groups: AdminNavGroup[]; onNavigate?: () => void }) {
   const pathname = usePathname();
-
-  return (
-    <nav className="flex flex-col gap-4 px-3 py-4">
-      {groups.map((group, i) => (
-        <NavGroupSection key={i} group={group} pathname={pathname} onNavigate={onNavigate} />
-      ))}
-    </nav>
-  );
+  return <nav aria-label="Navegación del panel" className="admin-sidebar-nav">
+    {groups.map((group, index) => <section key={group.title || index}>
+      {group.title && <h2><AdminNavIcon icon={group.icon} /><span>{group.title}</span></h2>}
+      {group.items.map(item => {
+        const active = pathname === item.href || pathname.startsWith(item.href + "/");
+        return <Link key={item.href} href={item.href} onClick={onNavigate} aria-current={active ? "page" : undefined}><span>{item.label}</span><span aria-hidden="true">↗</span></Link>;
+      })}
+    </section>)}
+  </nav>;
 }
-
-export function AdminShell({
-  navGroups,
-  userLabel,
-  roleLabel,
-  orgName,
-  orgTagline,
-  children,
-}: {
-  navGroups: AdminNavGroup[];
-  userLabel: string;
-  roleLabel: string;
-  orgName: string;
-  orgTagline: string;
-  children: React.ReactNode;
+function SidebarBrand({ roleLabel, orgTagline }: { roleLabel: string; orgTagline: string }) {
+  return <div className="admin-sidebar-brand"><span className="admin-brand-mark">AEFPY<span> / CONTROL</span></span><p>{roleLabel}</p><small>{orgTagline}</small></div>;
+}
+export function AdminShell({ navGroups, userLabel, roleLabel, orgName, orgTagline, seasonName, seasonStatus, children }: {
+  navGroups: AdminNavGroup[]; userLabel: string; roleLabel: string; orgName: string; orgTagline: string; seasonName: string; seasonStatus: string; children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+  const menuId = useId();
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const drawer = drawerRef.current;
+    const focusables = () => Array.from(drawer?.querySelectorAll<HTMLElement>('a[href],button:not([disabled])') || []);
+    focusables()[0]?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") { setMobileOpen(false); toggleRef.current?.focus(); }
+      if (event.key === "Tab") {
+        const items = focusables(); const first = items[0]; const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    }
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const onDesktop = () => { if (desktop.matches) setMobileOpen(false); };
+    desktop.addEventListener("change", onDesktop);
+    document.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = oldOverflow; document.removeEventListener("keydown", onKey); desktop.removeEventListener("change", onDesktop); };
+  }, [mobileOpen]);
 
-  return (
-    <div className="min-h-screen bg-[var(--color-gray-50)]">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--color-gray-200)] bg-[var(--color-surface)] px-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Abrir menú"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-gray-300)] text-[var(--color-navy-900)] lg:hidden"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
-            </svg>
-          </button>
-          <span className="text-sm font-extrabold uppercase tracking-tight text-[var(--color-navy-900)]">{orgName}</span>
-          <span className="hidden text-sm font-semibold text-[var(--color-gray-500)] sm:inline">
-            Panel de Administración
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden text-right sm:block">
-            <p className="text-sm font-semibold text-[var(--color-navy-900)]">{userLabel}</p>
-            <p className="text-xs text-[var(--color-gray-500)]">{roleLabel}</p>
-          </div>
-          <ThemeToggle className="text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]" />
-          <Link href="/admin/cuenta" className="btn btn-ghost !px-2.5 !py-1.5 text-xs">
-            Mi cuenta
-          </Link>
-          <form action={logoutAction}>
-            <button type="submit" className="btn btn-outline !px-3 !py-1.5 text-xs">
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
-      </header>
-
-      <div className="mx-auto flex max-w-[100rem]">
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 overflow-y-auto border-r border-[var(--color-gray-200)] bg-[var(--color-surface)] lg:block">
-          <SidebarBrandHero orgTagline={orgTagline} />
-          <SidebarNav groups={navGroups} />
-        </aside>
-
-        {mobileOpen && (
-          <div className="fixed inset-0 top-16 z-20 lg:hidden">
-            <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
-            <aside className="relative h-full w-64 overflow-y-auto bg-[var(--color-surface)] shadow-xl">
-              <SidebarBrandHero orgTagline={orgTagline} />
-              <SidebarNav groups={navGroups} onNavigate={() => setMobileOpen(false)} />
-            </aside>
-          </div>
-        )}
-
-        <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+  const sidebar = <><SidebarBrand roleLabel={roleLabel} orgTagline={orgTagline} /><div className="admin-sidebar-season"><span>Liga actual</span><strong>{seasonName}</strong><small><i />{seasonStatus === "INSCRIPCION" ? "Inscripciones" : "En curso"}</small></div><SidebarNav groups={navGroups} onNavigate={() => setMobileOpen(false)} /><Link href="/" className="admin-back-site">Ver sitio público <span aria-hidden="true">↗</span></Link></>;
+  return <div className="admin-arena">
+    <a href="#admin-main" className="league-skip-link">Saltar al contenido</a>
+    <header className="admin-topbar">
+      <div className="flex min-w-0 items-center gap-3"><button ref={toggleRef} type="button" aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"} aria-expanded={mobileOpen} aria-controls={menuId} onClick={() => setMobileOpen(value => !value)} className="admin-icon-button lg:hidden"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+        <Link href="/" className="admin-topbar-brand" aria-label={orgName + " · sitio público"}><Image src="/logo-liga-aefpy.png" alt="" width={32} height={32} /><span>{orgName}</span></Link><span className="admin-role-tag">{roleLabel}</span>
       </div>
+      <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+        <div className="hidden text-right md:block"><p className="text-xs font-bold">{userLabel}</p><p className="text-[0.65rem] text-[var(--color-gray-500)]">{roleLabel}</p></div>
+        <ThemeToggle className="admin-theme-toggle text-[var(--color-gray-600)]" />
+        <Link href="/admin/cuenta" className="admin-icon-button" aria-label="Mi cuenta"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 22v-2a8 8 0 0 1 16 0v2" /></svg><span className="hidden sm:inline">Cuenta</span></Link>
+        <form action={logoutAction}><button type="submit" className="admin-icon-button" aria-label="Cerrar sesión"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 3H4v18h6M14 7l5 5-5 5M8 12h12" /></svg><span className="hidden sm:inline">Salir</span></button></form>
+      </div>
+    </header>
+    <div className="admin-frame">
+      <aside className="admin-sidebar hidden lg:flex">{sidebar}</aside>
+      {mobileOpen && <div className="admin-mobile-layer lg:hidden"><button className="admin-drawer-backdrop" aria-label="Cerrar navegación" onClick={() => { setMobileOpen(false); toggleRef.current?.focus(); }} /><aside id={menuId} ref={drawerRef} role="dialog" aria-modal="true" aria-label="Menú del panel" className="admin-sidebar admin-mobile-sidebar"><button className="admin-drawer-close" onClick={() => { setMobileOpen(false); toggleRef.current?.focus(); }}>Cerrar menú <span aria-hidden="true">×</span></button>{sidebar}</aside></div>}
+      <main id="admin-main" tabIndex={-1} className="admin-main">{children}</main>
     </div>
-  );
+  </div>;
 }

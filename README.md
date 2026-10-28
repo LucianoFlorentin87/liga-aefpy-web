@@ -619,3 +619,22 @@ npm run db:studio          # explorador visual de la base (Prisma Studio)
 npm run create:superadmin  # crear un usuario Superadmin
 npm run create:delegates   # crear un usuario Delegado por cada equipo sin uno
 ```
+
+## Ligas, inscripciones e histórico
+
+- `/admin/ligas` es exclusivo del **SUPERADMIN**: permite nombrar la liga actual, abrir/cerrar inscripciones, iniciarla o archivar la edición y crear la siguiente.
+- `/admin/inscripciones` admite **SUPERADMIN** y **ADMINISTRADOR**. La inscripción de un equipo queda pendiente hasta que se aprueba o rechaza. Al aprobar, se vincula el equipo a una cuenta de **DELEGADO**; la solicitud nunca puede asignarse un rol administrativo.
+- `/inscripcion` lleva al formulario de la liga actual. Cada edición tiene un enlace permanente `/inscripcion/[slug]`; los enlaces de ediciones cerradas no aceptan solicitudes para otra liga.
+- Los delegados existentes deben ingresar antes de solicitar su inscripción en una nueva edición. Conservan su cuenta, pero cada liga tiene sus propios equipos y jugadores.
+- `/historico` y `/historico/[slug]` muestran exclusivamente la parte pública del archivo. El archivo JSON completo se descarga desde el panel del superadministrador y contiene contactos; no debe compartirse públicamente.
+- El cierre requiere escribir el nombre actual, reconocer los partidos pendientes y resolver los encuentros en curso. No asigna resultados a partidos pendientes. La apertura siguiente y el cierre se confirman en una sola transacción.
+- Las filas originales se conservan con `seasonId`. El cliente Prisma operativo aplica el ámbito automáticamente y los triggers PostgreSQL bloquean modificaciones de ligas finalizadas y referencias entre ligas distintas. El archivo conserva una captura de datos, estadísticas, planteles y configuración al cierre; no incluye contraseñas.
+- La migración inicial asigna los datos existentes a **Liga actual** sin cerrar la competición ni crear resultados o equipos nuevos. El seed sigue siendo idempotente y no reinicia datos deportivos.
+
+Validación de la funcionalidad:
+```sh
+npx prisma generate
+npx next typegen
+npx tsc --noEmit
+npx tsx --test tests/league-seasons.test.ts tests/matchSchedule.test.ts
+```
