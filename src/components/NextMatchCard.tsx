@@ -3,48 +3,24 @@ import { formatDate } from "@/lib/format";
 import { TeamCrest } from "@/components/TeamCrest";
 
 type NextMatch = {
-  matchday: number;
-  date: Date;
-  time: string;
-  venue: string;
+  matchday: number; date: Date; time: string; venue: string;
   homeTeam: { name: string; shortName: string; logoUrl: string | null };
   awayTeam: { name: string; shortName: string; logoUrl: string | null };
 } | null;
 
 export function NextMatchCard({ match }: { match: NextMatch }) {
-  if (!match) {
-    return (
-      <div className="rounded-xl border border-white/15 bg-white/5 p-6 text-center text-white backdrop-blur-sm">
-        <p className="eyebrow !text-red-300">Próximo partido</p>
-        <p className="mt-2 text-lg font-bold">Próximamente</p>
-        <p className="mt-1 text-sm text-white/70">Todavía no hay un próximo partido programado.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-hidden rounded-xl border border-white/15 bg-white/5 text-white backdrop-blur-sm">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-        <span className="eyebrow !text-red-300">Próximo partido</span>
-        <span className="badge badge-navy !bg-white/10 !text-white">Jornada {match.matchday}</span>
-      </div>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-5 px-5 py-8 text-center">
-        <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={64} />
-          <span className="break-words text-base font-bold leading-tight sm:text-lg">{match.homeTeam.name}</span>
+    <article className="arena-match">
+      <div className="arena-match-heading"><span>Próximo encuentro</span><span>{match ? "Jornada " + match.matchday : "Fixture"}</span></div>
+      {match ? <>
+        <div className="arena-match-teams">
+          <div><TeamCrest name={match.homeTeam.name} shortName={match.homeTeam.shortName} logoUrl={match.homeTeam.logoUrl} size={88} /><h2>{match.homeTeam.name}</h2><span>Local</span></div>
+          <span className="arena-versus" aria-label="contra">VS</span>
+          <div><TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={88} /><h2>{match.awayTeam.name}</h2><span>Visitante</span></div>
         </div>
-        <div className="flex h-16 items-center justify-center text-sm font-semibold text-white/70">vs</div>
-        <div className="flex flex-col items-center gap-2">
-          <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={64} />
-          <span className="break-words text-base font-bold leading-tight sm:text-lg">{match.awayTeam.name}</span>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-white/10 px-5 py-3 text-xs text-white/80">
-        <span className="capitalize">{formatDate(match.date)}</span>
-        <span>{match.time} hs</span>
-        <span>{match.venue}</span>
-      </div>
-      <Link href="/fixture" className="league-match-link">Ver fixture completo <span aria-hidden="true">→</span></Link>
-    </div>
+        <div className="arena-match-time"><b>{match.time}<small> h</small></b><div><span>{formatDate(match.date)}</span><span>{match.venue}</span></div></div>
+      </> : <div className="arena-match-empty"><span aria-hidden="true">↗</span><h2>La próxima fecha<br />está por venir.</h2><p>No hay encuentros futuros programados. Consultá el fixture para ver las fechas y los partidos pendientes.</p></div>}
+      <Link href="/fixture" className="arena-match-footer">Ver fixture completo <span aria-hidden="true">↗</span></Link>
+    </article>
   );
 }

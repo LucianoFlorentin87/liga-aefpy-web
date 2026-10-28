@@ -1,4 +1,5 @@
 import "server-only";
+import { upcomingScheduleFilter } from "@/lib/matchSchedule";
 import { prisma } from "@/lib/db";
 import { playerFullName, getMatchScore } from "@/lib/format";
 
@@ -377,7 +378,7 @@ export async function computeDiscipline(): Promise<DisciplineRow[]> {
 /** Próximo partido programado (el más cercano en el futuro que no fue jugado). */
 export async function getNextMatch() {
   return prisma.match.findFirst({
-    where: { status: { in: ["PROGRAMADO", "REPROGRAMADO"] } },
+    where: { status: { in: ["PROGRAMADO", "REPROGRAMADO"] }, ...upcomingScheduleFilter() },
     orderBy: [{ date: "asc" }, { time: "asc" }],
     include: { homeTeam: true, awayTeam: true },
   });
@@ -385,7 +386,7 @@ export async function getNextMatch() {
 
 export async function getUpcomingMatches(limit = 8) {
   return prisma.match.findMany({
-    where: { status: { in: ["PROGRAMADO", "REPROGRAMADO"] } },
+    where: { status: { in: ["PROGRAMADO", "REPROGRAMADO"] }, ...upcomingScheduleFilter() },
     orderBy: [{ date: "asc" }, { time: "asc" }],
     take: limit,
     include: { homeTeam: true, awayTeam: true },
