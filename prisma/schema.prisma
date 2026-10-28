@@ -31,7 +31,7 @@ enum RoleKey {
 }
 
 model Role {
-  id          Int    @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   key         RoleKey @unique
   name        String
   description String
@@ -46,28 +46,32 @@ enum UserStatus {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  firstName     String
-  lastName      String
-  email         String     @unique
-  username      String     @unique
-  passwordHash  String
-  mustChangePassword Boolean @default(true)
-  role          Role       @relation(fields: [roleId], references: [id])
-  roleId        Int
+  id                  String               @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String               @unique
+  username            String               @unique
+  passwordHash        String
+  mustChangePassword  Boolean              @default(true)
+  role                Role                 @relation(fields: [roleId], references: [id])
+  roleId              Int
   // Sólo se usa (y es obligatorio) para el rol DELEGADO: el equipo al que
   // queda restringido su acceso (plantel, logo, datos de cancha).
-  team          Team?      @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId        String?
-  status        UserStatus @default(ACTIVO)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  lastLoginAt   DateTime?
-  activityLogs  ActivityLog[]
+  team                Team?                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId              String?
+  status              UserStatus           @default(ACTIVO)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  lastLoginAt         DateTime?
+  activityLogs        ActivityLog[]
   // Sólo la usan los DELEGADO: pueden votar en las predicciones públicas
   // con su misma cuenta de staff, sin necesitar además una cuenta de hincha.
-  predictions   Prediction[]
+  predictions         Prediction[]
   passwordResetTokens PasswordResetToken[]
+
+  closedSeasons         Season[]             @relation("SeasonCloser")
+  registrations         LeagueRegistration[] @relation("RegistrationApplicant")
+  reviewedRegistrations LeagueRegistration[] @relation("RegistrationReviewer")
 
   @@map("users")
 }
@@ -106,8 +110,10 @@ enum TeamStatus {
 }
 
 model Team {
+  seasonId      String     @default(dbgenerated("current_league_season_id()"))
+  season        Season     @relation(fields: [seasonId], references: [id])
   id            String     @id @default(cuid())
-  name          String     @unique
+  name          String
   shortName     String
   logoUrl       String?
   delegateName  String?
@@ -133,17 +139,21 @@ model Team {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  players       Player[]
-  homeMatches   Match[]        @relation("HomeTeam")
-  awayMatches   Match[]        @relation("AwayTeam")
-  forfeitedMatches Match[]     @relation("ForfeitedTeam")
-  goals         MatchGoal[]
-  cards         MatchCard[]
-  sanctions     Sanction[]
-  participations MatchParticipation[]
+  players          Player[]
+  homeMatches      Match[]              @relation("HomeTeam")
+  awayMatches      Match[]              @relation("AwayTeam")
+  forfeitedMatches Match[]              @relation("ForfeitedTeam")
+  goals            MatchGoal[]
+  cards            MatchCard[]
+  sanctions        Sanction[]
+  participations   MatchParticipation[]
   pointAdjustments PointAdjustment[]
-  delegateUsers User[]
+  delegateUsers    User[]
 
+  registration LeagueRegistration?
+
+  @@unique([seasonId, name])
+  @@index([seasonId])
   @@map("teams")
 }
 
@@ -160,19 +170,21 @@ enum PlayerStatus {
 }
 
 model Player {
-  id            String         @id @default(cuid())
-  firstName     String
+  seasonId     String         @default(dbgenerated("current_league_season_id()"))
+  season       Season         @relation(fields: [seasonId], references: [id])
+  id           String         @id @default(cuid())
+  firstName    String
   // Opcional: muchos gamertags/jugadores de eFootball se cargan sólo con
   // nombre (apodo). No forzamos un apellido que puede no existir.
-  lastName      String?
-  jerseyNumber  Int
-  position      PlayerPosition
-  team          Team           @relation(fields: [teamId], references: [id])
-  teamId        String
-  birthDate     DateTime?
-  status        PlayerStatus   @default(ACTIVO)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  lastName     String?
+  jerseyNumber Int
+  position     PlayerPosition
+  team         Team           @relation(fields: [teamId], references: [id])
+  teamId       String
+  birthDate    DateTime?
+  status       PlayerStatus   @default(ACTIVO)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   // Carta de eFootball elegida para este jugador (buscada en eFHUB) — sólo
   // para mostrarla como miniatura en el sitio, no afecta ninguna regla del
@@ -193,6 +205,7 @@ model Player {
   sanctions      Sanction[]
   participations MatchParticipation[]
 
+  @@index([seasonId])
   @@map("players")
 }
 
@@ -237,33 +250,36 @@ enum MatchStatus {
 }
 
 model Match {
-  id           String      @id @default(cuid())
-  matchday     Int
-  date         DateTime
-  time         String
-  venue        String
-  homeTeam     Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  homeTeamId   String
-  awayTeam     Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  awayTeamId   String
-  status       MatchStatus @default(PROGRAMADO)
-  notes        String?
+  seasonId        String      @default(dbgenerated("current_league_season_id()"))
+  season          Season      @relation(fields: [seasonId], references: [id])
+  id              String      @id @default(cuid())
+  matchday        Int
+  date            DateTime
+  time            String
+  venue           String
+  homeTeam        Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeamId      String
+  awayTeam        Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeamId      String
+  status          MatchStatus @default(PROGRAMADO)
+  notes           String?
   // Si no es null, el partido se resolvió por abandono del equipo indicado
   // (retiro de la liga a mitad de temporada): el resultado se fija 3-0 en
   // contra suyo en vez de contar los goles cargados (ver buildStandingsRows
   // en lib/stats.ts) — no hace falta cargar goles falsos a ningún jugador.
-  forfeitedTeam   Team?    @relation("ForfeitedTeam", fields: [forfeitedTeamId], references: [id])
+  forfeitedTeam   Team?       @relation("ForfeitedTeam", fields: [forfeitedTeamId], references: [id])
   forfeitedTeamId String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  goals          MatchGoal[]
-  cards          MatchCard[]
-  participations MatchParticipation[]
+  goals            MatchGoal[]
+  cards            MatchCard[]
+  participations   MatchParticipation[]
   pointAdjustments PointAdjustment[]
-  predictions    Prediction[]
+  predictions      Prediction[]
 
   @@index([matchday])
+  @@index([seasonId])
   @@map("matches")
 }
 
@@ -305,20 +321,20 @@ enum CardType {
 }
 
 model MatchCard {
-  id        String   @id @default(cuid())
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  matchId   String
-  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  playerId  String
-  team      Team     @relation(fields: [teamId], references: [id])
-  teamId    String
-  type      CardType
-  minute    Int
-  note      String?
+  id                   String   @id @default(cuid())
+  match                Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId              String
+  player               Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId             String
+  team                 Team     @relation(fields: [teamId], references: [id])
+  teamId               String
+  type                 CardType
+  minute               Int
+  note                 String?
   // Marca si esta amarilla ya "gatilló" una suspensión automática por
   // acumulación de 3 (Art. 8.2 del reglamento), para no volver a contarla.
-  countedForSuspension Boolean @default(false)
-  createdAt DateTime @default(now())
+  countedForSuspension Boolean  @default(false)
+  createdAt            DateTime @default(now())
 
   @@index([matchId])
   @@index([playerId])
@@ -335,19 +351,22 @@ enum SanctionStatus {
 }
 
 model Sanction {
-  id            String         @id @default(cuid())
-  player        Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  playerId      String
-  team          Team           @relation(fields: [teamId], references: [id])
-  teamId        String
-  reason        String
-  matchesCount  Int
-  startDate     DateTime
-  endDate       DateTime?
-  status        SanctionStatus @default(ACTIVA)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  seasonId     String         @default(dbgenerated("current_league_season_id()"))
+  season       Season         @relation(fields: [seasonId], references: [id])
+  id           String         @id @default(cuid())
+  player       Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId     String
+  team         Team           @relation(fields: [teamId], references: [id])
+  teamId       String
+  reason       String
+  matchesCount Int
+  startDate    DateTime
+  endDate      DateTime?
+  status       SanctionStatus @default(ACTIVA)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
+  @@index([seasonId])
   @@map("sanctions")
 }
 
@@ -356,6 +375,8 @@ model Sanction {
 // la organización). Se suma (puede ser negativo) al total de puntos del
 // equipo en computeStandings().
 model PointAdjustment {
+  seasonId  String   @default(dbgenerated("current_league_season_id()"))
+  season    Season   @relation(fields: [seasonId], references: [id])
   id        String   @id @default(cuid())
   team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId    String
@@ -366,6 +387,7 @@ model PointAdjustment {
   createdAt DateTime @default(now())
 
   @@index([teamId])
+  @@index([seasonId])
   @@map("point_adjustments")
 }
 
@@ -374,7 +396,9 @@ model PointAdjustment {
 // ---------------------------------------------------------------------------
 
 model TournamentSettings {
-  id String @id @default("settings")
+  currentSeasonId String?
+  currentSeason   Season? @relation("CurrentSeason", fields: [currentSeasonId], references: [id])
+  id              String  @id @default("settings")
 
   // Textos editables del sitio público (hero, logo/wordmark, pie de página) —
   // se muestran en /admin/configuracion. Nunca hardcodeados en los componentes.
@@ -383,8 +407,8 @@ model TournamentSettings {
   heroSubtitle      String @default("Torneo de Fútbol")
   footerDescription String @default("Torneo oficial organizado por la Liga AEFPY (Asociación de Efootball Paraguay).")
 
-  standingsCriteria String   @default("PTS,DG,GF")
-  rulesContent      String   @default("")
+  standingsCriteria String  @default("PTS,DG,GF")
+  rulesContent      String  @default("")
   rulesPdfUrl       String?
 
   // Modo mantenimiento: mientras está activo, todo el sitio público (fuera
@@ -394,7 +418,7 @@ model TournamentSettings {
   maintenanceMode    Boolean @default(false)
   maintenanceMessage String  @default("Estamos haciendo tareas de mantenimiento. Volvemos pronto.")
 
-  updatedAt         DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("tournament_settings")
 }
@@ -447,17 +471,17 @@ enum PredictionChoice {
 // campo genérico para conservar la integridad referencial (FK real) hacia
 // cada tabla de cuentas cuando corresponde.
 model Prediction {
-  id          String            @id @default(cuid())
-  fanUser     FanUser?          @relation(fields: [fanUserId], references: [id], onDelete: Cascade)
+  id          String           @id @default(cuid())
+  fanUser     FanUser?         @relation(fields: [fanUserId], references: [id], onDelete: Cascade)
   fanUserId   String?
-  staffUser   User?             @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
+  staffUser   User?            @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
   staffUserId String?
   anonId      String?
-  match       Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  match       Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
   matchId     String
   choice      PredictionChoice
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@unique([fanUserId, matchId])
   @@unique([staffUserId, matchId])
@@ -471,6 +495,8 @@ model Prediction {
 // título, nunca sube archivos de video. El "visor" (embed) se resuelve en
 // tiempo de render a partir de la URL, ver src/lib/video.ts.
 model Video {
+  seasonId  String   @default(dbgenerated("current_league_season_id()"))
+  season    Season   @relation(fields: [seasonId], references: [id])
   id        String   @id @default(cuid())
   title     String
   url       String
@@ -482,6 +508,7 @@ model Video {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([seasonId])
   @@map("videos")
 }
 
@@ -493,6 +520,8 @@ model Video {
 // la liga; body es opcional porque una tarjeta importada puede no tener
 // cuerpo completo, sólo resumen + link "Leer en [fuente]".
 model News {
+  seasonId    String   @default(dbgenerated("current_league_season_id()"))
+  season      Season   @relation(fields: [seasonId], references: [id])
   id          String   @id @default(cuid())
   title       String
   excerpt     String
@@ -507,5 +536,76 @@ model News {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([seasonId])
   @@map("news")
+}
+
+enum SeasonStatus {
+  INSCRIPCION
+  EN_CURSO
+  FINALIZADA
+}
+
+enum RegistrationStatus {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+model Season {
+  id                   String               @id @default(cuid())
+  name                 String
+  slug                 String               @unique
+  status               SeasonStatus         @default(INSCRIPCION)
+  registrationOpen     Boolean              @default(true)
+  registrationDeadline DateTime?
+  createdAt            DateTime             @default(now())
+  startedAt            DateTime?
+  endedAt              DateTime?
+  closedById           String?
+  closedBy             User?                @relation("SeasonCloser", fields: [closedById], references: [id], onDelete: SetNull)
+  archive              Json?
+  standingsCriteria    String               @default("PTS,DG,GF")
+  teams                Team[]
+  players              Player[]
+  matches              Match[]
+  sanctions            Sanction[]
+  pointAdjustments     PointAdjustment[]
+  videos               Video[]
+  news                 News[]
+  registrations        LeagueRegistration[]
+  currentSettings      TournamentSettings[] @relation("CurrentSeason")
+
+  @@map("seasons")
+}
+
+model LeagueRegistration {
+  id                String             @id @default(cuid())
+  seasonId          String
+  season            Season             @relation(fields: [seasonId], references: [id])
+  teamName          String
+  shortName         String
+  gamertag          String
+  delegateFirstName String
+  delegateLastName  String
+  email             String
+  phone             String
+  username          String
+  passwordHash      String?
+  userId            String?
+  user              User?              @relation("RegistrationApplicant", fields: [userId], references: [id], onDelete: SetNull)
+  status            RegistrationStatus @default(PENDIENTE)
+  createdAt         DateTime           @default(now())
+  reviewedAt        DateTime?
+  reviewedById      String?
+  reviewedBy        User?              @relation("RegistrationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote        String?
+  teamId            String?            @unique
+  team              Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@unique([seasonId, email])
+  @@unique([seasonId, teamName])
+  @@unique([seasonId, userId])
+  @@index([seasonId, status])
+  @@map("league_registrations")
 }

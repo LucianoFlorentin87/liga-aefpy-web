@@ -25,6 +25,8 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     title: "Torneo",
     icon: "torneo",
     items: [
+      { href: "/admin/ligas", label: "Ligas y temporadas", resource: "temporadas" },
+      { href: "/admin/inscripciones", label: "Inscripciones", resource: "inscripciones" },
       { href: "/admin/equipos", label: "Equipos", resource: "equipos" },
       { href: "/admin/jugadores", label: "Jugadores", resource: "jugadores" },
       { href: "/admin/partidos", label: "Partidos", resource: "partidos" },
@@ -61,6 +63,6 @@ export const DELEGADO_NAV: AdminNavGroup[] = [
   {
     title: "",
     icon: "home",
-    items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }],
+    items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }, { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" }],
   },
 ];

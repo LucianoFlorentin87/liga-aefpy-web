@@ -64,7 +64,7 @@ export async function createTeamAction(_prevState: FormState, formData: FormData
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const existing = await prisma.team.findUnique({ where: { name: parsed.data.name } });
+  const existing = await prisma.team.findFirst({ where: { name: parsed.data.name } });
   if (existing) return { error: "Ya existe un equipo con ese nombre." };
 
   const team = await prisma.team.create({

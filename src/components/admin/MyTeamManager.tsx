@@ -223,8 +223,9 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-[var(--color-navy-900)]">Mi equipo</h1>
+      <div className="admin-page-heading">
+        <p className="arena-overline">Panel del delegado</p>
+        <h1>{team.name}.</h1>
         <p className="text-sm text-[var(--color-gray-500)]">
           Gestioná el perfil y los jugadores de {team.name}. Los resultados, goles y tarjetas los carga la liga.
         </p>

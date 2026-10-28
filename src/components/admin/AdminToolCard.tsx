@@ -11,7 +11,7 @@ export function AdminToolCard({ href, label, icon, category }: { href: string; l
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-2 rounded-xl border-2 border-[var(--color-gray-200)] bg-[var(--color-surface)] p-3.5 transition-colors hover:border-[var(--color-red-accent)]"
+      className="admin-tool-card group flex flex-col gap-2 rounded-xl border-2 border-[var(--color-gray-200)] bg-[var(--color-surface)] p-3.5 transition-colors hover:border-[var(--color-red-accent)]"
     >
       <div className="flex items-center justify-between">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-gray-100)] text-[var(--color-gray-500)] group-hover:bg-[var(--color-red-100)] group-hover:text-[var(--color-red-accent)]">

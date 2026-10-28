@@ -3,12 +3,13 @@ import { can } from "@/lib/permissions";
 import { ADMIN_NAV, DELEGADO_NAV } from "@/lib/admin-nav";
 import { roleLabel } from "@/lib/format";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { prisma } from "@/lib/db";
+import { prisma, getCurrentSeason } from "@/lib/db";
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
-  const [{ session }, settings] = await Promise.all([
+  const [{ session }, settings, season] = await Promise.all([
     requireAuth(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
+    getCurrentSeason(),
   ]);
 
   const navGroups =
@@ -21,6 +22,8 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
 
   return (
     <AdminShell
+      seasonName={season.name}
+      seasonStatus={season.status}
       navGroups={navGroups}
       userLabel={`${session.firstName} ${session.lastName}`}
       roleLabel={roleLabel(session.role)}

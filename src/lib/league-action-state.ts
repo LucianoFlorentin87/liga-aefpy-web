@@ -1,0 +1,1 @@
+export type LeagueActionState = { error?: string; success?: string; link?: string; linkLabel?: string };

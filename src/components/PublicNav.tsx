@@ -14,6 +14,8 @@ export const PUBLIC_NAV_GROUPS: PublicNavEntry[] = [
     label: "Competición",
     items: [
       { href: "/fixture", label: "Fixture" },
+      { href: "/inscripcion", label: "Inscripción" },
+      { href: "/historico", label: "Histórico de ligas" },
       { href: "/resultados", label: "Resultados" },
       { href: "/posiciones", label: "Posiciones" },
       { href: "/goleadores", label: "Goleadores" },
