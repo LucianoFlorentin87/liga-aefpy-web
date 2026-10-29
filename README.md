@@ -638,3 +638,14 @@ npx next typegen
 npx tsc --noEmit
 npx tsx --test tests/league-seasons.test.ts tests/matchSchedule.test.ts
 ```
+## Comité y resoluciones (implementación inicial)
+
+La ruta `/admin/comite` permite presentar reclamos, incorporar pruebas en texto, registrar defensa y notificaciones comprobables por el canal privado oficial, designar tres miembros, votar una propuesta completa y descargar la resolución PDF. Los adjuntos se reciben por el canal privado oficial; no se suben al almacenamiento público del sitio.
+
+El SUPERADMIN designa tres titulares y tres suplentes; los integrantes sin conflicto pueden coordinar expedientes. La revisión se solicita en doce horas desde la constancia de notificación y requiere otro panel de tres. Los votos se emiten una sola vez y no son accesibles a delegados, PDF ni usuarios administrativos ajenos al panel. Las pruebas, eventos y votos emitidos son inmutables en PostgreSQL. RLS y revocación de permisos cierran el acceso por la Data API pública.
+
+Antes de activar: aplicar `npm run db:deploy`, generar Prisma, designar miembros y comprobar el circuito con cuentas de prueba. La migración solo agrega las tablas del comité y sus protecciones; no reescribe resultados existentes.
+
+**Alcance:** este módulo registra y decide expedientes. El cierre automático de cinco días, la validación automática de puntualidad y excepciones de fuerza mayor, la carga privada de archivos, las notificaciones externas y la ejecución automática de resoluciones sobre la tabla no están incluidos. Los plazos de admisibilidad y la procedencia de excepciones se verifican por el comité conforme al reglamento, con constancia. La propuesta sometida a votación debe incluir hechos, artículos, fundamentos y efectos. No se adopta automáticamente el reglamento v1.1 como texto público: queda disponible para consulta en el módulo y requiere adopción de la edición. El cierre de temporada bloquea expedientes pendientes o decisiones iniciales todavía revisables.
+
+Validación: `npx tsx --test tests/committee*.test.ts`; `npx tsc --noEmit`; `npx eslint src/lib/committee*.ts "src/app/admin/(protected)/comite"`.

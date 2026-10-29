@@ -14,6 +14,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     { href: "/admin/jugadores", label: "Jugadores", resource: "jugadores" },
     { href: "/admin/partidos", label: "Fixture y partidos", resource: "partidos" },
     { href: "/admin/resultados", label: "Cargar resultados", resource: "resultados" },
+    { href: "/admin/comite", label: "Comité y reclamos" },
     { href: "/admin/reglamento", label: "Reglamento", resource: "reglamento" },
   ] },
   { title: "Estadísticas", icon: "estadisticas", items: [
@@ -36,6 +37,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
 export const DELEGADO_NAV: AdminNavGroup[] = [
   { title: "", icon: "home", items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }] },
   { title: "Participación", icon: "torneo", items: [
-    { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" },
+    { href: "/admin/comite", label: "Reclamos y resoluciones" }, { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" },
   ] },
 ];

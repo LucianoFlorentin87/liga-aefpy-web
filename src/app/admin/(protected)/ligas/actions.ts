@@ -39,6 +39,10 @@ export async function closeAndCreateLeague(_previous: LeagueActionState, form: F
       if (settings.currentSeasonId !== input.currentSeasonId) throw new LeagueActionError("La liga cambió. Actualizá la página antes de continuar.");
       const current = await tx.season.findUniqueOrThrow({ where: { id: input.currentSeasonId } });
       if (current.status === "FINALIZADA" || input.confirmName !== current.name) throw new LeagueActionError("Escribí exactamente el nombre de la liga actual para confirmar.");
+      const unresolvedCases = await tx.committeeCase.count({where:{seasonId:current.id,status:{in:['DEFENSA','VOTACION']}}});
+      if(unresolvedCases) throw new LeagueActionError('Hay expedientes del comité pendientes. Resolvelos antes de cerrar.');
+      const resolvedCases = await tx.committeeCase.findMany({where:{seasonId:current.id},include:{events:{where:{action:'RESOLUCION_NOTIFICADA'}}}});
+      if(resolvedCases.some(c=>!c.events[0] || (!c.parentId && Date.now()<c.events[0].createdAt.getTime()+12*3600000))) throw new LeagueActionError('Falta notificar decisiones o todavía corre un plazo de revisión del comité.');
       const playing = await tx.match.count({ where: { seasonId: current.id, status: "EN_CURSO" } });
       if (playing) throw new LeagueActionError("Hay partidos en curso. Resolvelos antes de cerrar la liga.");
       const pending = await tx.match.count({ where: { seasonId: current.id, status: { not: "FINALIZADO" } } });

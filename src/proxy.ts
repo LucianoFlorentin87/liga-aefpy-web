@@ -46,6 +46,7 @@ export async function proxy(request: NextRequest) {
     const DELEGADO_ALLOWED_PREFIXES = [
       "/admin/mi-equipo",
       "/admin/cuenta",
+      "/admin/comite",
       // No abre /admin/jugadores (esa pantalla sigue vedada al delegado):
       // sólo el endpoint de búsqueda de cartas, que el picker de
       // /admin/mi-equipo consulta por fetch. La autorización real la hace
