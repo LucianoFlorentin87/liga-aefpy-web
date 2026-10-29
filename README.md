@@ -649,3 +649,7 @@ Antes de activar: aplicar `npm run db:deploy`, generar Prisma, designar miembros
 **Alcance:** este módulo registra y decide expedientes. El cierre automático de cinco días, la validación automática de puntualidad y excepciones de fuerza mayor, la carga privada de archivos, las notificaciones externas y la ejecución automática de resoluciones sobre la tabla no están incluidos. Los plazos de admisibilidad y la procedencia de excepciones se verifican por el comité conforme al reglamento, con constancia. La propuesta sometida a votación debe incluir hechos, artículos, fundamentos y efectos. No se adopta automáticamente el reglamento v1.1 como texto público: queda disponible para consulta en el módulo y requiere adopción de la edición. El cierre de temporada bloquea expedientes pendientes o decisiones iniciales todavía revisables.
 
 Validación: `npx tsx --test tests/committee*.test.ts`; `npx tsc --noEmit`; `npx eslint src/lib/committee*.ts "src/app/admin/(protected)/comite"`.
+
+### Archivos institucionales del comité
+
+El logo PNG y el reglamento PDF se conservan sin pérdida en `assets/committee/`, en partes Base64. `npm install` y `npm run build` reconstruyen ambos en `public/` y verifican tamaño y SHA-256 antes de escribirlos. No se descargan archivos externos ni se modifican sus bytes. Para restaurarlos manualmente: `node scripts/restore-committee-assets.cjs`.
