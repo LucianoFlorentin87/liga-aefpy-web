@@ -1,0 +1,36 @@
+[
+  {
+    "path": "public/documentos/Reglamento_AEFPY_v1.1.pdf",
+    "size": 3003519,
+    "sha256": "4f562d288d47d49f7031d00c21cdb3d8f8ba7b87c98c6ef75cd2408b9424b5c9",
+    "parts": [
+      "reglamento-00.b64",
+      "reglamento-01.b64",
+      "reglamento-02.b64",
+      "reglamento-03.b64",
+      "reglamento-04.b64",
+      "reglamento-05.b64",
+      "reglamento-06.b64",
+      "reglamento-07.b64",
+      "reglamento-08.b64",
+      "reglamento-09.b64",
+      "reglamento-10.b64"
+    ]
+  },
+  {
+    "path": "public/logo-comite-aefpy.png",
+    "size": 2433142,
+    "sha256": "32572815d2f1850f3e52678b0e4e578670ebedc3c671f285a8b40d29d3b6388a",
+    "parts": [
+      "logo-00.b64",
+      "logo-01.b64",
+      "logo-02.b64",
+      "logo-03.b64",
+      "logo-04.b64",
+      "logo-05.b64",
+      "logo-06.b64",
+      "logo-07.b64",
+      "logo-08.b64"
+    ]
+  }
+]

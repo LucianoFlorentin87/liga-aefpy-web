@@ -609,3 +609,75 @@ model LeagueRegistration {
   @@index([seasonId, status])
   @@map("league_registrations")
 }
+
+
+// Private committee records. Access only through authenticated server code.
+model CommitteeMember {
+  id String @id @default(cuid())
+  seasonId String
+  userId String
+  alternate Boolean @default(false)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  @@unique([seasonId, userId])
+  @@map("committee_members")
+}
+model CommitteeCase {
+  id String @id @default(cuid())
+  seasonId String
+  matchId String?
+  title String
+  applicantId String
+  respondentId String
+  status String @default("DEFENSA")
+  evidenceDeadline DateTime
+  defenseDeadline DateTime?
+  voteDeadline DateTime?
+  notifiedAt DateTime?
+  notificationProof String?
+  proposal String?
+  resolution String?
+  resolvedAt DateTime?
+  resolutionNumber String? @unique
+  parentId String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  statements CommitteeStatement[]
+  ballots CommitteeBallot[]
+  events CommitteeEvent[]
+  @@index([seasonId, status])
+  @@map("committee_cases")
+}
+model CommitteeStatement {
+  id String @id @default(cuid())
+  caseId String
+  case CommitteeCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  authorId String
+  kind String
+  body String
+  createdAt DateTime @default(now())
+  @@index([caseId])
+  @@map("committee_statements")
+}
+model CommitteeBallot {
+  id String @id @default(cuid())
+  caseId String
+  case CommitteeCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  userId String
+  choice String?
+  reason String?
+  votedAt DateTime?
+  @@unique([caseId, userId])
+  @@map("committee_ballots")
+}
+model CommitteeEvent {
+  id String @id @default(cuid())
+  caseId String
+  case CommitteeCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  actorId String
+  action String
+  detail String
+  createdAt DateTime @default(now())
+  @@index([caseId])
+  @@map("committee_events")
+}
