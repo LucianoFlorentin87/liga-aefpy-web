@@ -1,4 +1,5 @@
 import "server-only";
+import { currentRegulation } from "@/lib/regulations";
 import { CLOSED_MATCH_STATUSES } from "@/lib/committee-effects";
 import { Prisma } from "@prisma/client";
 import { seasonAdminDb } from "@/lib/db";
@@ -16,6 +17,8 @@ export type PublicArchive = {
 };
 /** Called while the lifecycle transaction holds the exclusive league write lock. */
 export async function captureLeagueArchive(seasonId: string, name: string, settings: { rulesContent: string; rulesPdfUrl: string | null; standingsCriteria: string }) {
+  const adoptedRules = await currentRegulation(seasonId);
+  if(adoptedRules) settings = {...settings,rulesPdfUrl:adoptedRules.pdfUrl};
   const [teams, players, matches, sanctions, adjustments, videos, news, standings, scorers, discipline, registrations] = await Promise.all([
     seasonAdminDb.team.findMany({ where: { seasonId }, orderBy: { name: "asc" } }),
     seasonAdminDb.player.findMany({ where: { seasonId }, include: { efhubCard: true } }),
