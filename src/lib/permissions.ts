@@ -2,6 +2,7 @@ import "server-only";
 import type { RoleKey } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { delegateRegulationState } from "@/lib/regulations";
 import { requireActiveUser } from "@/lib/auth";
 
 /**
@@ -97,5 +98,7 @@ export async function requireDelegate() {
   if (!user.teamId) redirect("/inscripcion");
   const team = await prisma.team.findUnique({ where: { id: user.teamId }, select: { id: true } });
   if (!team) redirect("/inscripcion?estado=renovar");
+  const rules = await delegateRegulationState(user.id);
+  if (rules.publication && !rules.acceptance) redirect("/admin/aceptar-reglamento");
   return { session, user, teamId: user.teamId };
 }

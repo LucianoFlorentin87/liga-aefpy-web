@@ -622,6 +622,7 @@ model CommitteeMember {
   id String @id @default(cuid())
   seasonId String
   userId String
+  linkedUserId String?
   alternate Boolean @default(false)
   active Boolean @default(true)
   createdAt DateTime @default(now())
@@ -633,6 +634,9 @@ model CommitteeCase {
   seasonId String
   matchId String?
   title String
+  nature String?
+  article Int?
+  regulationPublicationId String?
   applicantId String
   respondentId String
   status String @default("DEFENSA")
@@ -704,4 +708,33 @@ model CommitteeApplication {
   createdAt DateTime @default(now())
   @@index([seasonId])
   @@map("committee_applications")
+}
+
+// Exact published version and append-only acknowledgement by the authenticated delegate.
+model RegulationPublication {
+  id String @id @default(cuid())
+  seasonId String
+  version String
+  pdfUrl String
+  pdfSha256 String
+  acceptanceText String
+  effectiveAt DateTime
+  publishedAt DateTime @default(now())
+  publishedById String
+  @@unique([seasonId, version])
+  @@map("regulation_publications")
+}
+model RegulationAcceptance {
+  id String @id @default(cuid())
+  publicationId String
+  seasonId String
+  userId String
+  username String
+  delegateName String
+  teamId String
+  teamName String
+  acceptedAt DateTime @default(now())
+  @@unique([publicationId, userId])
+  @@index([seasonId])
+  @@map("regulation_acceptances")
 }

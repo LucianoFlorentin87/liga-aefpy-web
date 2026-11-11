@@ -672,8 +672,9 @@ partido y sus eventos contra edición ordinaria. Una revisión genera su propio 
 conserva el anterior y puede reemplazar el efecto. El cierre impide omitir efectos
 nuevos pendientes. Los históricos ya cerrados se conservan sin recalcular ni reabrir.
 
-El reglamento v1.1 se ofrece para consulta: **no está adoptado para la edición actual**.
-La designación de tres titulares y tres suplentes sigue pendiente. No se generan
+La adopción del reglamento v1.1 se registra por edición en `regulation_publications`.
+El sitio muestra la versión vigente cuando existe esa publicación; antes, se ofrece solo para consulta.
+Los titulares y suplentes se designan por edición; los suplentes aún deben completarse. No se generan
 votos ni resoluciones reales de prueba en producción. El sistema no activa por sí
 solo el vencimiento automático de 120 horas, la recepción de archivos privados ni
 los avisos de WhatsApp; esos procedimientos siguen siendo manuales y auditados
@@ -694,3 +695,23 @@ no garantiza servicio permanente ni reactiva automáticamente una base ya pausad
 Validación local: `node --import tsx --test tests/*.test.ts`, `npx next typegen`,
 `npx tsc --noEmit`, `npm run build`. Las pruebas de migración usan PostgreSQL
 embebido aislado; no escriben datos de prueba en producción.
+
+
+### Aceptación expresa y reclamos del delegado
+
+Al entrar a Mi equipo, el delegado de la edición debe aceptar la versión publicada
+antes de gestionar el plantel. La casilla está desmarcada y se valida también en el
+servidor. Se conserva usuario, nombre, equipo, edición, fecha/hora y vínculo a la
+publicación inmutable con versión, texto de aceptación y SHA-256 del PDF. No hay
+aceptación por el administrador, ni aceptación retroactiva. Las cuentas de una
+edición anterior se reinscriben antes de aceptar para el equipo de la nueva edición.
+La defensa y revisión de un expediente siguen disponibles sin forzar aceptación.
+
+Mi equipo ofrece Presentar reclamo, Mis expedientes y Mi aceptación. Los nuevos
+reclamos se clasifican por naturaleza y artículo compatible, se vinculan a la versión
+vigente y mantienen privacidad. La selección no concede puntos ni acredita faltas.
+El panel Reglamento muestra las aceptaciones a los responsables autorizados.
+
+Las cuentas vinculadas de un mismo integrante comparten exclusiones por conflicto
+e independencia revisora, evitando doble voto mediante cuentas distintas. La
+publicación inicial se permite en inscripción, antes de empezar la edición.

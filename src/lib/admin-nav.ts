@@ -37,6 +37,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
 export const DELEGADO_NAV: AdminNavGroup[] = [
   { title: "", icon: "home", items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }] },
   { title: "Participación", icon: "torneo", items: [
-    { href: "/admin/comite", label: "Reclamos y resoluciones" }, { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" },
+    { href: "/admin/comite", label: "Reclamos y resoluciones" }, { href: "/admin/aceptar-reglamento", label: "Reglamento y aceptación" }, { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" },
   ] },
 ];
