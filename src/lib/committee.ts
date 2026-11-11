@@ -1,4 +1,6 @@
 import 'server-only';
+import { classifyClaim } from '@/lib/regulation-policy';
+import { expandIdentities } from '@/lib/committee-conflicts';
 import { Prisma } from '@prisma/client';
 import { seasonAdminDb as db, getCurrentSeasonId } from '@/lib/db';
 import { requireAuth } from '@/lib/permissions';
@@ -17,8 +19,12 @@ export async function readCommitteeCase(id: string) {
   const actor = await committeeActor();
   const record = await db.committeeCase.findFirst({ where: { id, seasonId: actor.seasonId }, include: { statements: { orderBy: { createdAt: 'asc' } }, ballots: true, events: { orderBy: { createdAt: 'asc' } } } });
   const reviewAccess = record ? await db.committeeCase.findFirst({ where: { parentId:record.id, seasonId:actor.seasonId, ballots:{some:{userId:actor.user.id}} }, select:{id:true} }) : null;
-  const parties = record ? await db.user.findMany({where:{id:{in:[record.applicantId,record.respondentId]}},select:{teamId:true}}) : [];
-  const conflict = !!actor.user.teamId && parties.some(p=>p.teamId===actor.user.teamId);
+  const identityLinks=await db.committeeMember.findMany({where:{seasonId:actor.seasonId},select:{userId:true,linkedUserId:true}});
+  const partyIds=record?expandIdentities([record.applicantId,record.respondentId],identityLinks):[];
+  const actorIds=expandIdentities([actor.user.id],identityLinks);
+  const actorTeams=await db.user.findMany({where:{id:{in:actorIds}},select:{teamId:true}});
+  const parties = record ? await db.user.findMany({where:{id:{in:partyIds}},select:{teamId:true}}) : [];
+  const conflict = actorIds.some(id=>partyIds.includes(id)) || actorTeams.some(u=>u.teamId && parties.some(p=>p.teamId===u.teamId));
   if (record && conflict && ![record.applicantId,record.respondentId].includes(actor.user.id)) throw new Error('Expediente no disponible por conflicto de interés.');
   if (!record || (!(reviewAccess && actor.member?.active && !conflict) && !canReadCase(actor.user.id, record.applicantId, record.respondentId, record.ballots.map(b => b.userId), ((actor.operator || actor.member?.active === true) && !conflict)))) throw new Error('Expediente no disponible.');
   return { actor, record, conflict, panel: record.ballots.some(b => b.userId === actor.user.id) && actor.member?.active === true && !conflict };
@@ -55,6 +61,9 @@ export async function mutateCommittee(f: FormData) {
       return '';
     }
     if (operation === 'create') {
+      const classification=classifyClaim(f.get('nature'),f.get('article'));
+      const publication=await tx.regulationPublication.findFirst({where:{seasonId:a.seasonId,effectiveAt:{lte:now}},orderBy:[{effectiveAt:'desc'},{publishedAt:'desc'}]});
+      if(activeActor.role.key==='DELEGADO' && publication && !await tx.regulationAcceptance.findUnique({where:{publicationId_userId:{publicationId:publication.id,userId:a.user.id}}})) throw new Error('Aceptá el reglamento vigente desde tu perfil antes de presentar un reclamo nuevo. La defensa y revisión siguen disponibles.');
       const openCount = await tx.committeeCase.count({where:{seasonId:a.seasonId,applicantId:a.user.id,status:{in:['DEFENSA','VOTACION']}}});
       if(openCount >= 3) throw new Error('Ya tenés tres expedientes abiertos. Incorporá información al correspondiente o contactá al comité.');
       const respondentId = text(f, 'respondentId', 100);
@@ -65,19 +74,23 @@ export async function mutateCommittee(f: FormData) {
       const matchId = String(f.get('matchId') ?? '').trim() || null;
       const match = matchId ? await tx.match.findFirst({ where: { id: matchId, seasonId: a.seasonId } }) : null;
       if (matchId && !match) throw new Error('Partido no disponible.');
-      if (!a.operator && !a.member?.active) {
+      if (activeActor.role.key==='DELEGADO' || (!a.operator && !a.member?.active)) {
         if (!a.user.teamId || (match && ![match.homeTeamId, match.awayTeamId].includes(a.user.teamId))) throw new Error('Solo podés reclamar partidos de tu equipo.');
       }
       if (match && respondent.teamId && ![match.homeTeamId, match.awayTeamId].includes(respondent.teamId)) throw new Error('La contraparte no pertenece al partido.');
-      const record = await tx.committeeCase.create({ data: { seasonId: a.seasonId, matchId, title: text(f, 'title', 180), applicantId: a.user.id, respondentId, evidenceDeadline: f.get('complete') === 'on' ? now : hoursAfter(now, 12), statements: { create: { authorId: a.user.id, kind: 'RECLAMO', body: text(f, 'body') } }, events: { create: { actorId: a.user.id, action: 'CREADO', detail: 'Reclamo recibido; pendiente de traslado comprobable.' } } } });
+      const record = await tx.committeeCase.create({ data: { seasonId: a.seasonId, ...classification, regulationPublicationId:publication?.id, matchId, title: text(f, 'title', 180), applicantId: a.user.id, respondentId, evidenceDeadline: f.get('complete') === 'on' ? now : hoursAfter(now, 12), statements: { create: { authorId: a.user.id, kind: 'RECLAMO', body: text(f, 'body') } }, events: { create: { actorId: a.user.id, action: 'CREADO', detail: 'Reclamo recibido; pendiente de traslado comprobable.' } } } });
       return record.id;
     }
     const id = text(f, 'caseId', 100);
     const c = await tx.committeeCase.findFirst({ where: { id, seasonId: a.seasonId }, include: { ballots: true } });
     if (!c) throw new Error('Expediente no disponible.');
-    const parties = await tx.user.findMany({ where:{id:{in:[c.applicantId,c.respondentId]}},select:{teamId:true} });
+    const identityLinks=await tx.committeeMember.findMany({where:{seasonId:a.seasonId},select:{userId:true,linkedUserId:true}});
+    const excludedIds=expandIdentities([c.applicantId,c.respondentId],identityLinks);
+    const actorIds=expandIdentities([a.user.id],identityLinks);
+    const actorUsers=await tx.user.findMany({where:{id:{in:actorIds}},select:{teamId:true}});
+    const parties = await tx.user.findMany({ where:{id:{in:excludedIds}},select:{teamId:true} });
     const affectedTeams = parties.map(p=>p.teamId).filter((id): id is string=>!!id);
-    const party = [c.applicantId, c.respondentId].includes(a.user.id) || (!!a.user.teamId && affectedTeams.includes(a.user.teamId));
+    const party = actorIds.some(id=>excludedIds.includes(id)) || actorUsers.some(u=>u.teamId && affectedTeams.includes(u.teamId));
     const coordinator = (a.operator || a.member?.active === true) && !party;
     const event = async (action: string, detail: string) => { await tx.committeeEvent.create({ data: { caseId: id, actorId: a.user.id, action, detail } }); };
     if (operation === 'apply') {
@@ -118,10 +131,10 @@ export async function mutateCommittee(f: FormData) {
       if (now >= decisionDeadline) throw new Error('Venció el plazo de decisión: registrá la ampliación y sustitución por el procedimiento del reglamento.');
       const ids = f.getAll('panelIds').map(String);
       const previous = c.parentId ? await tx.committeeBallot.findMany({ where: { caseId: c.parentId }, select: { userId: true } }) : [];
-      if (!panelValid(ids, [c.applicantId, c.respondentId, ...previous.map(b => b.userId)])) throw new Error('Elegí tres miembros distintos, sin partes ni votantes de primera instancia.');
+      if (!panelValid(ids, expandIdentities([...excludedIds,...previous.map(b => b.userId)],identityLinks)) || new Set(ids.map(id=>expandIdentities([id],identityLinks).sort().join('|'))).size!==3) throw new Error('Elegí tres miembros distintos, sin partes ni votantes de primera instancia.');
       const members = await tx.committeeMember.findMany({ where: { seasonId: a.seasonId, active: true, userId: { in: ids } } });
       const activeUsers = await tx.user.count({ where: { id: { in: ids }, status: 'ACTIVO' } });
-      const conflictUsers = await tx.user.count({where:{id:{in:ids},teamId:{in:affectedTeams}}});
+      const conflictUsers = await tx.user.count({where:{id:{in:expandIdentities(ids,identityLinks)},teamId:{in:affectedTeams}}});
       if (conflictUsers || members.length !== 3 || activeUsers !== 3) throw new Error('Los tres miembros deben estar activos.');
       const proposedEffect = parseEffect(f.get('proposedEffect'));
       const residualEffect = c.parentId ? 'SIN_CAMBIO' : parseEffect(f.get('residualEffect'));
@@ -147,7 +160,8 @@ export async function mutateCommittee(f: FormData) {
       if (result) {
         const validMembers = await tx.committeeMember.count({where:{seasonId:a.seasonId,active:true,userId:{in:ballots.map(b=>b.userId)}}});
         const validUsers = await tx.user.count({where:{id:{in:ballots.map(b=>b.userId)},status:'ACTIVO',OR:[{teamId:null},{teamId:{notIn:affectedTeams}}]}});
-        if(validMembers !== 3 || validUsers !== 3) throw new Error('El panel dejó de estar habilitado. Revisá los conflictos antes de resolver.');
+        const conflictAliases=await tx.user.count({where:{id:{in:expandIdentities(ballots.map(b=>b.userId),identityLinks)},teamId:{in:affectedTeams}}});
+        if(conflictAliases || validMembers !== 3 || validUsers !== 3) throw new Error('El panel dejó de estar habilitado. Revisá los conflictos antes de resolver.');
         const resolution = result === 'APROBADA' ? c.proposal! + '\n\nEfecto deportivo aprobado: ' + effectLabel(c.proposedEffect) : c.residualResolution ? c.residualResolution + (c.parentId ? '' : '\n\nEfecto residual aprobado: '+effectLabel(c.residualEffect)) : c.parentId ? 'Se mantiene la resolución inicial: la propuesta de revisión no alcanzó mayoría.' : 'La propuesta no alcanzó mayoría. No se concede la sanción ni la victoria solicitada. Efecto residual: '+effectLabel(c.residualEffect);
         await tx.committeeCase.update({ where: { id }, data: { status: result, resolution, resolvedAt: now, resolutionNumber: `AEFPY-${a.seasonId.toUpperCase()}-${id.toUpperCase()}` } });
         await event('RESUELTO', 'Resolución colegiada disponible. Pendiente de notificación para iniciar revisión.');
@@ -171,10 +185,11 @@ export async function mutateCommittee(f: FormData) {
       const absentId = text(f, 'absentId',100), replacementId = text(f,'replacementId',100);
       const ballot = c.ballots.find(b => b.userId === absentId && !b.votedAt);
       const replacementUser = await tx.user.findFirst({where:{id:replacementId,status:'ACTIVO'}});
-      if(!replacementUser || (replacementUser.teamId && affectedTeams.includes(replacementUser.teamId))) throw new Error('Suplente con conflicto o inactivo.');
+      const replacementAliases=await tx.user.count({where:{id:{in:expandIdentities([replacementId],identityLinks)},teamId:{in:affectedTeams}}});
+      if(replacementAliases || !replacementUser || (replacementUser.teamId && affectedTeams.includes(replacementUser.teamId))) throw new Error('Suplente con conflicto o inactivo.');
       const replacement = await tx.committeeMember.findFirst({ where: { seasonId:a.seasonId,userId:replacementId,active:true } });
       const previous = c.parentId ? await tx.committeeBallot.findMany({ where:{ caseId:c.parentId } }) : [];
-      if (!ballot || !replacement || [c.applicantId,c.respondentId,...c.ballots.map(b=>b.userId),...previous.map(b=>b.userId)].includes(replacementId)) throw new Error('Suplente inválido o con conflicto.');
+      if (!ballot || !replacement || expandIdentities([...excludedIds,...c.ballots.map(b=>b.userId),...previous.map(b=>b.userId)],identityLinks).includes(replacementId)) throw new Error('Suplente inválido o con conflicto.');
       await tx.committeeBallot.update({ where:{id:ballot.id},data:{userId:replacementId} });
       await tx.committeeCase.update({where:{id},data:{voteDeadline:hoursAfter(now,24)}});
       await event('AMPLIACION',`Sustitución ${absentId} por ${replacementId}: ${text(f,'reason',2000)}`);return id;
