@@ -91,7 +91,7 @@ export async function mutateCommittee(f: FormData) {
     const parties = await tx.user.findMany({ where:{id:{in:excludedIds}},select:{teamId:true} });
     const affectedTeams = parties.map(p=>p.teamId).filter((id): id is string=>!!id);
     const party = actorIds.some(id=>excludedIds.includes(id)) || actorUsers.some(u=>u.teamId && affectedTeams.includes(u.teamId));
-    const coordinator = (a.operator || a.member?.active === true) && !party;
+    const coordinator = a.member?.active === true && !party;
     const event = async (action: string, detail: string) => { await tx.committeeEvent.create({ data: { caseId: id, actorId: a.user.id, action, detail } }); };
     if (operation === 'apply') {
       if (!coordinator) throw new Error('Solo un coordinador sin conflicto aplica decisiones firmes.');

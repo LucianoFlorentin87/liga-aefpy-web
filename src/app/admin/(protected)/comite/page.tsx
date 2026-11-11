@@ -23,7 +23,7 @@ export default async function CommitteePage({searchParams}:{searchParams:Promise
  const context = query.id ? await readCommitteeCase(query.id) : null;
  const c = context?.record, now = new Date();
  const party = c && [c.applicantId,c.respondentId].includes(a.user.id);
- const coordinator = (a.operator || a.member?.active) && !party && !context?.conflict;
+ const coordinator = a.member?.active === true && !party && !context?.conflict;
  const ownBallot = c?.ballots.find(b=>b.userId===a.user.id);
  const closed = !!c?.resolvedAt;
  const notice = c?.events.find(e=>e.action==='RESOLUCION_NOTIFICADA');
