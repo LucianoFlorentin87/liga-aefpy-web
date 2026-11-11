@@ -1,3 +1,4 @@
+import { isAnnulled } from "@/lib/committee-effects";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
@@ -51,7 +52,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
               <span className="text-lg font-extrabold sm:text-2xl">{match.homeTeam.name}</span>
             </div>
             <div className="flex h-9 items-center justify-center text-2xl font-extrabold sm:text-3xl">
-              {score.home} - {score.away}
+              {isAnnulled(match.status) ? "Sin resultado" : `${score.home} - ${score.away}`}
             </div>
             <div className="flex flex-col items-center gap-2">
               <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={36} />
@@ -67,10 +68,10 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <div className="container-page py-8">
-        <div className="grid gap-6 lg:grid-cols-2">
+        {match.committeeCaseId && <p className="card mb-5 p-4 text-sm">Resultado vinculado al expediente {match.committeeCaseId}. La resolución y su notificación están disponibles para las partes en Comité y reclamos.</p>}<div className="grid gap-6 lg:grid-cols-2">
           <div className="card p-5">
             <h2 className="section-title mb-3">⚽ Goles</h2>
-            {match.forfeitedTeamId ? (
+            {(isAnnulled(match.status) || match.status === 'RESULTADO_ADMINISTRATIVO') ? <EmptyState title={isAnnulled(match.status) ? 'Partido anulado sin puntos ni goles' : 'Resultado administrativo del Comité'} hint="Los registros originales se conservan como antecedentes; no generan goles individuales en la estadística oficial." /> : match.forfeitedTeamId ? (
               <EmptyState
                 title="Partido resuelto por abandono"
                 hint={`${match.forfeitedTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} se retiró de la liga — resultado 3-0 en su contra, sin goles cargados.`}

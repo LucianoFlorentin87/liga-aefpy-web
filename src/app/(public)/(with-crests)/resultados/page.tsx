@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ResultadosPage() {
   const matches = await prisma.match.findMany({
-    where: { status: { in: ["FINALIZADO", "EN_CURSO", "SUSPENDIDO"] } },
+    where: { status: { in: ["FINALIZADO", "EN_CURSO", "SUSPENDIDO", "RESULTADO_ADMINISTRATIVO", "ANULADO_VENCIMIENTO", "ANULADO_TECNICO"] } },
     orderBy: [{ date: "desc" }, { time: "desc" }],
     include: { homeTeam: true, awayTeam: true, goals: true },
   });

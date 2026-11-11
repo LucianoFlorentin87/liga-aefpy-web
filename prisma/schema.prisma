@@ -247,6 +247,9 @@ enum MatchStatus {
   FINALIZADO
   SUSPENDIDO
   REPROGRAMADO
+  RESULTADO_ADMINISTRATIVO
+  ANULADO_VENCIMIENTO
+  ANULADO_TECNICO
 }
 
 model Match {
@@ -263,6 +266,9 @@ model Match {
   awayTeamId      String
   status          MatchStatus @default(PROGRAMADO)
   notes           String?
+  officialHomeScore Int?
+  officialAwayScore Int?
+  committeeCaseId String?
   // Si no es null, el partido se resolvió por abandono del equipo indicado
   // (retiro de la liga a mitad de temporada): el resultado se fija 3-0 en
   // contra suyo en vez de contar los goles cargados (ver buildStandingsRows
@@ -635,6 +641,9 @@ model CommitteeCase {
   voteDeadline DateTime?
   notifiedAt DateTime?
   notificationProof String?
+  proposedEffect String?
+  residualEffect String?
+  residualResolution String?
   proposal String?
   resolution String?
   resolvedAt DateTime?
@@ -680,4 +689,19 @@ model CommitteeEvent {
   createdAt DateTime @default(now())
   @@index([caseId])
   @@map("committee_events")
+}
+
+// Append-only application ledger: before/after remain private; never delete sports events.
+model CommitteeApplication {
+  id String @id @default(cuid())
+  caseId String @unique
+  seasonId String
+  matchId String
+  actorId String
+  effect String
+  before Json
+  after Json
+  createdAt DateTime @default(now())
+  @@index([seasonId])
+  @@map("committee_applications")
 }

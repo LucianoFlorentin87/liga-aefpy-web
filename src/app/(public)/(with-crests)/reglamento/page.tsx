@@ -15,6 +15,11 @@ export default async function ReglamentoPage() {
     <div>
       <PageHeader title="Reglamento" subtitle="Reglamento oficial del torneo." />
       <div className="container-page py-8">
+        <aside className="card mb-6 p-5" aria-label="Reglamento v1.1 para consulta">
+          <h2 className="font-bold">Reglamento v1.1 - Documento para consulta</h2>
+          <p className="mt-2 text-sm">Versión del 29 de octubre de 2026. Pendiente de adopción oficial para esta edición; su disponibilidad no reemplaza el reglamento vigente.</p>
+          <a className="mt-3 inline-block underline font-semibold" href="/documentos/Reglamento_AEFPY_v1.1.pdf" target="_blank" rel="noreferrer">Consultar PDF v1.1</a>
+        </aside>
         {pdfUrl ? (
           <div className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-[var(--color-gray-200)] px-4 py-2.5">

@@ -1,3 +1,4 @@
+import { isAnnulled } from "@/lib/committee-effects";
 import Link from "next/link";
 import type { Match, MatchGoal, Team } from "@prisma/client";
 import { formatDateShort, getMatchScore } from "@/lib/format";
@@ -35,7 +36,7 @@ export function ResultsList({ matches }: { matches: MatchWithData[] }) {
                   </span>
                 </span>
                 <span className="shrink-0 whitespace-nowrap rounded-md bg-[var(--color-gray-100)] px-2.5 py-1 text-sm font-extrabold text-[var(--color-navy-900)]">
-                  {homeGoals} - {awayGoals}
+                  {isAnnulled(match.status) ? "Sin resultado" : `${homeGoals} - ${awayGoals}`}
                 </span>
                 <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold text-[var(--color-navy-900)]">
                   <TeamCrest name={match.awayTeam.name} shortName={match.awayTeam.shortName} logoUrl={match.awayTeam.logoUrl} size={20} />

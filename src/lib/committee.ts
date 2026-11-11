@@ -2,6 +2,8 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { seasonAdminDb as db, getCurrentSeasonId } from '@/lib/db';
 import { requireAuth } from '@/lib/permissions';
+import { applyCommitteeDecision } from '@/lib/committee-application';
+import { effectLabel, parseEffect } from '@/lib/committee-effects';
 import { ballotResult, hoursAfter, panelValid, canReadCase } from '@/lib/committee-policy';
 
 export async function committeeActor() {
@@ -15,8 +17,11 @@ export async function readCommitteeCase(id: string) {
   const actor = await committeeActor();
   const record = await db.committeeCase.findFirst({ where: { id, seasonId: actor.seasonId }, include: { statements: { orderBy: { createdAt: 'asc' } }, ballots: true, events: { orderBy: { createdAt: 'asc' } } } });
   const reviewAccess = record ? await db.committeeCase.findFirst({ where: { parentId:record.id, seasonId:actor.seasonId, ballots:{some:{userId:actor.user.id}} }, select:{id:true} }) : null;
-  if (!record || (!reviewAccess && !canReadCase(actor.user.id, record.applicantId, record.respondentId, record.ballots.map(b => b.userId), (actor.operator || actor.member?.active === true)))) throw new Error('Expediente no disponible.');
-  return { actor, record, panel: record.ballots.some(b => b.userId === actor.user.id) && actor.member?.active === true };
+  const parties = record ? await db.user.findMany({where:{id:{in:[record.applicantId,record.respondentId]}},select:{teamId:true}}) : [];
+  const conflict = !!actor.user.teamId && parties.some(p=>p.teamId===actor.user.teamId);
+  if (record && conflict && ![record.applicantId,record.respondentId].includes(actor.user.id)) throw new Error('Expediente no disponible por conflicto de interés.');
+  if (!record || (!(reviewAccess && actor.member?.active && !conflict) && !canReadCase(actor.user.id, record.applicantId, record.respondentId, record.ballots.map(b => b.userId), ((actor.operator || actor.member?.active === true) && !conflict)))) throw new Error('Expediente no disponible.');
+  return { actor, record, conflict, panel: record.ballots.some(b => b.userId === actor.user.id) && actor.member?.active === true && !conflict };
 }
 const text = (f: FormData, key: string, max = 12000) => {
   const value = String(f.get(key) ?? '').trim();
@@ -32,6 +37,11 @@ export async function mutateCommittee(f: FormData) {
   return db.$transaction(async tx => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock_shared(736527184)`;
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${a.seasonId}), 4107)`;
+    const activeActor=await tx.user.findUniqueOrThrow({where:{id:a.user.id},include:{role:true}});
+    if(activeActor.status !== 'ACTIVO') throw new Error('Usuario inactivo.');
+    a.user=activeActor;
+    a.operator=activeActor.role.key === 'SUPERADMIN';
+    a.member=await tx.committeeMember.findUnique({where:{seasonId_userId:{seasonId:a.seasonId,userId:a.user.id}}});
     const current = await tx.tournamentSettings.findUniqueOrThrow({where:{id:'settings'},select:{currentSeasonId:true}});
     const season = await tx.season.findUniqueOrThrow({where:{id:a.seasonId},select:{status:true}});
     if(current.currentSeasonId !== a.seasonId || season.status === 'FINALIZADA') throw new Error('La edición cambió o se cerró.');
@@ -70,6 +80,10 @@ export async function mutateCommittee(f: FormData) {
     const party = [c.applicantId, c.respondentId].includes(a.user.id) || (!!a.user.teamId && affectedTeams.includes(a.user.teamId));
     const coordinator = (a.operator || a.member?.active === true) && !party;
     const event = async (action: string, detail: string) => { await tx.committeeEvent.create({ data: { caseId: id, actorId: a.user.id, action, detail } }); };
+    if (operation === 'apply') {
+      if (!coordinator) throw new Error('Solo un coordinador sin conflicto aplica decisiones firmes.');
+      return applyCommitteeDecision(tx, id, a.seasonId, a.user.id, now);
+    }
     if (operation === 'evidence' || operation === 'defense') {
       const isDefense = operation === 'defense';
       if (c.status !== 'DEFENSA' || (isDefense ? a.user.id !== c.respondentId : a.user.id !== c.applicantId)) throw new Error('No podés realizar esta presentación.');
@@ -92,8 +106,16 @@ export async function mutateCommittee(f: FormData) {
       await tx.committeeCase.update({ where: { id }, data: { notifiedAt: deliveredAt, notificationProof: proof, defenseDeadline: hoursAfter(deliveredAt, c.parentId ? 12 : 24) } });
       await event('NOTIFICADO', `Entrega comprobada: ${deliveredAt.toISOString()}.`); return id;
     }
+    if (operation === 'extendDecision') {
+      if (!coordinator || c.status !== 'DEFENSA' || !c.defenseDeadline || now < hoursAfter(c.defenseDeadline,24) || now >= hoursAfter(c.defenseDeadline,48)) throw new Error('Ampliación no disponible en esta etapa.');
+      if (await tx.committeeEvent.findFirst({where:{caseId:id,action:'AMPLIACION'}})) throw new Error('La única ampliación ya se utilizó.');
+      await tx.committeeCase.update({where:{id},data:{voteDeadline:hoursAfter(c.defenseDeadline,48)}});
+      await event('AMPLIACION', 'Ampliación única de decisión: '+text(f,'reason',2000)); return id;
+    }
     if (operation === 'open') {
       if (!coordinator || c.status !== 'DEFENSA' || !c.defenseDeadline || now < c.defenseDeadline) throw new Error('Debe concluir el plazo de defensa antes de votar.');
+      const decisionDeadline = c.voteDeadline ?? hoursAfter(c.defenseDeadline,24);
+      if (now >= decisionDeadline) throw new Error('Venció el plazo de decisión: registrá la ampliación y sustitución por el procedimiento del reglamento.');
       const ids = f.getAll('panelIds').map(String);
       const previous = c.parentId ? await tx.committeeBallot.findMany({ where: { caseId: c.parentId }, select: { userId: true } }) : [];
       if (!panelValid(ids, [c.applicantId, c.respondentId, ...previous.map(b => b.userId)])) throw new Error('Elegí tres miembros distintos, sin partes ni votantes de primera instancia.');
@@ -101,8 +123,15 @@ export async function mutateCommittee(f: FormData) {
       const activeUsers = await tx.user.count({ where: { id: { in: ids }, status: 'ACTIVO' } });
       const conflictUsers = await tx.user.count({where:{id:{in:ids},teamId:{in:affectedTeams}}});
       if (conflictUsers || members.length !== 3 || activeUsers !== 3) throw new Error('Los tres miembros deben estar activos.');
+      const proposedEffect = parseEffect(f.get('proposedEffect'));
+      const residualEffect = c.parentId ? 'SIN_CAMBIO' : parseEffect(f.get('residualEffect'));
+      if (!c.matchId && proposedEffect !== 'SIN_CAMBIO') throw new Error('Relacioná un partido para adjudicar un efecto deportivo.');
+      if (!c.parentId && !['SIN_CAMBIO','ANULAR','ANULAR_TECNICO'].includes(residualEffect)) throw new Error('El rechazo no puede conceder una victoria.');
+      if (!c.matchId && residualEffect !== 'SIN_CAMBIO') throw new Error('Sin partido: el efecto residual debe conservar el registro.');
       const proposal = text(f, 'proposal');
-      await tx.committeeCase.update({ where: { id }, data: { status: 'VOTACION', proposal, voteDeadline: hoursAfter(now, 24), ballots: { create: ids.map(userId => ({ userId })) } } });
+      const parent = c.parentId ? await tx.committeeCase.findFirstOrThrow({where:{id:c.parentId,seasonId:a.seasonId}}) : null;
+      const residualResolution = parent ? 'Se confirma la resolución inicial.\n\n'+parent.resolution : text(f,'residualResolution');
+      await tx.committeeCase.update({ where: { id }, data: { status: 'VOTACION', proposal, proposedEffect, residualEffect, residualResolution, voteDeadline: decisionDeadline, ballots: { create: ids.map(userId => ({ userId })) } } });
       await event('VOTACION_ABIERTA', 'Panel de tres miembros asignado. Propuesta congelada.'); return id;
     }
     if (operation === 'vote') {
@@ -116,8 +145,11 @@ export async function mutateCommittee(f: FormData) {
       const ballots = await tx.committeeBallot.findMany({ where: { caseId: id } });
       const result = ballotResult(ballots.map(b => b.choice));
       if (result) {
-        const resolution = result === 'APROBADA' ? c.proposal! : c.parentId ? 'Se mantiene la resolución inicial: la propuesta de revisión no alcanzó mayoría.' : 'La propuesta no alcanzó mayoría. No se concede la sanción ni la victoria solicitada. Se aplica el tratamiento residual del reglamento, según el tipo de partido.';
-        await tx.committeeCase.update({ where: { id }, data: { status: result, resolution, resolvedAt: now, resolutionNumber: `AEFPY-${id.toUpperCase()}` } });
+        const validMembers = await tx.committeeMember.count({where:{seasonId:a.seasonId,active:true,userId:{in:ballots.map(b=>b.userId)}}});
+        const validUsers = await tx.user.count({where:{id:{in:ballots.map(b=>b.userId)},status:'ACTIVO',OR:[{teamId:null},{teamId:{notIn:affectedTeams}}]}});
+        if(validMembers !== 3 || validUsers !== 3) throw new Error('El panel dejó de estar habilitado. Revisá los conflictos antes de resolver.');
+        const resolution = result === 'APROBADA' ? c.proposal! + '\n\nEfecto deportivo aprobado: ' + effectLabel(c.proposedEffect) : c.residualResolution ? c.residualResolution + (c.parentId ? '' : '\n\nEfecto residual aprobado: '+effectLabel(c.residualEffect)) : c.parentId ? 'Se mantiene la resolución inicial: la propuesta de revisión no alcanzó mayoría.' : 'La propuesta no alcanzó mayoría. No se concede la sanción ni la victoria solicitada. Efecto residual: '+effectLabel(c.residualEffect);
+        await tx.committeeCase.update({ where: { id }, data: { status: result, resolution, resolvedAt: now, resolutionNumber: `AEFPY-${a.seasonId.toUpperCase()}-${id.toUpperCase()}` } });
         await event('RESUELTO', 'Resolución colegiada disponible. Pendiente de notificación para iniciar revisión.');
       } return id;
     }

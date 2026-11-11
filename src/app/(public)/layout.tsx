@@ -3,6 +3,9 @@ import { InfoBar } from "@/components/InfoBar";
 import { PublicHeader } from "@/components/PublicHeader";
 import { PublicFooter } from "@/components/PublicFooter";
 
+// Settings and maintenance mode are read at request time, never during build.
+export const dynamic = "force-dynamic";
+
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const settings = await prisma.tournamentSettings.findUnique({ where: { id: "settings" } });
 

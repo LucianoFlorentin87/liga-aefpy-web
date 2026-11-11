@@ -1,4 +1,5 @@
 "use server";
+import { CLOSED_MATCH_STATUSES } from "@/lib/committee-effects";
 
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
@@ -43,9 +44,11 @@ export async function closeAndCreateLeague(_previous: LeagueActionState, form: F
       if(unresolvedCases) throw new LeagueActionError('Hay expedientes del comité pendientes. Resolvelos antes de cerrar.');
       const resolvedCases = await tx.committeeCase.findMany({where:{seasonId:current.id},include:{events:{where:{action:'RESOLUCION_NOTIFICADA'}}}});
       if(resolvedCases.some(c=>!c.events[0] || (!c.parentId && Date.now()<c.events[0].createdAt.getTime()+12*3600000))) throw new LeagueActionError('Falta notificar decisiones o todavía corre un plazo de revisión del comité.');
+      const unapplied = await tx.committeeCase.count({where:{seasonId:current.id,matchId:{not:null},proposedEffect:{not:null},events:{none:{action:'EFECTO_APLICADO'}},id:{notIn:(await tx.committeeCase.findMany({where:{seasonId:current.id,parentId:{not:null}},select:{parentId:true}})).map(c=>c.parentId!)}}});
+      if(unapplied) throw new LeagueActionError('Hay resoluciones firmes sin efecto deportivo aplicado. Verificá Comité y reclamos antes del cierre.');
       const playing = await tx.match.count({ where: { seasonId: current.id, status: "EN_CURSO" } });
       if (playing) throw new LeagueActionError("Hay partidos en curso. Resolvelos antes de cerrar la liga.");
-      const pending = await tx.match.count({ where: { seasonId: current.id, status: { not: "FINALIZADO" } } });
+      const pending = await tx.match.count({ where: { seasonId: current.id, status: { notIn: CLOSED_MATCH_STATUSES } } });
       if (pending && !input.acknowledgePending) throw new LeagueActionError("Confirmá que los partidos pendientes se archivarán sin cambiar sus resultados.");
       const archive = await captureLeagueArchive(current.id, current.name, settings);
       await tx.leagueRegistration.updateMany({ where: { seasonId: current.id, status: "PENDIENTE" }, data: { passwordHash: null } });
