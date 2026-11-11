@@ -18,7 +18,12 @@ export function getMatchScore(match: {
   awayTeamId: string;
   forfeitedTeamId: string | null;
   goals: { teamId: string }[];
+  officialHomeScore?: number | null;
+  officialAwayScore?: number | null;
 }): { home: number; away: number } {
+  if (match.officialHomeScore != null && match.officialAwayScore != null) {
+    return { home: match.officialHomeScore, away: match.officialAwayScore };
+  }
   if (match.forfeitedTeamId) {
     return {
       home: match.forfeitedTeamId === match.homeTeamId ? 0 : FORFEIT_SCORE,
@@ -71,6 +76,9 @@ const MATCH_STATUS_LABEL: Record<string, string> = {
   FINALIZADO: "Finalizado",
   SUSPENDIDO: "Suspendido",
   REPROGRAMADO: "Reprogramado",
+  RESULTADO_ADMINISTRATIVO: "Resultado administrativo",
+  ANULADO_VENCIMIENTO: "Anulado sin puntos",
+  ANULADO_TECNICO: "Anulado técnico",
 };
 
 export function matchStatusLabel(status: string): string {

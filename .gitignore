@@ -51,3 +51,6 @@ next-env.d.ts
 # Restored from verified lossless asset parts during install/build
 /public/logo-comite-aefpy.png
 /public/documentos/Reglamento_AEFPY_v1.1.pdf
+
+# Local validation artifacts
+/tmp/

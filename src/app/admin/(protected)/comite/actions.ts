@@ -11,6 +11,6 @@ export async function committeeAction(form: FormData) {
     const message = error instanceof Error && !('code' in error) ? error.message : 'No se pudo guardar. Actualizá y volvé a intentar.';
     redirect('/admin/comite?error=' + encodeURIComponent(message));
   }
-  revalidatePath('/admin/comite');
+  revalidatePath('/', 'layout');
   redirect('/admin/comite' + (id ? '?id=' + encodeURIComponent(id) : ''));
 }

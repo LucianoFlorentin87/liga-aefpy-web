@@ -1,7 +1,9 @@
 import "server-only";
+import { buildStandingsRows } from "@/lib/standings-calculation";
+import { SCORED_STATUSES } from "@/lib/committee-effects";
 import { upcomingScheduleFilter } from "@/lib/matchSchedule";
 import { prisma, prismaForSeason } from "@/lib/db";
-import { playerFullName, getMatchScore } from "@/lib/format";
+import { playerFullName } from "@/lib/format";
 
 export type StandingsRow = {
   teamId: string;
@@ -21,108 +23,11 @@ export type StandingsRow = {
   pointAdjustment: number;
 };
 
-const DEFAULT_CRITERIA = ["PTS", "DG", "GF"];
-
-/** Estados de equipo que siguen contando en la tabla de posiciones: ACTIVO
- *  y RETIRADO (un equipo que abandonó la liga sigue visible, con todos sus
- *  partidos resueltos 3-0 en contra por abandono — ver forfeitedTeamId).
- *  INACTIVO es el único que desaparece del todo. */
 const STANDINGS_TEAM_STATUSES: ("ACTIVO" | "RETIRADO")[] = ["ACTIVO", "RETIRADO"];
-
-function parseCriteria(raw: string | undefined): string[] {
-  const list = (raw ?? "").split(",").map((c) => c.trim().toUpperCase()).filter(Boolean);
-  return list.length > 0 ? list : DEFAULT_CRITERIA;
-}
-
-function compareByCriteria(a: StandingsRow, b: StandingsRow, criteria: string[]): number {
-  for (const key of criteria) {
-    let diff = 0;
-    if (key === "PTS") diff = b.pts - a.pts;
-    else if (key === "DG") diff = b.dg - a.dg;
-    else if (key === "GF") diff = b.gf - a.gf;
-    else if (key === "PG") diff = b.pg - a.pg;
-    if (diff !== 0) return diff;
-  }
-  return a.teamName.localeCompare(b.teamName, "es");
-}
-
-type TeamLite = { id: string; name: string; shortName: string; logoUrl: string | null; status: string };
-type FinishedMatch = Awaited<ReturnType<typeof fetchFinishedMatches>>[number];
-type PointAdjustmentRow = Awaited<ReturnType<typeof prisma.pointAdjustment.findMany>>[number];
-
+function parseCriteria(raw: string | undefined) { return (raw || "PTS,DG,GF").split(',').map(c=>c.trim().toUpperCase()).filter(Boolean); }
 function fetchFinishedMatches(seasonId?: string) {
-  const db = seasonId ? prismaForSeason(seasonId) : prisma;
-  return db.match.findMany({ where: { status: "FINALIZADO" }, include: { goals: true } });
-}
-
-function buildStandingsRows(
-  teams: TeamLite[],
-  finishedMatches: FinishedMatch[],
-  pointAdjustments: PointAdjustmentRow[],
-  criteria: string[],
-): StandingsRow[] {
-  const rows = new Map<string, StandingsRow>();
-  for (const team of teams) {
-    rows.set(team.id, {
-      teamId: team.id,
-      teamName: team.name,
-      teamShortName: team.shortName,
-      teamStatus: team.status,
-      logoUrl: team.logoUrl,
-      pj: 0,
-      pg: 0,
-      pe: 0,
-      pp: 0,
-      gf: 0,
-      gc: 0,
-      dg: 0,
-      pts: 0,
-      pointAdjustment: 0,
-    });
-  }
-
-  for (const match of finishedMatches) {
-    const home = rows.get(match.homeTeamId);
-    const away = rows.get(match.awayTeamId);
-    if (!home || !away) continue; // equipo inactivo/eliminado: se excluye de la tabla
-
-    const { home: homeGoals, away: awayGoals } = getMatchScore(match);
-
-    home.pj += 1;
-    away.pj += 1;
-    home.gf += homeGoals;
-    home.gc += awayGoals;
-    away.gf += awayGoals;
-    away.gc += homeGoals;
-
-    if (homeGoals > awayGoals) {
-      home.pg += 1;
-      home.pts += 3;
-      away.pp += 1;
-    } else if (homeGoals < awayGoals) {
-      away.pg += 1;
-      away.pts += 3;
-      home.pp += 1;
-    } else {
-      home.pe += 1;
-      away.pe += 1;
-      home.pts += 1;
-      away.pts += 1;
-    }
-  }
-
-  for (const adjustment of pointAdjustments) {
-    const row = rows.get(adjustment.teamId);
-    if (!row) continue;
-    row.pointAdjustment += adjustment.points;
-    row.pts += adjustment.points;
-  }
-
-  for (const row of rows.values()) {
-    row.dg = row.gf - row.gc;
-  }
-
-  return Array.from(rows.values()).sort((a, b) => compareByCriteria(a, b, criteria));
+ const db = seasonId ? prismaForSeason(seasonId) : prisma;
+ return db.match.findMany({where:{status:{in:SCORED_STATUSES}},include:{goals:true}});
 }
 
 /** Calcula la tabla de posiciones a partir de los partidos finalizados. */
@@ -327,7 +232,7 @@ export type DisciplineRow = {
 export async function computeDiscipline(seasonId?: string): Promise<DisciplineRow[]> {
   const db = seasonId ? prismaForSeason(seasonId) : prisma;
   const cards = await db.matchCard.findMany({
-    where: { match: { status: "FINALIZADO" } },
+    where: { match: { status: { in: ["FINALIZADO", "RESULTADO_ADMINISTRATIVO", "ANULADO_TECNICO"] } } },
     include: { player: { include: { team: true, efhubCard: true } } },
   });
 
@@ -400,7 +305,7 @@ export async function getUpcomingMatches(limit = 8) {
 
 export async function getRecentResults(limit = 5) {
   return prisma.match.findMany({
-    where: { status: "FINALIZADO" },
+    where: { status: { in: SCORED_STATUSES } },
     orderBy: [{ date: "desc" }, { time: "desc" }],
     take: limit,
     include: { homeTeam: true, awayTeam: true, goals: true },

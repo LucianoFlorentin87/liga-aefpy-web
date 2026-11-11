@@ -19,6 +19,7 @@ export async function reconcileSanctions(): Promise<void> {
     const servedMatches = await prisma.match.findMany({
       where: {
         status: "FINALIZADO",
+        forfeitedTeamId: null,
         date: { gte: sanction.startDate },
         OR: [{ homeTeamId: sanction.teamId }, { awayTeamId: sanction.teamId }],
         participations: { none: { playerId: sanction.playerId } },

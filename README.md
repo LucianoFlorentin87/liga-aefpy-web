@@ -653,3 +653,44 @@ Validación: `npx tsx --test tests/committee*.test.ts`; `npx tsc --noEmit`; `npx
 ### Archivos institucionales del comité
 
 El logo PNG y el reglamento PDF se conservan sin pérdida en `assets/committee/`, en partes Base64. `npm install` y `npm run build` reconstruyen ambos en `public/` y verifican tamaño y SHA-256 antes de escribirlos. No se descargan archivos externos ni se modifican sus bytes. Para restaurarlos manualmente: `node scripts/restore-committee-assets.cjs`.
+
+## Comité: efectos deportivos y disponibilidad
+
+La continuación del PR #7 agrega efectos deportivos estructurados y congelados junto
+con las dos resoluciones completas que vota el panel. Se requieren tres votos
+válidos y dos coincidentes. No se aplican resultados al votar: un coordinador sin
+conflicto ejecuta la decisión cuando está firme y notificada, pasado el plazo de
+revisión o terminada la revisión independiente. La ejecución es transaccional e
+idempotente; conserva marcador anterior, goles, tarjetas y autor en un registro
+privado inmutable. Las decisiones anteriores sin efecto estructurado no se
+reinterpretan automáticamente. Las sanciones personales siguen registrándose y
+verificándose en el módulo de sanciones.
+
+La clasificación incluye resultados administrativos sin fabricar goles de jugadores.
+Las anulaciones no son empates ni partidos jugados. La decisión aplicada protege el
+partido y sus eventos contra edición ordinaria. Una revisión genera su propio PDF,
+conserva el anterior y puede reemplazar el efecto. El cierre impide omitir efectos
+nuevos pendientes. Los históricos ya cerrados se conservan sin recalcular ni reabrir.
+
+El reglamento v1.1 se ofrece para consulta: **no está adoptado para la edición actual**.
+La designación de tres titulares y tres suplentes sigue pendiente. No se generan
+votos ni resoluciones reales de prueba en producción. El sistema no activa por sí
+solo el vencimiento automático de 120 horas, la recepción de archivos privados ni
+los avisos de WhatsApp; esos procedimientos siguen siendo manuales y auditados
+hasta su implementación y adopción para una edición.
+
+`GET /healthz` verifica la aplicación y una lectura mínima de su configuración en
+PostgreSQL, devolviendo solamente `{"status":"ok"}` o HTTP 503. No devuelve datos
+personales ni credenciales. `.github/workflows/availability.yml` consulta este
+endpoint cada diez minutos y permite ejecución manual desde Actions. No requiere
+secretos ni paquetes externos. Los fallos quedan como ejecuciones fallidas, con
+las notificaciones que el propietario tenga configuradas en GitHub.
+
+Límites: las ejecuciones programadas pueden demorarse y GitHub desactiva los
+horarios en repositorios públicos tras 60 días sin actividad. Las 750 horas gratuitas
+de Render se comparten entre servicios del espacio. El monitor no cambia planes,
+no garantiza servicio permanente ni reactiva automáticamente una base ya pausada.
+
+Validación local: `node --import tsx --test tests/*.test.ts`, `npx next typegen`,
+`npx tsc --noEmit`, `npm run build`. Las pruebas de migración usan PostgreSQL
+embebido aislado; no escriben datos de prueba en producción.

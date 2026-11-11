@@ -42,7 +42,7 @@ export function FixtureList({
             </div>
             <ul className="divide-y divide-[var(--color-gray-100)]">
               {games.map((match) => {
-                const isFinished = match.status === "FINALIZADO";
+                const isFinished = match.status === "FINALIZADO" || match.status === "RESULTADO_ADMINISTRATIVO";
                 const { home: homeGoals, away: awayGoals } = getMatchScore(match);
 
                 return (
