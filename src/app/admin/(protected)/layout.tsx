@@ -6,13 +6,13 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { prisma, getCurrentSeason } from "@/lib/db";
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
-  const [{ session }, settings, season] = await Promise.all([
+  const [{ user, session }, settings, season] = await Promise.all([
     requireAuth(),
     prisma.tournamentSettings.findUnique({ where: { id: "settings" } }),
     getCurrentSeason(),
   ]);
 
-  const unreadNotifications = await prisma.notification.count({ where: { recipientId: (await requireAuth()).user.id, readAt: null } });
+  const unreadNotifications = await prisma.notification.count({ where: { recipientId: user.id, readAt: null } });
 
   const navGroups =
     session.role === "DELEGADO"
