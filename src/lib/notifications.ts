@@ -37,7 +37,7 @@ export async function notifyAllDelegates(input: {
   return delegates.length;
 }
 
-/** Best-effort email delivery for pending inbox messages; safe to retry. */
+/** Best-effort email delivery. Retries may duplicate email if provider accepted before DB update. */
 export async function sendPendingNotificationEmails(limit = 30) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
