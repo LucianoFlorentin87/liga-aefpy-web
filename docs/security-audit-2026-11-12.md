@@ -15,7 +15,7 @@
 | SEC-07 | Media | Pendiente | `src/app/admin/(protected)/jugadores/efhub-search/route.ts` lanza Chromium por búsquedas de usuario autenticado, sin cuota por usuario ni límite de concurrencia, y devuelve detalles de excepción. | Rate limit, concurrencia máxima, límite de longitud de consulta y errores genéricos. |
 | SEC-08 | Media | Pendiente | `src/lib/notifications.ts`: workers concurrentes pueden enviar el mismo correo; `emailError` no impide reintentos ilimitados. | Claim transaccional/lease, backoff y límite de intentos. |
 | SEC-09 | Media | Pendiente | `src/lib/league-rate-limit.ts`: mapa en memoria, no compartido entre instancias y clave tomada de `x-forwarded-for`; el límite es eludible dependiendo del proxy. | Límite distribuido y dirección IP normalizada desde infraestructura confiable. |
-| SEC-10 | Media | Pendiente | `src/app/admin/(protected)/auditoria/export/route.ts` y `usuarios/export/route.ts` escriben campos controlados por usuarios en Excel sin neutralización explícita de fórmulas. | Escapar prefijos `=,+,-,@` y controles antes de exportar. |
+| SEC-10 | Media | Corregido en rama; pendiente pruebas | `src/app/admin/(protected)/auditoria/export/route.ts` y `usuarios/export/route.ts` escriben campos controlados por usuarios en Excel sin neutralización explícita de fórmulas. | Escapar prefijos `=,+,-,@` y controles antes de exportar. |
 | SEC-11 | Media | Pendiente | `src/lib/email.ts` insertaba nombre del usuario en HTML sin escape. | Se agregó escape HTML en la rama; revisar el resto de plantillas. |
 | SEC-12 | Media | Pendiente de pruebas dinámicas | Permisos del comité tienen lógica compleja en `src/lib/committee.ts`; hay controles por usuario, equipo y conflicto de interés, pero no se ejecutaron pruebas de matriz multiusuario y concurrencia. | Pruebas negativas por roles, pertenencia de equipo, acceso a expedientes y voto secreto. |
 
@@ -39,6 +39,12 @@
 - El restablecimiento de contraseña por correo o desde administración incrementa el contador, invalidando sesiones anteriores.
 - Requiere ejecutar migración **antes** de desplegar código. Sesiones antiguas sin `sessionVersion` exigirán iniciar sesión de nuevo.
 - Pendiente prueba dinámica de revocación y revisión separada de sesiones de hinchas.
+
+## Endurecimiento de archivos y exportaciones (12/11/2026)
+- `src/lib/upload.ts`: valida cabeceras PNG/JPEG/WEBP y PDF además del MIME y tamaño; no se aceptan SVG. Es una verificación de firma, **no** una inspección antivirus ni una decodificación completa de contenido.
+- `src/lib/excel-safe.ts`: protege valores textuales que comienzan con caracteres interpretables como fórmula, incluyendo prefijos de espacios o controles.
+- `auditoria/export` y `usuarios/export`: aplican escape a campos de usuarios, equipos y bitácora.
+- Pendientes: pruebas con archivos malformados y muestras de fórmulas, revisión de políticas de Storage.
 
 ## Controles positivos observados
 - `src/lib/auth.ts`: cookies `httpOnly`, `sameSite=lax`, `secure` en producción; JWT con expiración; revalidación de usuario activo y rol en base de datos.
