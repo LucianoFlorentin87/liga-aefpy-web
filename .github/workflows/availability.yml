@@ -2,8 +2,8 @@ name: Comprobar disponibilidad de Liga AEFPY
 
 on:
   schedule:
-    # Offset away from the top of the hour; UTC, every ten minutes.
-    - cron: '3,13,23,33,43,53 * * * *'
+    # Cada 5 minutos, fuera del minuto 0 (UTC). GitHub puede retrasar u omitir ejecuciones.
+    - cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *'
   workflow_dispatch:
 
 permissions: {}
