@@ -90,7 +90,7 @@ export async function completePasswordResetAction(_prevState: FormState, formDat
       data: { usedAt: new Date() },
     });
     if (consumed.count !== 1) return false;
-    await tx.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false } });
+    await tx.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false, sessionVersion: { increment: 1 } } });
     return true;
   });
   if (!changed) return { error: invalidMessage };
