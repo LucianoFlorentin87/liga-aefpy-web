@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/activity";
 import { matchSchema } from "@/lib/validation";
 import { matchStatusLabel } from "@/lib/format";
 import { reconcileSanctions } from "@/lib/sanctions";
+import { notifyTeamDelegates } from "@/lib/notifications";
 
 export type FormState = { error?: string; success?: string };
 
@@ -43,7 +44,7 @@ export async function createMatchAction(_prevState: FormState, formData: FormDat
   ]);
   if (!home || !away) return { error: "Seleccioná equipos válidos." };
 
-  await prisma.match.create({
+  const createdMatch = await prisma.match.create({
     data: {
       matchday: parsed.data.matchday,
       date: new Date(parsed.data.date),
@@ -57,6 +58,7 @@ export async function createMatchAction(_prevState: FormState, formData: FormDat
   });
   if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
+  for (const teamId of new Set([home.id, away.id])) await notifyTeamDelegates({ teamId, type: "CALENDARIO", title: "Nuevo partido programado", body: `${home.name} vs ${away.name} · Jornada ${parsed.data.matchday} · ${parsed.data.time} h. Consultá el fixture para confirmar la fecha.`, href: "/fixture", sourceKey: "match-created:" + createdMatch.id });
   await logActivity(`${actor.firstName} ${actor.lastName} agregó el partido ${home.name} vs ${away.name} (Jornada ${parsed.data.matchday}).`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
@@ -106,6 +108,9 @@ export async function updateMatchAction(_prevState: FormState, formData: FormDat
   });
   if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
+  if (target.date.getTime() !== new Date(parsed.data.date).getTime() || target.time !== parsed.data.time || target.status !== parsed.data.status || target.venue !== parsed.data.venue || target.homeTeamId !== home.id || target.awayTeamId !== away.id) {
+    for (const teamId of new Set([target.homeTeamId, target.awayTeamId, home.id, away.id])) await notifyTeamDelegates({ teamId, type: parsed.data.status === "FINALIZADO" ? "RESULTADO" : "CALENDARIO", title: "Cambio en un partido", body: `${home.name} vs ${away.name} · Jornada ${parsed.data.matchday}. Estado: ${matchStatusLabel(parsed.data.status)}. Horario: ${parsed.data.time} h.`, href: "/fixture", sourceKey: "match-updated:" + id + ":" + Date.now() });
+  }
   await logActivity(`${actor.firstName} ${actor.lastName} actualizó el partido ${home.name} vs ${away.name}.`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath(`/admin/partidos/${id}`);
