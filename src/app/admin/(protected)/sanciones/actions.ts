@@ -92,6 +92,7 @@ export async function deleteSanctionAction(formData: FormData): Promise<void> {
   const target = await prisma.sanction.findUnique({ where: { id }, include: { player: true } });
   if (!target) return;
 
+  await notifyTeamDelegates({ teamId: target.teamId, type: "DISCIPLINA", title: "Sanción anulada", body: `Se anuló la sanción de ${playerFullName(target.player)}. Consultá a la organización si necesitás aclaraciones.`, href: "/admin/mi-equipo", sourceKey: "sanction-deleted:" + id });
   await prisma.sanction.delete({ where: { id } });
   await logActivity(`${actor.firstName} ${actor.lastName} eliminó una sanción de ${playerFullName(target.player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
