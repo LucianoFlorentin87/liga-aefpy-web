@@ -12,7 +12,9 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 - [ ] **BLOQUEANTE**: confirmar `APP_URL=https://liga-aefpy-web.onrender.com` antes del despliegue. No hay lectura de variables Render disponible en el conector actual.
 - [ ] Verificar `SESSION_SECRET`, `DATABASE_URL`, `DIRECT_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, `NOTIFICATION_JOB_SECRET` y variables de Supabase, sin exponer valores en logs.
 - [ ] Confirmar que el comando de compilación ejecuta `prisma migrate deploy` **antes** de iniciar el código que usa nuevas columnas y tablas.
-- [ ] Verificar que el cron de notificaciones está autenticado y que no existen jobs duplicados.
+- [ ] **BLOQUEANTE PARA EMAIL**: crear el mismo `NOTIFICATION_JOB_SECRET` (valor aleatorio largo) en GitHub Actions Secrets y Render; la tarea `.github/workflows/notification-delivery.yml` invoca el endpoint cada 10 minutos desde `main`.
+- [ ] **BLOQUEANTE PARA EMAIL**: confirmar `RESEND_API_KEY` y remitente `EMAIL_FROM` verificado en Render; probar una entrega real con cuenta controlada.
+- [ ] Verificar que el cron de notificaciones está autenticado y que no existen jobs duplicados. GitHub Actions puede retrasar ejecuciones.
 
 ## 3. Migraciones pendientes en la rama
 - `20261112200000_secure_trigger_search_path`: fija `search_path` en seis funciones trigger.
