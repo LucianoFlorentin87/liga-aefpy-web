@@ -11,7 +11,7 @@
 | SEC-03 | Verificado | Sin exposición confirmada | Consulta directa a Supabase: las 30 tablas de `public` tienen RLS activo, cero políticas; tablas nuevas sin privilegios `anon`/`authenticated`. El diseño usa Prisma en backend. | Mantener revisión continua de grants, RLS y Storage; no añadir políticas públicas innecesarias. |
 | SEC-04 | Alta | Corregido en rama; pendiente migración y pruebas | `src/app/admin/login/actions.ts` no tiene limitación de intentos, bloqueo progresivo ni protección centralizada ante fuerza bruta. | Rate limit distribuido por IP y cuenta, logs y alertas; probar intentos repetidos. |
 | SEC-05 | Media/Alta | Corregido parcialmente en rama; pendiente pruebas | `src/app/admin/recuperar-contrasena/actions.ts` permite solicitudes repetidas sin cuota, y verifica `usedAt` antes de actualizar sin condición atómica; una carrera concurrente puede reutilizar el mismo token. | Limitar solicitudes y consumir token atómicamente; invalidar sesiones existentes tras cambio de contraseña. |
-| SEC-06 | Media | Pendiente | `src/lib/auth.ts` verifica usuario activo y rol, pero no revoca JWT ya emitidos cuando cambia la contraseña. Duración 8 h; sesiones de hincha duran 30 días. | Agregar `sessionVersion`/fecha de revocación y verificarla al autorizar. |
+| SEC-06 | Media | Corregido para staff en rama; pendiente integración | `src/lib/auth.ts` verifica usuario activo y rol, pero no revoca JWT ya emitidos cuando cambia la contraseña. Duración 8 h; sesiones de hincha duran 30 días. | Agregar `sessionVersion`/fecha de revocación y verificarla al autorizar. |
 | SEC-07 | Media | Pendiente | `src/app/admin/(protected)/jugadores/efhub-search/route.ts` lanza Chromium por búsquedas de usuario autenticado, sin cuota por usuario ni límite de concurrencia, y devuelve detalles de excepción. | Rate limit, concurrencia máxima, límite de longitud de consulta y errores genéricos. |
 | SEC-08 | Media | Pendiente | `src/lib/notifications.ts`: workers concurrentes pueden enviar el mismo correo; `emailError` no impide reintentos ilimitados. | Claim transaccional/lease, backoff y límite de intentos. |
 | SEC-09 | Media | Pendiente | `src/lib/league-rate-limit.ts`: mapa en memoria, no compartido entre instancias y clave tomada de `x-forwarded-for`; el límite es eludible dependiendo del proxy. | Límite distribuido y dirección IP normalizada desde infraestructura confiable. |
@@ -32,6 +32,13 @@
 - `src/app/admin/recuperar-contrasena/actions.ts`: hasta 3 solicitudes por correo/hora, sin revelar existencia de cuenta; consumo atómico del token de recuperación.
 - Migración nueva `20261112210000_auth_attempt_limits` pendiente de ejecutar en producción. **No desplegar el código de login sin esta migración.**
 - Faltan pruebas de integración con Postgres, concurrencia y experiencia de usuario.
+
+## Revocación de sesiones administrativas (12/11/2026)
+- `users.sessionVersion` nuevo campo (migración `20261112220000_staff_session_revocation`).
+- El login firma el contador de sesión en JWT; `requireActiveUser` lo compara con PostgreSQL en cada operación protegida.
+- El restablecimiento de contraseña por correo o desde administración incrementa el contador, invalidando sesiones anteriores.
+- Requiere ejecutar migración **antes** de desplegar código. Sesiones antiguas sin `sessionVersion` exigirán iniciar sesión de nuevo.
+- Pendiente prueba dinámica de revocación y revisión separada de sesiones de hinchas.
 
 ## Controles positivos observados
 - `src/lib/auth.ts`: cookies `httpOnly`, `sameSite=lax`, `secure` en producción; JWT con expiración; revalidación de usuario activo y rol en base de datos.
