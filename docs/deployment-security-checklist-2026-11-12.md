@@ -3,13 +3,13 @@
 Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 
 ## 1. Respaldo y reversión
-- [ ] Confirmar último respaldo válido de PostgreSQL en Supabase y probar restauración aislada de datos críticos.
+- [ ] **BLOQUEANTE**: confirmar respaldo íntegro de PostgreSQL en Supabase y probar restauración aislada de datos críticos. El conector disponible no expone una operación para descargar/verificar backups. No asumir que existe.
 - [ ] Exportar/verificar esquema, migraciones aplicadas y recuentos de usuarios, partidos, votaciones y sanciones.
 - [ ] Registrar commit y despliegue actual de Render; preparar procedimiento de rollback de código.
 - [ ] Tener en cuenta que revertir código **no revierte migraciones**: las migraciones nuevas son aditivas y deben mantenerse compatibles.
 
 ## 2. Configuración de Render
-- [ ] Confirmar `APP_URL=https://liga-aefpy-web.onrender.com` antes del despliegue.
+- [ ] **BLOQUEANTE**: confirmar `APP_URL=https://liga-aefpy-web.onrender.com` antes del despliegue. No hay lectura de variables Render disponible en el conector actual.
 - [ ] Verificar `SESSION_SECRET`, `DATABASE_URL`, `DIRECT_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, `NOTIFICATION_JOB_SECRET` y variables de Supabase, sin exponer valores en logs.
 - [ ] Confirmar que el comando de compilación ejecuta `prisma migrate deploy` **antes** de iniciar el código que usa nuevas columnas y tablas.
 - [ ] Verificar que el cron de notificaciones está autenticado y que no existen jobs duplicados.
@@ -19,6 +19,7 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 - `20261112210000_auth_attempt_limits`: crea tabla persistente de cuotas.
 - `20261112220000_staff_session_revocation`: agrega `users.sessionVersion`.
 - `20261112230000_notification_email_leases`: agrega `notifications.emailClaimedAt` y `emailAttempts`.
+- `20261112240000_secure_notifications_rls`: habilita RLS y revoca acceso de `anon` y `authenticated` a las notificaciones.
 - [ ] Ejecutar `prisma migrate status` y verificar que no hay deriva o migraciones fallidas.
 - [ ] Validar las cuatro migraciones en base aislada y ejecutar pruebas de reversibilidad operativa.
 
@@ -37,7 +38,7 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 ## Cobertura automatizada agregada
 - Prueba de escape de fórmulas Excel: `tests/excel-safe.test.ts`.
 - Prueba de firmas de archivos y MIME declarado: `tests/upload-signatures.test.ts`.
-- Prueba de las tres migraciones estructurales en una base PostgreSQL compatible aislada (PGlite): `tests/security-migrations.test.ts`. No prueba la migración de funciones existentes ni el esquema completo de producción.
+- Prueba de migraciones de notificaciones, funciones, cuotas y sesiones en una base PostgreSQL compatible aislada (PGlite): `tests/security-migrations.test.ts`. Usa funciones simuladas y una tabla de usuarios mínima; **no** prueba el esquema completo de producción.
 - GitHub Actions ejecuta `npm run test:security` además de Prisma, TypeScript, auditoría y build.
 - **No sustituyen** las pruebas de integración con PostgreSQL y servicios externos.
 
