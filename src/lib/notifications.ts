@@ -40,8 +40,8 @@ export async function notifyAllDelegates(input: {
 /** Best-effort email delivery. Retries may duplicate email if provider accepted before DB update. */
 export async function sendPendingNotificationEmails(limit = 30) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) return { sent: 0, skipped: "Falta RESEND_API_KEY o EMAIL_FROM" };
+  const from = process.env.EMAIL_FROM || "Liga AEFPY <onboarding@resend.dev>";
+  if (!apiKey) return { sent: 0, skipped: "Falta RESEND_API_KEY" };
   const client = new Resend(apiKey);
   const pending = await prisma.notification.findMany({
     where: { emailSentAt: null },
