@@ -12,8 +12,8 @@
 | SEC-04 | Alta | Corregido en rama; pendiente migración y pruebas | `src/app/admin/login/actions.ts` no tiene limitación de intentos, bloqueo progresivo ni protección centralizada ante fuerza bruta. | Rate limit distribuido por IP y cuenta, logs y alertas; probar intentos repetidos. |
 | SEC-05 | Media/Alta | Corregido parcialmente en rama; pendiente pruebas | `src/app/admin/recuperar-contrasena/actions.ts` permite solicitudes repetidas sin cuota, y verifica `usedAt` antes de actualizar sin condición atómica; una carrera concurrente puede reutilizar el mismo token. | Limitar solicitudes y consumir token atómicamente; invalidar sesiones existentes tras cambio de contraseña. |
 | SEC-06 | Media | Corregido para staff en rama; pendiente integración | `src/lib/auth.ts` verifica usuario activo y rol, pero no revoca JWT ya emitidos cuando cambia la contraseña. Duración 8 h; sesiones de hincha duran 30 días. | Agregar `sessionVersion`/fecha de revocación y verificarla al autorizar. |
-| SEC-07 | Media | Pendiente | `src/app/admin/(protected)/jugadores/efhub-search/route.ts` lanza Chromium por búsquedas de usuario autenticado, sin cuota por usuario ni límite de concurrencia, y devuelve detalles de excepción. | Rate limit, concurrencia máxima, límite de longitud de consulta y errores genéricos. |
-| SEC-08 | Media | Pendiente | `src/lib/notifications.ts`: workers concurrentes pueden enviar el mismo correo; `emailError` no impide reintentos ilimitados. | Claim transaccional/lease, backoff y límite de intentos. |
+| SEC-07 | Media | Corregido en rama; pendiente pruebas | `src/app/admin/(protected)/jugadores/efhub-search/route.ts` lanza Chromium por búsquedas de usuario autenticado, sin cuota por usuario ni límite de concurrencia, y devuelve detalles de excepción. | Rate limit, concurrencia máxima, límite de longitud de consulta y errores genéricos. |
+| SEC-08 | Media | Mitigado en rama; pendiente pruebas | `src/lib/notifications.ts`: workers concurrentes pueden enviar el mismo correo; `emailError` no impide reintentos ilimitados. | Claim transaccional/lease, backoff y límite de intentos. |
 | SEC-09 | Media | Pendiente | `src/lib/league-rate-limit.ts`: mapa en memoria, no compartido entre instancias y clave tomada de `x-forwarded-for`; el límite es eludible dependiendo del proxy. | Límite distribuido y dirección IP normalizada desde infraestructura confiable. |
 | SEC-10 | Media | Corregido en rama; pendiente pruebas | `src/app/admin/(protected)/auditoria/export/route.ts` y `usuarios/export/route.ts` escriben campos controlados por usuarios en Excel sin neutralización explícita de fórmulas. | Escapar prefijos `=,+,-,@` y controles antes de exportar. |
 | SEC-11 | Media | Pendiente | `src/lib/email.ts` insertaba nombre del usuario en HTML sin escape. | Se agregó escape HTML en la rama; revisar el resto de plantillas. |
@@ -45,6 +45,13 @@
 - `src/lib/excel-safe.ts`: protege valores textuales que comienzan con caracteres interpretables como fórmula, incluyendo prefijos de espacios o controles.
 - `auditoria/export` y `usuarios/export`: aplican escape a campos de usuarios, equipos y bitácora.
 - Pendientes: pruebas con archivos malformados y muestras de fórmulas, revisión de políticas de Storage.
+
+## eFHUB y entrega de notificaciones (12/11/2026)
+- eFHUB: cuota persistente de 30 búsquedas por usuario/hora, dos scrapes concurrentes por instancia, validación de consulta y límite de caché; errores internos no se exponen al cliente.
+- Notificaciones: reclamo atómico por fila con `updateMany`, lease de 5 minutos y máximo cinco intentos. Migración `20261112230000_notification_email_leases` pendiente de aplicar.
+- **Limitación:** si Resend acepta el correo y falla la confirmación en PostgreSQL, aún podría reenviarse después de expirar el lease. Se requiere deduplicación del proveedor o reconciliación para garantizar no duplicación estricta.
+- El límite de concurrencia eFHUB es por instancia; la cuota por usuario se comparte en PostgreSQL.
+- Pendientes pruebas de concurrencia, expiración, errores de proveedor y carga en Render.
 
 ## Controles positivos observados
 - `src/lib/auth.ts`: cookies `httpOnly`, `sameSite=lax`, `secure` en producción; JWT con expiración; revalidación de usuario activo y rol en base de datos.
