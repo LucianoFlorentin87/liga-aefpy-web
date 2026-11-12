@@ -11,7 +11,7 @@ function digest(scope: string, identifier: string): string {
 }
 
 export async function consumeAuthAttempt(
-  scope: "staff-login" | "staff-reset",
+  scope: "staff-login" | "staff-reset" | "efhub-search",
   identifier: string,
   limit: number,
   windowSeconds: number,
