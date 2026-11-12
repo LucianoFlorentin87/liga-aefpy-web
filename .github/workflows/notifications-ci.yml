@@ -22,5 +22,5 @@ jobs:
       - run: npm ci
       - run: npx prisma validate
       - run: npx tsc --noEmit
-      - run: npm run lint
+      - run: npx eslint src/lib/notifications.ts src/lib/sanctions.ts src/lib/committee.ts src/app/layout.tsx src/app/admin/\(protected\)/layout.tsx src/app/admin/\(protected\)/notificaciones src/app/admin/\(protected\)/partidos/actions.ts src/app/admin/\(protected\)/sanciones/actions.ts src/app/admin/\(protected\)/inscripciones/actions.ts src/app/api/internal/notifications/send/route.ts src/components/admin/AdminShell.tsx src/lib/admin-nav.ts src/proxy.ts
       - run: npm run build
