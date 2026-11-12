@@ -1,7 +1,6 @@
 "use server";
 
 import { randomBytes, createHash } from "node:crypto";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { requestPasswordResetSchema, completePasswordResetSchema } from "@/lib/validation";
 import { sendPasswordResetEmail } from "@/lib/email";
@@ -35,12 +34,15 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
     data: { tokenHash, userId: user.id, expiresAt: new Date(Date.now() + TOKEN_TTL_MS) },
   });
 
-  const hdrs = await headers();
-  const host = hdrs.get("host");
-  const proto = hdrs.get("x-forwarded-proto") ?? "https";
-  const resetUrl = `${proto}://${host}/admin/restablecer-contrasena?token=${rawToken}`;
+  // Never derive a password-reset destination from attacker-controlled Host headers.
+  const configuredOrigin = process.env.APP_URL;
+  if (!configuredOrigin) throw new Error("APP_URL no está configurada para recuperar contraseñas.");
+  const origin = new URL(configuredOrigin);
+  if (origin.protocol !== "https:" && process.env.NODE_ENV === "production") throw new Error("APP_URL debe usar HTTPS.");
+  const resetUrl = new URL("/admin/restablecer-contrasena", origin);
+  resetUrl.searchParams.set("token", rawToken);
 
-  await sendPasswordResetEmail(user.email, `${user.firstName} ${user.lastName}`, resetUrl);
+  await sendPasswordResetEmail(user.email, `${user.firstName} ${user.lastName}`, resetUrl.toString());
 
   return { success: GENERIC_SUCCESS };
 }
