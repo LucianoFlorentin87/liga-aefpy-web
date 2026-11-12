@@ -6,7 +6,7 @@ export type AdminNavGroup = { title: string; icon: AdminNavIconKey; items: Admin
 
 /** Workflow order: prepare the league, operate it, inspect data, publish, administer. */
 export const ADMIN_NAV: AdminNavGroup[] = [
-  { title: "", icon: "home", items: [{ href: "/admin/dashboard", label: "Resumen" }] },
+  { title: "", icon: "home", items: [{ href: "/admin/dashboard", label: "Resumen" }, { href: "/admin/notificaciones", label: "Notificaciones" }] },
   { title: "Competición", icon: "torneo", items: [
     { href: "/admin/ligas", label: "Ligas y temporadas", resource: "temporadas" },
     { href: "/admin/inscripciones", label: "Inscripciones", resource: "inscripciones" },
@@ -35,7 +35,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   ] },
 ];
 export const DELEGADO_NAV: AdminNavGroup[] = [
-  { title: "", icon: "home", items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }] },
+  { title: "", icon: "home", items: [{ href: "/admin/mi-equipo", label: "Mi equipo" }, { href: "/admin/notificaciones", label: "Bandeja de entrada" }] },
   { title: "Participación", icon: "torneo", items: [
     { href: "/admin/comite", label: "Reclamos y resoluciones" }, { href: "/admin/aceptar-reglamento", label: "Reglamento y aceptación" }, { href: "/inscripcion", label: "Inscribir equipo" }, { href: "/historico", label: "Histórico de ligas" },
   ] },
