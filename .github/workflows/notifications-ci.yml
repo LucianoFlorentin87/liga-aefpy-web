@@ -6,6 +6,7 @@ on:
       - 'src/**'
       - 'package*.json'
       - '.github/workflows/notifications-ci.yml'
+      - '.github/workflows/notification-delivery.yml'
   workflow_dispatch:
 jobs:
   validate:
