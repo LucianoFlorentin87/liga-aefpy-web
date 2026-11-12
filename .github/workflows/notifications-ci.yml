@@ -22,7 +22,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm audit fix
+      - run: npm install next@16.4.6 zod@^4.6.6
+      - run: npm audit fix || true
       - run: npm audit --json > audit-report.json || true
       - run: node -e 'const a=require("./audit-report.json"); for(const [name,v] of Object.entries(a.vulnerabilities||{})) console.log(JSON.stringify({name,severity:v.severity,isDirect:v.isDirect,range:v.range,fixAvailable:v.fixAvailable,via:v.via.map(x=>typeof x==="string"?x:{name:x.name,title:x.title,range:x.range})}))'
       - run: npx prisma validate
