@@ -7,8 +7,6 @@ on:
       - 'package*.json'
       - '.github/workflows/notifications-ci.yml'
   workflow_dispatch:
-permissions:
-  contents: write
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -21,31 +19,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Checkout PR head for patch commit
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-        run: |
-          git fetch origin "$BRANCH_NAME"
-          git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
       - run: npm ci
-      - run: npm install next@16.4.6 zod@^4.6.6
-      - run: npm audit fix || true
       - run: npm audit --json > audit-report.json || true
       - run: node -e 'const a=require("./audit-report.json"); for(const [name,v] of Object.entries(a.vulnerabilities||{})) console.log(JSON.stringify({name,severity:v.severity,isDirect:v.isDirect,range:v.range,fixAvailable:v.fixAvailable,via:v.via.map(x=>typeof x==="string"?x:{name:x.name,title:x.title,range:x.range})}))'
+      - name: Block critical dependency advisories
+        run: node -e 'const a=require("./audit-report.json"); if((a.metadata?.vulnerabilities?.critical||0)>0) { console.error("Critical dependency advisories remain"); process.exit(1) }'
       - run: npx prisma validate
       - run: npx tsc --noEmit
       - run: npx eslint src/lib/notifications.ts src/lib/sanctions.ts src/lib/committee.ts src/app/layout.tsx src/app/admin/\(protected\)/layout.tsx src/app/admin/\(protected\)/notificaciones src/app/admin/\(protected\)/partidos/actions.ts src/app/admin/\(protected\)/sanciones/actions.ts src/app/admin/\(protected\)/inscripciones/actions.ts src/app/api/internal/notifications/send/route.ts src/components/admin/AdminShell.tsx src/lib/admin-nav.ts src/proxy.ts
       - run: npm run build
-      - name: Save compatible security patches to PR branch
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-        run: |
-          if ! git diff --quiet -- package-lock.json package.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package-lock.json package.json
-            git commit -m "security: apply npm audit compatible patches"
-            git push origin HEAD:"$BRANCH_NAME"
-          fi
