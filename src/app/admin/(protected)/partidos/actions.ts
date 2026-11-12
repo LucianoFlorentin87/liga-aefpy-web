@@ -131,6 +131,7 @@ export async function deleteMatchAction(formData: FormData): Promise<void> {
   if (target._count.goals > 0 || target._count.cards > 0) return; // hay que suspender/reprogramar, no eliminar
 
   await prisma.match.delete({ where: { id } });
+  for (const teamId of [target.homeTeamId, target.awayTeamId]) await notifyTeamDelegates({ teamId, type: "CALENDARIO", title: "Partido retirado del fixture", body: `${target.homeTeam.name} vs ${target.awayTeam.name} fue retirado del calendario.`, href: "/fixture", sourceKey: "match-deleted:" + id });
   await logActivity(`${actor.firstName} ${actor.lastName} eliminó el partido ${target.homeTeam.name} vs ${target.awayTeam.name}.`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
@@ -180,7 +181,16 @@ export async function updateMatchesStatusAction(_prevState: BulkFormState, formD
   if (ids.length === 0) return { error: "No seleccionaste ningún partido." };
   if (!BULK_STATUSES.includes(status as (typeof BULK_STATUSES)[number])) return { error: "Estado inválido." };
 
+  const changedMatches = await prisma.match.findMany({ where: { id: { in: ids }, status: { not: status as (typeof BULK_STATUSES)[number] } }, include: { homeTeam: true, awayTeam: true } });
   await prisma.match.updateMany({ where: { id: { in: ids } }, data: { status: status as (typeof BULK_STATUSES)[number] } });
+  for (const match of changedMatches) {
+    for (const teamId of [match.homeTeamId, match.awayTeamId]) await notifyTeamDelegates({
+      teamId, type: status === "FINALIZADO" ? "RESULTADO" : "CALENDARIO",
+      title: "Estado de partido actualizado",
+      body: `${match.homeTeam.name} vs ${match.awayTeam.name}: ${matchStatusLabel(status)}.`,
+      href: "/fixture", sourceKey: "match-bulk-status:" + match.id + ":" + status + ":" + Date.now(),
+    });
+  }
   if (status === "FINALIZADO") await reconcileSanctions();
   await logActivity(
     `${actor.firstName} ${actor.lastName} cambió el estado de ${ids.length} partido(s) en lote a "${matchStatusLabel(status)}".`,
