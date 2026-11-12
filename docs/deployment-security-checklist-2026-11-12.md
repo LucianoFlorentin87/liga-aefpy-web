@@ -10,20 +10,16 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 
 ## 2. Configuración de Render
 - [ ] **BLOQUEANTE**: confirmar `APP_URL=https://liga-aefpy-web.onrender.com` antes del despliegue. No hay lectura de variables Render disponible en el conector actual.
-- [ ] Verificar `SESSION_SECRET`, `DATABASE_URL`, `DIRECT_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, `NOTIFICATION_JOB_SECRET` y variables de Supabase, sin exponer valores en logs.
+- [ ] Verificar `SESSION_SECRET`, `DATABASE_URL`, `DIRECT_URL` y variables de Supabase, sin exponer valores en logs. No se requiere servicio de correo para la bandeja interna.
 - [ ] Confirmar que el comando de compilación ejecuta `prisma migrate deploy` **antes** de iniciar el código que usa nuevas columnas y tablas.
-- [ ] **BLOQUEANTE PARA EMAIL**: crear el mismo `NOTIFICATION_JOB_SECRET` (valor aleatorio largo) en GitHub Actions Secrets y Render; la tarea `.github/workflows/notification-delivery.yml` invoca el endpoint cada 10 minutos desde `main`.
-- [ ] **BLOQUEANTE PARA EMAIL**: confirmar `RESEND_API_KEY` y remitente `EMAIL_FROM` verificado en Render; probar una entrega real con cuenta controlada.
-- [ ] Verificar que el cron de notificaciones está autenticado y que no existen jobs duplicados. GitHub Actions puede retrasar ejecuciones.
 
 ## 3. Migraciones pendientes en la rama
 - `20261112200000_secure_trigger_search_path`: fija `search_path` en seis funciones trigger.
 - `20261112210000_auth_attempt_limits`: crea tabla persistente de cuotas.
 - `20261112220000_staff_session_revocation`: agrega `users.sessionVersion`.
-- `20261112230000_notification_email_leases`: agrega `notifications.emailClaimedAt` y `emailAttempts`.
 - `20261112240000_secure_notifications_rls`: habilita RLS y revoca acceso de `anon` y `authenticated` a las notificaciones.
 - [ ] Ejecutar `prisma migrate status` y verificar que no hay deriva o migraciones fallidas.
-- [ ] Validar las cuatro migraciones en base aislada y ejecutar pruebas de reversibilidad operativa.
+- [ ] Validar las migraciones pendientes en base aislada y ejecutar pruebas de reversibilidad operativa.
 
 ## 4. Pruebas funcionales obligatorias
 - [ ] Login válido, contraseña incorrecta, bloqueo tras 12 intentos y desbloqueo tras ventana.
@@ -34,13 +30,13 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 - [ ] Subida de imágenes/PDF válidos y rechazo de contenido incompatible con MIME.
 - [ ] Exportaciones Excel: celdas que empiezan por =, +, -, @ y espacios previos.
 - [ ] eFHUB: cuota, concurrencia, fallos externos, búsqueda con caracteres acentuados.
-- [ ] Notificaciones: dos workers simultáneos, lease vencido, enfriamiento de cinco minutos tras fallo, cinco reintentos, fallo del proveedor.
+- [ ] Notificaciones internas: creación por evento, destinatario correcto, privacidad por delegado, lectura/no lectura y deduplicación por `sourceKey`.
 - [ ] Revisar políticas del bucket público de Storage.
 
 ## Cobertura automatizada agregada
 - Prueba de escape de fórmulas Excel: `tests/excel-safe.test.ts`.
 - Prueba de firmas de archivos y MIME declarado: `tests/upload-signatures.test.ts`.
-- Prueba de migraciones de notificaciones, funciones, cuotas y sesiones en una base PostgreSQL compatible aislada (PGlite): `tests/security-migrations.test.ts`. Usa funciones simuladas y una tabla de usuarios mínima; **no** prueba el esquema completo de producción.
+- Prueba de migraciones de bandeja interna, funciones, cuotas y sesiones en una base PostgreSQL compatible aislada (PGlite): `tests/security-migrations.test.ts`. Usa funciones simuladas y una tabla de usuarios mínima; **no** prueba el esquema completo de producción.
 - GitHub Actions ejecuta `npm run test:security` además de Prisma, TypeScript, auditoría y build.
 - **No sustituyen** las pruebas de integración con PostgreSQL y servicios externos.
 
@@ -51,7 +47,6 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 - [ ] Registrar fecha, responsable, evidencia y resultado; si falla un control, no declarar despliegue completado.
 
 ## Riesgos residuales
-- La reserva de email no garantiza entrega exactamente una vez ante fallos entre proveedor y DB.
 - La limitación de concurrencia eFHUB es local por instancia.
 - Las firmas de archivos no sustituyen antivirus o decodificación completa.
 - Bloqueo por usuario puede ser provocado por terceros; complementar con protección IP/WAF.
