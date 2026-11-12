@@ -1,22 +1,31 @@
-# Notificaciones AEFPY — implementación por etapas
+# Notificaciones AEFPY — implementación y despliegue
 
-La bandeja es privada por destinatario y guarda una fila por comunicación. La entrega al panel se registra al crear la fila; readAt no equivale a entrega. sourceKey evita duplicados en reintentos.
+## Implementado en esta rama
+- Bandeja persistente privada por usuario, lectura individual/masiva y contador.
+- Eventos: sanciones manuales, aprobación de inscripción, creación/cambio de partidos, reclamos, traslado de defensa, resolución notificada, solicitud de revisión.
+- Recordatorio de partido programado en las próximas 24 h, idempotente.
+- Correo complementario por Resend con cuerpo genérico (sin pruebas ni datos sensibles).
+- Endpoint POST protegido: /api/internal/notifications/send.
+- La entrega en bandeja no equivale a lectura ni prueba acceso durante una caída. El correo enviado tampoco sustituye el traslado comprobado del Comité.
 
-## Eventos previstos
-INSCRIPCION: recepción, aprobación, rechazo, renovación.
-CALENDARIO: publicación, apertura, cambios, recordatorios y cierre.
-RESULTADO: reporte, corrección, confirmación, anulación.
-DISCIPLINA: amarillas, rojas, sanción creada/modificada/cumplida.
-RECLAMO: recepción, traslado, prueba nueva, vencimientos, defensa.
-COMITE: asignación, resolución, revisión, firmeza.
-TORNEO: temporada, reglamento, tabla definitiva, campeón.
-PREMIO: solicitud de datos, entrega, incidencia.
-COMUNICADO: anuncios oficiales.
+## Variables necesarias en Render
+- RESEND_API_KEY: clave de envío.
+- EMAIL_FROM: remitente de un dominio verificado en Resend.
+- NOTIFICATION_JOB_SECRET: secreto aleatorio de al menos 32 bytes para el job.
+No imprimir ni registrar valores secretos. No se crean ni se modifican automáticamente aquí.
 
-## Integración actual
-- Bandeja persistente y navegación del delegado.
-- Alta manual de sanción notifica al delegado del equipo.
-- El resto de eventos requiere conectar los puntos de escritura correspondientes.
-- Correo pendiente: implementar cola de envío y seguimiento de entrega antes de usarlo para notificaciones con efecto reglamentario.
-- La existencia de una fila no acredita que el usuario haya podido acceder a la plataforma durante una caída; conservar canal alternativo.
-- No se debe considerar una sanción automáticamente exigible sin verificar el procedimiento de notificación vigente.
+## Puesta en marcha
+1. npm ci; npx prisma validate; npx tsc --noEmit.
+2. Revisar y aprobar PR, respaldar BD, desplegar migración: npm run db:deploy (DIRECT_URL requerida).
+3. Verificar bandeja de dos delegados distintos y que no puedan ver notificaciones ajenas.
+4. Configurar llamada POST periódica con Authorization: Bearer <NOTIFICATION_JOB_SECRET> desde un scheduler confiable. Sin scheduler no se envían correos ni recordatorios automáticamente.
+5. Probar envío Resend, fallos, reintentos y accesibilidad de la bandeja.
+6. Verificar funcionamiento con datos de prueba antes de habilitar en producción.
+
+## Pendiente
+- Conectar el resto de eventos deportivos (goles/tarjetas automáticas, sanciones reconciliadas, cierre de fechas, premios, tabla definitiva).
+- Evitar múltiples envíos concurrentes del mismo correo con bloqueo/lease transaccional.
+- Registro de webhook de entrega real de Resend y políticas de retención.
+- Pruebas automáticas end-to-end y de concurrencia.
+
+**No fusionar ni desplegar sin validar lo anterior.**
