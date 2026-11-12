@@ -16,6 +16,22 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
       CREATE TABLE public.users (id text PRIMARY KEY);
       CREATE TABLE public.notifications (id text PRIMARY KEY, "emailSentAt" timestamptz);
     `);
+    for (const name of [
+      "committee_guard_match", "committee_guard_sports_event", "committee_prevent_edits",
+      "committee_protect_ballot", "committee_protect_case", "validate_regulation_acceptance",
+    ]) {
+      await db.exec(`CREATE FUNCTION public.${name}() RETURNS void LANGUAGE sql AS 'SELECT NULL::void'`);
+    }
+    await db.exec(migration("20261112200000_secure_trigger_search_path"));
+    const paths = await db.query<{ proname: string; proconfig: string[] }>(`
+      SELECT proname, proconfig FROM pg_proc
+      WHERE pronamespace = 'public'::regnamespace
+        AND proname IN ('committee_guard_match', 'committee_guard_sports_event',
+          'committee_prevent_edits', 'committee_protect_ballot',
+          'committee_protect_case', 'validate_regulation_acceptance')
+    `);
+    assert.equal(paths.rows.length, 6);
+    for (const row of paths.rows) assert.ok(row.proconfig.includes("search_path=public, pg_temp"));
     await db.exec(migration("20261112210000_auth_attempt_limits"));
     await db.exec(migration("20261112220000_staff_session_revocation"));
     await db.exec(migration("20261112230000_notification_email_leases"));
