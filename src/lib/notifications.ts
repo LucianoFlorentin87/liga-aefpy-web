@@ -37,19 +37,28 @@ export async function notifyAllDelegates(input: {
   return delegates.length;
 }
 
-/** Best-effort email delivery. Retries may duplicate email if provider accepted before DB update. */
+/** Atomic DB leases prevent concurrent workers from sending the same email. A provider acceptance followed by DB failure can still cause a retry. */
 export async function sendPendingNotificationEmails(limit = 30) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || "Liga AEFPY <onboarding@resend.dev>";
   if (!apiKey) return { sent: 0, skipped: "Falta RESEND_API_KEY" };
   const client = new Resend(apiKey);
+  const leaseExpired = new Date(Date.now() - 5 * 60 * 1000);
   const pending = await prisma.notification.findMany({
-    where: { emailSentAt: null },
+    where: { emailSentAt: null, emailAttempts: { lt: 5 }, OR: [{ emailClaimedAt: null }, { emailClaimedAt: { lt: leaseExpired } }] },
     orderBy: { createdAt: "asc" }, take: Math.min(Math.max(limit, 1), 100),
     include: { recipient: { select: { email: true } } },
   });
   let sent = 0;
   for (const item of pending) {
+    const claimed = await prisma.notification.updateMany({
+      where: {
+        id: item.id, emailSentAt: null, emailAttempts: { lt: 5 },
+        OR: [{ emailClaimedAt: null }, { emailClaimedAt: { lt: leaseExpired } }],
+      },
+      data: { emailClaimedAt: new Date(), emailAttempts: { increment: 1 } },
+    });
+    if (claimed.count !== 1) continue;
     try {
       // Avoid including confidential case details or sanctions in external email.
       const { error } = await client.emails.send({
@@ -58,10 +67,10 @@ export async function sendPendingNotificationEmails(limit = 30) {
         text: "Tenés una nueva comunicación oficial en la bandeja de entrada de tu panel AEFPY. Ingresá al sitio oficial e iniciá sesión para leerla.",
       });
       if (error) throw new Error(error.message);
-      await prisma.notification.update({ where: { id: item.id }, data: { emailSentAt: new Date(), emailError: null } });
+      await prisma.notification.update({ where: { id: item.id }, data: { emailSentAt: new Date(), emailError: null, emailClaimedAt: null } });
       sent++;
     } catch (e) {
-      await prisma.notification.update({ where: { id: item.id }, data: { emailError: String(e).slice(0, 400) } });
+      await prisma.notification.update({ where: { id: item.id }, data: { emailError: String(e).slice(0, 400), emailClaimedAt: null } });
     }
   }
   return { sent, attempted: pending.length };
