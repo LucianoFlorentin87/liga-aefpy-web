@@ -50,6 +50,7 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role.key,
+    sessionVersion: user.sessionVersion,
   });
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
