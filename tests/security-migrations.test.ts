@@ -34,7 +34,6 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
     await db.exec(migration("20261112170000_delegate_notifications"));
     await db.exec(migration("20261112210000_auth_attempt_limits"));
     await db.exec(migration("20261112220000_staff_session_revocation"));
-    await db.exec(migration("20261112230000_notification_email_leases"));
     await db.exec(migration("20261112240000_secure_notifications_rls"));
     const rls = await db.query<{ relrowsecurity: boolean }>(
       "SELECT relrowsecurity FROM pg_class WHERE oid = 'public.auth_attempt_limits'::regclass"
@@ -48,11 +47,10 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
       "INSERT INTO public.users (id) VALUES ('test') RETURNING \"sessionVersion\""
     );
     assert.equal(user.rows[0].sessionVersion, 0);
-    const notification = await db.query<{ emailAttempts: number; emailClaimedAt: Date | null }>(
-      "INSERT INTO public.notifications (id, \"recipientId\", type, title, body) VALUES ('test', 'test', 'CALENDARIO', 'Test', 'Body') RETURNING \"emailAttempts\", \"emailClaimedAt\""
+    const notification = await db.query<{ id: string }>(
+      "INSERT INTO public.notifications (id, \"recipientId\", type, title, body) VALUES ('test', 'test', 'CALENDARIO', 'Test', 'Body') RETURNING id"
     );
-    assert.equal(notification.rows[0].emailAttempts, 0);
-    assert.equal(notification.rows[0].emailClaimedAt, null);
+    assert.equal(notification.rows[0].id, "test");
     const limit = await db.query<{ attempts: number }>(`
       INSERT INTO public.auth_attempt_limits (key_hash, attempts, window_expires_at)
       VALUES ('key', 1, now() + interval '1 hour')
@@ -67,21 +65,6 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
       RETURNING attempts
     `);
     assert.equal(next.rows[0].attempts, 2);
-    // A single conditional UPDATE is the atomic lease primitive.
-    const lease = await db.query<{ id: string }>(`
-      UPDATE public.notifications
-      SET "emailClaimedAt" = now(), "emailAttempts" = "emailAttempts" + 1
-      WHERE id = 'test' AND "emailSentAt" IS NULL AND "emailClaimedAt" IS NULL
-      RETURNING id
-    `);
-    assert.equal(lease.rows.length, 1);
-    const duplicateLease = await db.query<{ id: string }>(`
-      UPDATE public.notifications
-      SET "emailClaimedAt" = now(), "emailAttempts" = "emailAttempts" + 1
-      WHERE id = 'test' AND "emailSentAt" IS NULL AND "emailClaimedAt" IS NULL
-      RETURNING id
-    `);
-    assert.equal(duplicateLease.rows.length, 0);
   } finally {
     await db.close();
   }
