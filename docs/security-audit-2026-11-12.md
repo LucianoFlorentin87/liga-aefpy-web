@@ -9,8 +9,8 @@
 | SEC-01 | Alta | Corregido en rama; pendiente configurar APP_URL | `src/app/admin/recuperar-contrasena/actions.ts`: el enlace de recuperación se formaba con `Host` y `x-forwarded-proto` del request; riesgo de envenenamiento del enlace. | Usar origen canónico `APP_URL` con HTTPS. Configurarlo en Render antes de desplegar. |
 | SEC-02 | Alta | Corregido en rama | `src/lib/upload.ts`: aceptaba SVG en un bucket público. Los SVG pueden contener contenido activo y causar XSS cuando se sirven directamente. | Limitar a PNG/JPEG/WEBP. Verificar contenido real/magic bytes y configuración de Content-Type en Storage en siguiente fase. |
 | SEC-03 | Verificado | Sin exposición confirmada | Consulta directa a Supabase: las 30 tablas de `public` tienen RLS activo, cero políticas; tablas nuevas sin privilegios `anon`/`authenticated`. El diseño usa Prisma en backend. | Mantener revisión continua de grants, RLS y Storage; no añadir políticas públicas innecesarias. |
-| SEC-04 | Alta | Pendiente | `src/app/admin/login/actions.ts` no tiene limitación de intentos, bloqueo progresivo ni protección centralizada ante fuerza bruta. | Rate limit distribuido por IP y cuenta, logs y alertas; probar intentos repetidos. |
-| SEC-05 | Media/Alta | Pendiente | `src/app/admin/recuperar-contrasena/actions.ts` permite solicitudes repetidas sin cuota, y verifica `usedAt` antes de actualizar sin condición atómica; una carrera concurrente puede reutilizar el mismo token. | Limitar solicitudes y consumir token atómicamente; invalidar sesiones existentes tras cambio de contraseña. |
+| SEC-04 | Alta | Corregido en rama; pendiente migración y pruebas | `src/app/admin/login/actions.ts` no tiene limitación de intentos, bloqueo progresivo ni protección centralizada ante fuerza bruta. | Rate limit distribuido por IP y cuenta, logs y alertas; probar intentos repetidos. |
+| SEC-05 | Media/Alta | Corregido parcialmente en rama; pendiente pruebas | `src/app/admin/recuperar-contrasena/actions.ts` permite solicitudes repetidas sin cuota, y verifica `usedAt` antes de actualizar sin condición atómica; una carrera concurrente puede reutilizar el mismo token. | Limitar solicitudes y consumir token atómicamente; invalidar sesiones existentes tras cambio de contraseña. |
 | SEC-06 | Media | Pendiente | `src/lib/auth.ts` verifica usuario activo y rol, pero no revoca JWT ya emitidos cuando cambia la contraseña. Duración 8 h; sesiones de hincha duran 30 días. | Agregar `sessionVersion`/fecha de revocación y verificarla al autorizar. |
 | SEC-07 | Media | Pendiente | `src/app/admin/(protected)/jugadores/efhub-search/route.ts` lanza Chromium por búsquedas de usuario autenticado, sin cuota por usuario ni límite de concurrencia, y devuelve detalles de excepción. | Rate limit, concurrencia máxima, límite de longitud de consulta y errores genéricos. |
 | SEC-08 | Media | Pendiente | `src/lib/notifications.ts`: workers concurrentes pueden enviar el mismo correo; `emailError` no impide reintentos ilimitados. | Claim transaccional/lease, backoff y límite de intentos. |
@@ -25,6 +25,13 @@
 - Se agregó migración `20261112200000_secure_trigger_search_path` para fijar `public, pg_temp`; **aún no aplicada en producción**.
 - Fuente: Supabase Security Advisors, `function_search_path_mutable`: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable
 - La revisión no equivale a prueba de acceso por HTTP con claves públicas ni a auditoría de Storage.
+
+## Correcciones de autenticación preparadas (12/11/2026)
+- `src/lib/auth-rate-limit.ts`: contador atómico y persistente en PostgreSQL, clave HMAC no reversible con `SESSION_SECRET`.
+- `src/app/admin/login/actions.ts`: hasta 12 intentos por usuario/15 minutos, limpieza tras login válido. Riesgo residual: bloqueo temporal de cuentas por terceros; añadir límite IP de infraestructura confiable/WAF como defensa complementaria.
+- `src/app/admin/recuperar-contrasena/actions.ts`: hasta 3 solicitudes por correo/hora, sin revelar existencia de cuenta; consumo atómico del token de recuperación.
+- Migración nueva `20261112210000_auth_attempt_limits` pendiente de ejecutar en producción. **No desplegar el código de login sin esta migración.**
+- Faltan pruebas de integración con Postgres, concurrencia y experiencia de usuario.
 
 ## Controles positivos observados
 - `src/lib/auth.ts`: cookies `httpOnly`, `sameSite=lax`, `secure` en producción; JWT con expiración; revalidación de usuario activo y rol en base de datos.
