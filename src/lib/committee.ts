@@ -79,6 +79,7 @@ export async function mutateCommittee(f: FormData) {
       }
       if (match && respondent.teamId && ![match.homeTeamId, match.awayTeamId].includes(respondent.teamId)) throw new Error('La contraparte no pertenece al partido.');
       const record = await tx.committeeCase.create({ data: { seasonId: a.seasonId, ...classification, regulationPublicationId:publication?.id, matchId, title: text(f, 'title', 180), applicantId: a.user.id, respondentId, evidenceDeadline: f.get('complete') === 'on' ? now : hoursAfter(now, 12), statements: { create: { authorId: a.user.id, kind: 'RECLAMO', body: text(f, 'body') } }, events: { create: { actorId: a.user.id, action: 'CREADO', detail: 'Reclamo recibido; pendiente de traslado comprobable.' } } } });
+      await tx.notification.create({ data: { recipientId: respondent.id, type: "RECLAMO", title: "Nuevo reclamo registrado", body: "Se registró un reclamo que involucra a tu equipo. El traslado y el plazo de defensa requieren notificación comprobada por el Comité.", href: "/admin/comite?id=" + record.id, sourceKey: "committee-case-created:" + record.id } });
       return record.id;
     }
     const id = text(f, 'caseId', 100);
