@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { sanctionSchema } from "@/lib/validation";
 import { playerFullName } from "@/lib/format";
+import { notifyTeamDelegates } from "@/lib/notifications";
 
 export type FormState = { error?: string; success?: string };
 
@@ -25,7 +26,7 @@ export async function createSanctionAction(_prevState: FormState, formData: Form
   const player = await prisma.player.findUnique({ where: { id: parsed.data.playerId } });
   if (!player) return { error: "El jugador no existe." };
 
-  await prisma.sanction.create({
+  const sanction = await prisma.sanction.create({
     data: {
       playerId: player.id,
       teamId: player.teamId,
@@ -37,6 +38,7 @@ export async function createSanctionAction(_prevState: FormState, formData: Form
     },
   });
 
+  await notifyTeamDelegates({ teamId: player.teamId, type: "DISCIPLINA", title: "Sanción registrada", body: `${playerFullName(player)}: ${parsed.data.reason}. Partidos: ${parsed.data.matchesCount}. Estado: ${parsed.data.status}. Consultá el detalle con la organización; la sanción requiere notificación válida antes de exigirse.`, href: "/admin/mi-equipo", sourceKey: "sanction-created:" + sanction.id });
   await logActivity(`${actor.firstName} ${actor.lastName} registró una sanción para ${playerFullName(player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
   revalidatePath(`/admin/jugadores/${player.id}`);
@@ -76,6 +78,7 @@ export async function updateSanctionAction(_prevState: FormState, formData: Form
     },
   });
 
+  await notifyTeamDelegates({ teamId: player.teamId, type: "DISCIPLINA", title: "Sanción actualizada", body: `${playerFullName(player)}: ${parsed.data.reason}. Partidos: ${parsed.data.matchesCount}. Estado: ${parsed.data.status}.`, href: "/admin/mi-equipo", sourceKey: "sanction-updated:" + id + ":" + Date.now() });
   await logActivity(`${actor.firstName} ${actor.lastName} actualizó una sanción de ${playerFullName(player)}.`, actor.id);
   revalidatePath("/admin/sanciones");
   revalidatePath(`/admin/jugadores/${player.id}`);
