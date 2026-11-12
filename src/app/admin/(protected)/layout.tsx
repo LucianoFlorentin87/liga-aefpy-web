@@ -12,6 +12,8 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
     getCurrentSeason(),
   ]);
 
+  const unreadNotifications = await prisma.notification.count({ where: { recipientId: (await requireAuth()).user.id, readAt: null } });
+
   const navGroups =
     session.role === "DELEGADO"
       ? DELEGADO_NAV
@@ -22,6 +24,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
 
   return (
     <AdminShell
+      unreadNotifications={unreadNotifications}
       seasonName={season.name}
       seasonStatus={season.status}
       navGroups={navGroups}
