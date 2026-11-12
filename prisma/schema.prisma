@@ -63,6 +63,7 @@ model User {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   lastLoginAt         DateTime?
+  notifications       Notification[]
   activityLogs        ActivityLog[]
   // Sólo la usan los DELEGADO: pueden votar en las predicciones públicas
   // con su misma cuenta de staff, sin necesitar además una cuenta de hincha.
@@ -737,4 +738,37 @@ model RegulationAcceptance {
   @@unique([publicationId, userId])
   @@index([seasonId])
   @@map("regulation_acceptances")
+}
+
+enum NotificationType {
+  INSCRIPCION
+  CALENDARIO
+  RESULTADO
+  DISCIPLINA
+  RECLAMO
+  COMITE
+  TORNEO
+  PREMIO
+  COMUNICADO
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  type        NotificationType
+  title       String
+  body        String
+  href        String?
+  sourceKey   String?
+  createdAt   DateTime         @default(now())
+  deliveredAt DateTime         @default(now())
+  readAt      DateTime?
+  emailSentAt DateTime?
+  emailError  String?
+
+  @@unique([recipientId, sourceKey])
+  @@index([recipientId, createdAt(sort: Desc)])
+  @@index([recipientId, readAt])
+  @@map("notifications")
 }
