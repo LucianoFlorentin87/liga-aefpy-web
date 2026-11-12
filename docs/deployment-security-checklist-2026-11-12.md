@@ -31,8 +31,14 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 - [ ] Subida de imágenes/PDF válidos y rechazo de contenido incompatible con MIME.
 - [ ] Exportaciones Excel: celdas que empiezan por =, +, -, @ y espacios previos.
 - [ ] eFHUB: cuota, concurrencia, fallos externos, búsqueda con caracteres acentuados.
-- [ ] Notificaciones: dos workers simultáneos, lease vencido, cinco reintentos, fallo del proveedor.
+- [ ] Notificaciones: dos workers simultáneos, lease vencido, enfriamiento de cinco minutos tras fallo, cinco reintentos, fallo del proveedor.
 - [ ] Revisar políticas del bucket público de Storage.
+
+## Cobertura automatizada agregada
+- Prueba de escape de fórmulas Excel: `tests/excel-safe.test.ts`.
+- Prueba de firmas de archivos y MIME declarado: `tests/upload-signatures.test.ts`.
+- GitHub Actions ejecuta `npm run test:security` además de Prisma, TypeScript, auditoría y build.
+- **No sustituyen** las pruebas de integración con PostgreSQL y servicios externos.
 
 ## 5. Verificación posterior
 - [ ] Confirmar Render `live` con nuevo SHA y migraciones exitosas.
