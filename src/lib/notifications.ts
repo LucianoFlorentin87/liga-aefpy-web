@@ -43,6 +43,7 @@ export async function sendPendingNotificationEmails(limit = 30) {
   const from = process.env.EMAIL_FROM || "Liga AEFPY <onboarding@resend.dev>";
   if (!apiKey) return { sent: 0, skipped: "Falta RESEND_API_KEY" };
   const client = new Resend(apiKey);
+  // Failed sends keep their claim timestamp, enforcing a 5-minute cooldown.
   const leaseExpired = new Date(Date.now() - 5 * 60 * 1000);
   const pending = await prisma.notification.findMany({
     where: { emailSentAt: null, emailAttempts: { lt: 5 }, OR: [{ emailClaimedAt: null }, { emailClaimedAt: { lt: leaseExpired } }] },
@@ -70,7 +71,7 @@ export async function sendPendingNotificationEmails(limit = 30) {
       await prisma.notification.update({ where: { id: item.id }, data: { emailSentAt: new Date(), emailError: null, emailClaimedAt: null } });
       sent++;
     } catch (e) {
-      await prisma.notification.update({ where: { id: item.id }, data: { emailError: String(e).slice(0, 400), emailClaimedAt: null } });
+      await prisma.notification.update({ where: { id: item.id }, data: { emailError: String(e).slice(0, 400) } });
     }
   }
   return { sent, attempted: pending.length };
