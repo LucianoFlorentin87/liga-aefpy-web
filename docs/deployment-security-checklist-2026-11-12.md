@@ -37,6 +37,7 @@ Estado: **NO APTO PARA FUSIÓN AUTOMÁTICA** hasta completar los controles.
 ## Cobertura automatizada agregada
 - Prueba de escape de fórmulas Excel: `tests/excel-safe.test.ts`.
 - Prueba de firmas de archivos y MIME declarado: `tests/upload-signatures.test.ts`.
+- Prueba de las tres migraciones estructurales en una base PostgreSQL compatible aislada (PGlite): `tests/security-migrations.test.ts`. No prueba la migración de funciones existentes ni el esquema completo de producción.
 - GitHub Actions ejecuta `npm run test:security` además de Prisma, TypeScript, auditoría y build.
 - **No sustituyen** las pruebas de integración con PostgreSQL y servicios externos.
 
