@@ -767,6 +767,8 @@ model Notification {
   readAt      DateTime?
   emailSentAt DateTime?
   emailError  String?
+  emailClaimedAt DateTime?
+  emailAttempts Int @default(0)
 
   @@unique([recipientId, sourceKey])
   @@index([recipientId, createdAt(sort: Desc)])
