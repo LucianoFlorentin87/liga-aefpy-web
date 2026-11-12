@@ -10,8 +10,6 @@ CREATE TABLE "notifications" (
  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
  "readAt" TIMESTAMP(3),
  "deliveredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
- "emailSentAt" TIMESTAMP(3),
- "emailError" TEXT,
  CONSTRAINT "notifications_recipientId_fkey" FOREIGN KEY ("recipientId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE INDEX "notifications_recipientId_createdAt_idx" ON "notifications"("recipientId","createdAt" DESC);
