@@ -27,6 +27,19 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
     return { success: GENERIC_SUCCESS };
   }
 
+  // Validate the canonical origin before persisting a usable reset token.
+  const configuredOrigin = process.env.APP_URL;
+  if (!configuredOrigin) return { success: GENERIC_SUCCESS };
+  let origin: URL;
+  try {
+    origin = new URL(configuredOrigin);
+    if (origin.username || origin.password || origin.search || origin.hash ||
+      (process.env.NODE_ENV === "production" && origin.protocol !== "https:") ||
+      !["https:", "http:"].includes(origin.protocol)) return { success: GENERIC_SUCCESS };
+  } catch {
+    return { success: GENERIC_SUCCESS };
+  }
+
   const rawToken = randomBytes(32).toString("hex");
   const tokenHash = createHash("sha256").update(rawToken).digest("hex");
 
@@ -35,10 +48,6 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
   });
 
   // Never derive a password-reset destination from attacker-controlled Host headers.
-  const configuredOrigin = process.env.APP_URL;
-  if (!configuredOrigin) throw new Error("APP_URL no está configurada para recuperar contraseñas.");
-  const origin = new URL(configuredOrigin);
-  if (origin.protocol !== "https:" && process.env.NODE_ENV === "production") throw new Error("APP_URL debe usar HTTPS.");
   const resetUrl = new URL("/admin/restablecer-contrasena", origin);
   resetUrl.searchParams.set("token", rawToken);
 
@@ -70,10 +79,16 @@ export async function completePasswordResetAction(_prevState: FormState, formDat
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
-  await prisma.$transaction([
-    prisma.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false } }),
-    prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
-  ]);
+  const changed = await prisma.$transaction(async (tx) => {
+    const consumed = await tx.passwordResetToken.updateMany({
+      where: { id: record.id, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
+    if (consumed.count !== 1) return false;
+    await tx.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false } });
+    return true;
+  });
+  if (!changed) return { error: invalidMessage };
 
   await logActivity(`${record.user.firstName} ${record.user.lastName} restableció su contraseña por correo.`, record.userId);
 
