@@ -46,6 +46,21 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
       RETURNING attempts
     `);
     assert.equal(next.rows[0].attempts, 2);
+    // A single conditional UPDATE is the atomic lease primitive.
+    const lease = await db.query<{ id: string }>(`
+      UPDATE public.notifications
+      SET "emailClaimedAt" = now(), "emailAttempts" = "emailAttempts" + 1
+      WHERE id = 'test' AND "emailSentAt" IS NULL AND "emailClaimedAt" IS NULL
+      RETURNING id
+    `);
+    assert.equal(lease.rows.length, 1);
+    const duplicateLease = await db.query<{ id: string }>(`
+      UPDATE public.notifications
+      SET "emailClaimedAt" = now(), "emailAttempts" = "emailAttempts" + 1
+      WHERE id = 'test' AND "emailSentAt" IS NULL AND "emailClaimedAt" IS NULL
+      RETURNING id
+    `);
+    assert.equal(duplicateLease.rows.length, 0);
   } finally {
     await db.close();
   }
