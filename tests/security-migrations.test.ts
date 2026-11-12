@@ -14,7 +14,6 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
       CREATE ROLE anon;
       CREATE ROLE authenticated;
       CREATE TABLE public.users (id text PRIMARY KEY);
-      CREATE TABLE public.notifications (id text PRIMARY KEY, "emailSentAt" timestamptz);
     `);
     for (const name of [
       "committee_guard_match", "committee_guard_sports_event", "committee_prevent_edits",
@@ -32,19 +31,25 @@ test("security migrations apply to an isolated PostgreSQL-compatible database", 
     `);
     assert.equal(paths.rows.length, 6);
     for (const row of paths.rows) assert.ok(row.proconfig.includes("search_path=public, pg_temp"));
+    await db.exec(migration("20261112170000_delegate_notifications"));
     await db.exec(migration("20261112210000_auth_attempt_limits"));
     await db.exec(migration("20261112220000_staff_session_revocation"));
     await db.exec(migration("20261112230000_notification_email_leases"));
+    await db.exec(migration("20261112240000_secure_notifications_rls"));
     const rls = await db.query<{ relrowsecurity: boolean }>(
       "SELECT relrowsecurity FROM pg_class WHERE oid = 'public.auth_attempt_limits'::regclass"
     );
     assert.equal(rls.rows[0].relrowsecurity, true);
+    const notificationRls = await db.query<{ relrowsecurity: boolean }>(
+      "SELECT relrowsecurity FROM pg_class WHERE oid = 'public.notifications'::regclass"
+    );
+    assert.equal(notificationRls.rows[0].relrowsecurity, true);
     const user = await db.query<{ sessionVersion: number }>(
       "INSERT INTO public.users (id) VALUES ('test') RETURNING \"sessionVersion\""
     );
     assert.equal(user.rows[0].sessionVersion, 0);
     const notification = await db.query<{ emailAttempts: number; emailClaimedAt: Date | null }>(
-      "INSERT INTO public.notifications (id) VALUES ('test') RETURNING \"emailAttempts\", \"emailClaimedAt\""
+      "INSERT INTO public.notifications (id, \"recipientId\", type, title, body) VALUES ('test', 'test', 'CALENDARIO', 'Test', 'Body') RETURNING \"emailAttempts\", \"emailClaimedAt\""
     );
     assert.equal(notification.rows[0].emailAttempts, 0);
     assert.equal(notification.rows[0].emailClaimedAt, null);
