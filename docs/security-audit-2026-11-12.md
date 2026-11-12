@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | SEC-01 | Alta | Corregido en rama; pendiente configurar APP_URL | `src/app/admin/recuperar-contrasena/actions.ts`: el enlace de recuperación se formaba con `Host` y `x-forwarded-proto` del request; riesgo de envenenamiento del enlace. | Usar origen canónico `APP_URL` con HTTPS. Configurarlo en Render antes de desplegar. |
 | SEC-02 | Alta | Corregido en rama | `src/lib/upload.ts`: aceptaba SVG en un bucket público. Los SVG pueden contener contenido activo y causar XSS cuando se sirven directamente. | Limitar a PNG/JPEG/WEBP. Verificar contenido real/magic bytes y configuración de Content-Type en Storage en siguiente fase. |
-| SEC-03 | Alta (condicionada a grants y esquema expuesto) | Pendiente verificación y remediación | `prisma/migrations/20260813010000_enable_rls/migration.sql` habilita RLS para las tablas existentes en agosto, pero migraciones posteriores crean tablas nuevas. No se observó en esta revisión una migración que habilite RLS para todas ellas. Si el rol `anon` o `authenticated` tiene grants, podría haber acceso indebido vía PostgREST. | Auditar todas las tablas de `public` en Supabase: RLS, grants, políticas y exposición de esquema; habilitar RLS o revocar acceso a tablas privadas. Probar como anon/authenticated. |
+| SEC-03 | Verificado | Sin exposición confirmada | Consulta directa a Supabase: las 30 tablas de `public` tienen RLS activo, cero políticas; tablas nuevas sin privilegios `anon`/`authenticated`. El diseño usa Prisma en backend. | Mantener revisión continua de grants, RLS y Storage; no añadir políticas públicas innecesarias. |
 | SEC-04 | Alta | Pendiente | `src/app/admin/login/actions.ts` no tiene limitación de intentos, bloqueo progresivo ni protección centralizada ante fuerza bruta. | Rate limit distribuido por IP y cuenta, logs y alertas; probar intentos repetidos. |
 | SEC-05 | Media/Alta | Pendiente | `src/app/admin/recuperar-contrasena/actions.ts` permite solicitudes repetidas sin cuota, y verifica `usedAt` antes de actualizar sin condición atómica; una carrera concurrente puede reutilizar el mismo token. | Limitar solicitudes y consumir token atómicamente; invalidar sesiones existentes tras cambio de contraseña. |
 | SEC-06 | Media | Pendiente | `src/lib/auth.ts` verifica usuario activo y rol, pero no revoca JWT ya emitidos cuando cambia la contraseña. Duración 8 h; sesiones de hincha duran 30 días. | Agregar `sessionVersion`/fecha de revocación y verificarla al autorizar. |
@@ -18,6 +18,13 @@
 | SEC-10 | Media | Pendiente | `src/app/admin/(protected)/auditoria/export/route.ts` y `usuarios/export/route.ts` escriben campos controlados por usuarios en Excel sin neutralización explícita de fórmulas. | Escapar prefijos `=,+,-,@` y controles antes de exportar. |
 | SEC-11 | Media | Pendiente | `src/lib/email.ts` insertaba nombre del usuario en HTML sin escape. | Se agregó escape HTML en la rama; revisar el resto de plantillas. |
 | SEC-12 | Media | Pendiente de pruebas dinámicas | Permisos del comité tienen lógica compleja en `src/lib/committee.ts`; hay controles por usuario, equipo y conflicto de interés, pero no se ejecutaron pruebas de matriz multiusuario y concurrencia. | Pruebas negativas por roles, pertenencia de equipo, acceso a expedientes y voto secreto. |
+
+## Comprobación directa de Supabase (12/11/2026)
+- Proyecto `liga-aefpy-web`, consulta SQL de solo lectura: 30/30 tablas de `public` con RLS activo; ninguna política registrada.
+- El asesor de seguridad confirma RLS sin políticas (informativo, compatible con backend Prisma); detectó **6 funciones de trigger con search_path mutable**.
+- Se agregó migración `20261112200000_secure_trigger_search_path` para fijar `public, pg_temp`; **aún no aplicada en producción**.
+- Fuente: Supabase Security Advisors, `function_search_path_mutable`: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable
+- La revisión no equivale a prueba de acceso por HTTP con claves públicas ni a auditoría de Storage.
 
 ## Controles positivos observados
 - `src/lib/auth.ts`: cookies `httpOnly`, `sameSite=lax`, `secure` en producción; JWT con expiración; revalidación de usuario activo y rol en base de datos.
@@ -35,4 +42,4 @@
 5. Confirmar encabezados CSP/HSTS, cookies y CORS en la instancia real.
 6. Volver a correr CI tras los cambios y desplegar únicamente con pruebas aprobadas.
 
-**Dictamen:** Dependencias sin avisos conocidos; **seguridad integral NO certificada**. Mantener despliegue bloqueado hasta cerrar SEC-03 y SEC-04, validar configuración real y ejecutar pruebas dinámicas.
+**Dictamen:** Dependencias sin avisos conocidos; **seguridad integral NO certificada**. Mantener despliegue bloqueado hasta cerrar SEC-04, aplicar/verificar el endurecimiento de funciones y validar configuración real, validar configuración real y ejecutar pruebas dinámicas.
