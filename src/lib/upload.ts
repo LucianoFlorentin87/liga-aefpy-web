@@ -1,7 +1,7 @@
 import "server-only";
 import { uploadToStorage } from "@/lib/supabase-admin";
 
-const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 /**
@@ -13,13 +13,13 @@ const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 export async function saveTeamLogo(file: File | null, teamId: string): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error("Formato de imagen no soportado (usá PNG, JPG, WEBP o SVG).");
+    throw new Error("Formato de imagen no soportado (usá PNG, JPG o WEBP).");
   }
   if (file.size > MAX_SIZE_BYTES) {
     throw new Error("El logo no puede superar los 2MB.");
   }
 
-  const ext = file.type === "image/svg+xml" ? "svg" : file.type.split("/")[1];
+  const ext = file.type.split("/")[1];
   const fileName = `teams/${teamId}-${Date.now()}.${ext}`;
   return uploadToStorage(fileName, file);
 }
