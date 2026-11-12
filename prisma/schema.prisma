@@ -53,6 +53,7 @@ model User {
   username            String               @unique
   passwordHash        String
   mustChangePassword  Boolean              @default(true)
+  sessionVersion      Int                  @default(0)
   role                Role                 @relation(fields: [roleId], references: [id])
   roleId              Int
   // Sólo se usa (y es obligatorio) para el rol DELEGADO: el equipo al que
