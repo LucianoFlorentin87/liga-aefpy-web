@@ -66,6 +66,7 @@ export function AdminShell({ navGroups, userLabel, roleLabel, orgName, orgTaglin
       </div>
       <div className="flex shrink-0 items-center gap-1 sm:gap-3">
         <div className="hidden text-right md:block"><p className="text-xs font-bold">{userLabel}</p><p className="text-[0.65rem] text-[var(--color-gray-500)]">{roleLabel}</p></div>
+        <Link href="/admin/notificaciones" className="admin-icon-button" aria-label="Bandeja de notificaciones" title="Notificaciones">🔔</Link>
         <ThemeToggle className="admin-theme-toggle text-[var(--color-gray-600)]" />
         <Link href="/admin/cuenta" className="admin-icon-button" aria-label="Mi cuenta"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 22v-2a8 8 0 0 1 16 0v2" /></svg><span className="hidden sm:inline">Cuenta</span></Link>
         <form action={logoutAction}><button type="submit" className="admin-icon-button" aria-label="Cerrar sesión"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 3H4v18h6M14 7l5 5-5 5M8 12h12" /></svg><span className="hidden sm:inline">Salir</span></button></form>
