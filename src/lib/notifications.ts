@@ -66,3 +66,21 @@ export async function sendPendingNotificationEmails(limit = 30) {
   }
   return { sent, attempted: pending.length };
 }
+
+/** Reminder for scheduled fixtures approaching within 24 hours. */
+export async function createUpcomingMatchReminders(now = new Date()) {
+  const until = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const matches = await prisma.match.findMany({
+    where: { status: "PROGRAMADO", date: { gt: now, lte: until } },
+    select: { id: true, date: true, matchday: true, homeTeamId: true, awayTeamId: true, homeTeam: { select: { name: true } }, awayTeam: { select: { name: true } } },
+    take: 200,
+  });
+  for (const match of matches) {
+    for (const teamId of [match.homeTeamId, match.awayTeamId]) {
+      await notifyTeamDelegates({ teamId, type: "CALENDARIO", title: "Partido en las próximas 24 horas",
+        body: match.homeTeam.name + " vs " + match.awayTeam.name + " · Jornada " + match.matchday + ". Revisá el fixture y coordiná con tu rival.",
+        href: "/fixture", sourceKey: "match-reminder-24h:" + match.id });
+    }
+  }
+  return matches.length;
+}
