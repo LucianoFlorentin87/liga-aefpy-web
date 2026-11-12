@@ -207,7 +207,7 @@ export async function resetPasswordAction(_prevState: FormState, formData: FormD
   const passwordHash = await hashPassword(parsed.data.password);
   await prisma.user.update({
     where: { id: target.id },
-    data: { passwordHash, mustChangePassword: true },
+    data: { passwordHash, mustChangePassword: true, sessionVersion: { increment: 1 } },
   });
 
   await logActivity(`${actor.firstName} ${actor.lastName} restableció la contraseña de "${target.username}".`, actor.id);
