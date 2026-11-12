@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 // A hashed identifier avoids retaining emails/usernames in the throttle table.
 function digest(scope: string, identifier: string): string {
   const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 32) throw new Error("SESSION_SECRET debe tener al menos 32 caracteres.");
+  if (!secret || secret.length < 16) throw new Error("SESSION_SECRET debe tener al menos 16 caracteres.");
   return createHmac("sha256", secret).update(scope + ":" + identifier.trim().toLowerCase()).digest("hex");
 }
 
