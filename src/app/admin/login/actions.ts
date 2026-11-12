@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { verifyPassword, createSession } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import { loginSchema } from "@/lib/validation";
+import { consumeAuthAttempt, clearAuthAttempts } from "@/lib/auth-rate-limit";
 
 export type LoginState = { error?: string };
 
@@ -19,6 +20,10 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   }
 
   const username = parsed.data.identifier.trim().toLowerCase();
+  if (username.length > 128) return { error: "Usuario o contraseña incorrectos." };
+  if (!await consumeAuthAttempt("staff-login", username, 12, 15 * 60)) {
+    return { error: "Demasiados intentos. Esperá 15 minutos antes de volver a ingresar." };
+  }
 
   const user = await prisma.user.findFirst({
     where: { username },
@@ -38,6 +43,7 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     return { error: invalidMessage };
   }
 
+  await clearAuthAttempts("staff-login", username);
   await createSession({
     sub: user.id,
     username: user.username,
