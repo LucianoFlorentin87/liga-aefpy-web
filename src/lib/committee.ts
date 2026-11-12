@@ -118,7 +118,8 @@ export async function mutateCommittee(f: FormData) {
       const deliveredAt = new Date(text(f, 'deliveredAt', 60));
       if (!Number.isFinite(deliveredAt.getTime()) || deliveredAt > now || deliveredAt < c.createdAt) throw new Error('Fecha de entrega inválida.');
       await tx.committeeCase.update({ where: { id }, data: { notifiedAt: deliveredAt, notificationProof: proof, defenseDeadline: hoursAfter(deliveredAt, c.parentId ? 12 : 24) } });
-      await event('NOTIFICADO', `Entrega comprobada: ${deliveredAt.toISOString()}.`); return id;
+      await event('NOTIFICADO', `Entrega comprobada: ${deliveredAt.toISOString()}.`);
+      await tx.notification.create({ data: { recipientId: c.respondentId, type: 'RECLAMO', title: 'Plazo de defensa abierto', body: 'El Comité registró el traslado del reclamo. Consultá el expediente y presentá tu defensa dentro del plazo indicado.', href: '/admin/comite?id=' + id, sourceKey: 'committee-defense:' + id } }); return id;
     }
     if (operation === 'extendDecision') {
       if (!coordinator || c.status !== 'DEFENSA' || !c.defenseDeadline || now < hoursAfter(c.defenseDeadline,24) || now >= hoursAfter(c.defenseDeadline,48)) throw new Error('Ampliación no disponible en esta etapa.');
@@ -172,13 +173,15 @@ export async function mutateCommittee(f: FormData) {
       if (!coordinator || !c.resolvedAt || !['APROBADA','RECHAZADA'].includes(c.status)) throw new Error('Resolución no notificable.');
       const proof = text(f, 'notificationProof', 2000);
       if (await tx.committeeEvent.findFirst({ where: { caseId: id, action: 'RESOLUCION_NOTIFICADA' } })) throw new Error('Ya se notificó.');
-      await event('RESOLUCION_NOTIFICADA', proof); return id;
+      await event('RESOLUCION_NOTIFICADA', proof);
+      for (const recipientId of new Set([c.applicantId,c.respondentId])) await tx.notification.create({ data: { recipientId, type: 'COMITE', title: 'Resolución del Comité', body: 'Hay una resolución notificada en tu expediente. Revisá el detalle y el plazo para solicitar revisión.', href: '/admin/comite?id=' + id, sourceKey: 'committee-resolution:' + id } }); return id;
     }
     if (operation === 'review') {
       if (!party || c.parentId || !c.resolvedAt) throw new Error('Revisión no disponible.');
       const notification = await tx.committeeEvent.findFirst({ where: { caseId: id, action: 'RESOLUCION_NOTIFICADA' } });
       if (!notification || now >= hoursAfter(notification.createdAt, 12)) throw new Error('Revisión fuera de plazo o sin notificación.');
-      const r = await tx.committeeCase.create({ data: { seasonId: a.seasonId, matchId: c.matchId, parentId: id, applicantId: a.user.id, respondentId: a.user.id === c.applicantId ? c.respondentId : c.applicantId, title: `Revisión: ${c.title}`.slice(0,180), evidenceDeadline: now, statements: { create: { authorId: a.user.id, kind: 'REVISION', body: text(f, 'body') } }, events: { create: { actorId: a.user.id, action: 'CREADO', detail: `Revisión de ${id}. Exige panel independiente.` } } } }); return r.id;
+      const r = await tx.committeeCase.create({ data: { seasonId: a.seasonId, matchId: c.matchId, parentId: id, applicantId: a.user.id, respondentId: a.user.id === c.applicantId ? c.respondentId : c.applicantId, title: `Revisión: ${c.title}`.slice(0,180), evidenceDeadline: now, statements: { create: { authorId: a.user.id, kind: 'REVISION', body: text(f, 'body') } }, events: { create: { actorId: a.user.id, action: 'CREADO', detail: `Revisión de ${id}. Exige panel independiente.` } } } });
+      for (const recipientId of new Set([r.applicantId,r.respondentId])) await tx.notification.create({ data: { recipientId, type: 'COMITE', title: 'Solicitud de revisión', body: 'Se presentó una revisión del expediente. Consultá el panel del Comité.', href: '/admin/comite?id=' + r.id, sourceKey: 'committee-review:' + r.id } }); return r.id;
     }
     if (operation === 'replace') {
       if (!coordinator || c.status !== 'VOTACION' || !c.voteDeadline || now < c.voteDeadline) throw new Error('Sustitución solo después del vencimiento.');
