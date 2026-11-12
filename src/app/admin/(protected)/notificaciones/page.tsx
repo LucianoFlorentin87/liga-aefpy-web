@@ -6,23 +6,30 @@ import { markAllNotificationsRead, markNotificationRead } from "./actions";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Bandeja de notificaciones" };
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({ searchParams }: { searchParams: Promise<{ filtro?: string; pagina?: string }> }) {
+  const params = await searchParams;
+  const filter = params.filtro === "sin-leer" ? "sin-leer" : "todas";
+  const page = Math.max(1, Math.min(1000, Number.parseInt(params.pagina ?? "1", 10) || 1));
+  const pageSize = 30;
   const { user } = await requireAuth();
-  const [items, unread] = await Promise.all([
+  const where = { recipientId: user.id, ...(filter === "sin-leer" ? { readAt: null } : {}) };
+  const [items, unread, total] = await Promise.all([
     prisma.notification.findMany({
-      where: { recipientId: user.id },
-      orderBy: { createdAt: "desc" }, take: 100,
+      where,
+      orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize,
     }),
     prisma.notification.count({ where: { recipientId: user.id, readAt: null } }),
+    prisma.notification.count({ where }),
   ]);
   return <div className="admin-page-stack">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="text-2xl font-bold">Bandeja de entrada</h1>
-      <p className="text-sm opacity-70">{unread} sin leer · últimas 100 comunicaciones</p></div>
+      <p className="text-sm opacity-70">{unread} sin leer · {total} comunicaciones en esta vista</p></div>
       {unread > 0 && <form action={markAllNotificationsRead}>
         <button type="submit" className="btn btn-secondary">Marcar todas como leídas</button>
       </form>}
     </div>
+    <nav aria-label="Filtros de notificaciones" className="flex gap-4 text-sm"><Link href="/admin/notificaciones" aria-current={filter === "todas" ? "page" : undefined} className="underline">Todas</Link><Link href="/admin/notificaciones?filtro=sin-leer" aria-current={filter === "sin-leer" ? "page" : undefined} className="underline">Sin leer</Link></nav>
     {items.length === 0 && <section className="card p-6"><p>Todavía no tenés notificaciones.</p></section>}
     <div className="space-y-3">
       {items.map(item => <article key={item.id} className={"card p-5 space-y-3 " + (!item.readAt ? "border-l-4 border-red-600" : "")}>
@@ -39,5 +46,10 @@ export default async function NotificationsPage() {
         </div>
       </article>)}
     </div>
+    <nav aria-label="Páginas de notificaciones" className="flex items-center gap-4 text-sm">
+      {page > 1 && <Link className="underline" href={`/admin/notificaciones?filtro=${filter}&pagina=${page - 1}`}>Anterior</Link>}
+      <span>Página {page} de {Math.max(1, Math.ceil(total / pageSize))}</span>
+      {page * pageSize < total && <Link className="underline" href={`/admin/notificaciones?filtro=${filter}&pagina=${page + 1}`}>Siguiente</Link>}
+    </nav>
   </div>;
 }
