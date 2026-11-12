@@ -6,6 +6,7 @@ import { requestPasswordResetSchema, completePasswordResetSchema } from "@/lib/v
 import { sendPasswordResetEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
 import { logActivity } from "@/lib/activity";
+import { consumeAuthAttempt } from "@/lib/auth-rate-limit";
 
 export type FormState = { error?: string; success?: string };
 
@@ -22,6 +23,10 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  // Identical response for existing and unknown accounts; quota is persistent.
+  if (!await consumeAuthAttempt("staff-reset", email, 3, 60 * 60)) {
+    return { success: GENERIC_SUCCESS };
+  }
   const user = await prisma.user.findFirst({ where: { email, status: "ACTIVO" } });
   if (!user) {
     return { success: GENERIC_SUCCESS };
