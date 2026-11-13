@@ -716,3 +716,125 @@ table.data-table tbody tr:hover {
 .admin-nav-search input { width:100%; min-height:44px; padding:.65rem .75rem; border:1px solid #ffffff25; border-radius:.3rem; background:#ffffff05; color:#e5efdf; font-size:.72rem; outline-offset:3px; }
 .admin-nav-search input::placeholder { color:#8da087; }
 .admin-nav-search input:focus-visible { outline:2px solid #d1ff3b; }
+
+
+/* AEFPY Football Identity v1 — additive, scoped and reversible.
+   Primary actions remain lime. Cyan identifies match data; gold marks achievements.
+   Pitch geometry is decorative and never intercepts clicks or covers content. */
+.league-site, .admin-arena {
+  --football-cyan: #22b8cf;
+  --football-gold: #d9ac55;
+  --football-pitch-line: #d1ff3b28;
+}
+.league-site .arena-hero {
+  background: radial-gradient(ellipse at 82% 38%, #1d3a2d 0%, #101512 62%);
+}
+.league-site .arena-pitch {
+  top: -18%;
+  right: -12%;
+  width: 68%;
+  height: 138%;
+  opacity: .85;
+  border: 1px solid var(--football-pitch-line);
+  background: repeating-linear-gradient(90deg,#ffffff03 0,#ffffff03 70px,transparent 70px,transparent 140px);
+  pointer-events: none;
+}
+.league-site .arena-pitch span:first-child {
+  width: 33%;
+  aspect-ratio: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  border-color: var(--football-pitch-line);
+}
+.league-site .arena-pitch span:nth-child(2) {
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: 0;
+  border-top: 0;
+  border-left: 1px solid var(--football-pitch-line);
+}
+.league-site .arena-pitch span:last-child {
+  top: 27%;
+  right: 0;
+  width: 19%;
+  height: 46%;
+  border-color: var(--football-pitch-line);
+}
+.league-site .arena-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 13%;
+  height: 21%;
+  top: 40%;
+  right: 0;
+  border: 1px solid var(--football-pitch-line);
+  border-right: 0;
+  pointer-events: none;
+}
+.league-site .arena-schedule {
+  border-top: 2px solid var(--football-cyan);
+}
+.league-site .arena-section-heading h2::after {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 2px;
+  margin-top: .75rem;
+  background: var(--football-cyan);
+}
+.league-site .arena-leader-first {
+  box-shadow: inset 0 3px 0 var(--football-gold);
+}
+.league-site .arena-leader-first .arena-leader-label {
+  color: #33441a;
+}
+.league-site .arena-scorer-top>span:first-child,
+.league-site .arena-scorer-top>span:last-child {
+  color: var(--football-gold);
+}
+.league-site .arena-scorer {
+  transition: border-color .2s ease, transform .2s ease;
+}
+@media (hover:hover) {
+  .league-site .arena-scorer:hover {
+    border-color: var(--football-cyan);
+    transform: translateY(-2px);
+  }
+}
+.league-site .football-fixture-card {
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid var(--football-cyan);
+}
+.league-site .football-fixture-card::after {
+  content: "";
+  position: absolute;
+  width: 66px;
+  height: 66px;
+  right: -26px;
+  bottom: -26px;
+  border: 1px solid var(--football-pitch-line);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.league-site .football-fixture-time {
+  color: var(--color-navy-900);
+  text-decoration: underline;
+  text-decoration-color: var(--football-cyan);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+.league-site .football-widget-heading {
+  border-left-color: var(--football-cyan);
+}
+@media(max-width:700px) {
+  .league-site .arena-pitch { width: 110%; right: -65%; opacity: .42; }
+  .league-site .arena-hero::after { display:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .league-site .arena-scorer { transition: none; }
+  .league-site .arena-scorer:hover { transform: none; }
+}
