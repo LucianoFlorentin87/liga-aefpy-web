@@ -914,3 +914,27 @@ table.data-table tbody tr:hover {
   .league-site .arena-actions .arena-text-link:hover,
   .league-site .arena-actions .arena-text-link:active { transform: none; }
 }
+
+
+/* Historical closures are neutral information, not amber warnings. */
+.league-site .league-info {
+  padding: 1rem;
+  border: 1px solid #276775;
+  border-radius: .35rem;
+  background: #142c32;
+  color: #c2d4d6;
+  font-size: .8rem;
+  line-height: 1.7;
+}
+:root[data-theme="light"] .league-site .league-info {
+  border-color: #73adba;
+  background: #e7f7fb;
+  color: #164553;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .league-site .league-info {
+    border-color: #73adba;
+    background: #e7f7fb;
+    color: #164553;
+  }
+}
