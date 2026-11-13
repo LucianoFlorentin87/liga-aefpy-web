@@ -9,7 +9,7 @@ export function RegulationUploadForm() {
     <h2 className="text-lg font-bold">Publicar nueva versión del reglamento</h2>
     <p className="text-sm">Subí el PDF definitivo. La versión anterior y sus aceptaciones quedarán conservadas. Solo se permite publicar durante la inscripción.</p>
     <label className="block text-sm font-semibold" htmlFor="reg-version">Nueva versión</label>
-    <input id="reg-version" name="version" type="text" required pattern="[1-9][0-9]{0,2}\\.[0-9]{1,3}" placeholder="1.2" className="w-full rounded-lg border p-3" />
+    <input id="reg-version" name="version" type="text" required pattern="[1-9][0-9]{0,2}[.][0-9]{1,3}" placeholder="1.2" className="w-full rounded-lg border p-3" />
     <label className="block text-sm font-semibold" htmlFor="reg-pdf">Documento PDF (máximo 15 MB)</label>
     <input id="reg-pdf" name="rulesPdf" type="file" accept="application/pdf,.pdf" required className="block w-full rounded-lg border p-3" />
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm" required className="mt-1" /><span>Confirmo que este PDF es definitivo y que los delegados deberán aceptar expresamente esta nueva versión.</span></label>
