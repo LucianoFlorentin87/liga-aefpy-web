@@ -838,3 +838,19 @@ table.data-table tbody tr:hover {
   .league-site .arena-scorer { transition: none; }
   .league-site .arena-scorer:hover { transform: none; }
 }
+
+/* Football rule colors must not inherit AEFPY brand accents. */
+:root {
+  --football-card-yellow: #eab308;
+  --football-card-red: #ef3340;
+}
+
+/* Sanctions and disciplinary status remain semantically red in both themes. */
+.league-site .badge-red,
+.admin-arena .badge-red,
+.league-site .btn-danger,
+.admin-arena .btn-danger,
+.league-site .field-error,
+.admin-arena .field-error {
+  color: var(--football-card-red);
+}
