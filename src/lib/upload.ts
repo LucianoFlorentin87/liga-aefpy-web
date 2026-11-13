@@ -1,7 +1,8 @@
 import "server-only";
 import { uploadToStorage } from "@/lib/supabase-admin";
+import { validateImageSignature, validatePdfSignature } from "@/lib/upload-signatures";
 
-const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 /**
@@ -13,13 +14,14 @@ const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 export async function saveTeamLogo(file: File | null, teamId: string): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error("Formato de imagen no soportado (usá PNG, JPG, WEBP o SVG).");
+    throw new Error("Formato de imagen no soportado (usá PNG, JPG o WEBP).");
   }
   if (file.size > MAX_SIZE_BYTES) {
     throw new Error("El logo no puede superar los 2MB.");
   }
 
-  const ext = file.type === "image/svg+xml" ? "svg" : file.type.split("/")[1];
+  await validateImageSignature(file);
+  const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
   const fileName = `teams/${teamId}-${Date.now()}.${ext}`;
   return uploadToStorage(fileName, file);
 }
@@ -34,13 +36,14 @@ export async function saveTeamLogo(file: File | null, teamId: string): Promise<s
 export async function saveNewsImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error("Formato de imagen no soportado (usá PNG, JPG, WEBP o SVG).");
+    throw new Error("Formato de imagen no soportado (usá PNG, JPG o WEBP).");
   }
   if (file.size > MAX_SIZE_BYTES) {
     throw new Error("La imagen no puede superar los 2MB.");
   }
 
-  const ext = file.type === "image/svg+xml" ? "svg" : file.type.split("/")[1];
+  await validateImageSignature(file);
+  const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
   const fileName = `news/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   return uploadToStorage(fileName, file);
 }
@@ -61,6 +64,7 @@ export async function saveRulesPdf(file: File | null): Promise<string | null> {
     throw new Error("El PDF no puede superar los 15MB.");
   }
 
+  await validatePdfSignature(file);
   const fileName = `reglamento/reglamento-${Date.now()}.pdf`;
   return uploadToStorage(fileName, file);
 }

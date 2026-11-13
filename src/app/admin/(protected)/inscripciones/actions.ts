@@ -32,6 +32,7 @@ export async function reviewLeagueRegistration(_state: LeagueActionState, form: 
         const delegate = applicant
           ? await tx.user.update({ where: { id: applicant.id }, data: { teamId: team.id } })
           : await tx.user.create({ data: { firstName: request.delegateFirstName, lastName: request.delegateLastName, email: request.email, username: request.username, passwordHash: request.passwordHash!, roleId: role.id, teamId: team.id, status: "ACTIVO", mustChangePassword: false } });
+        await tx.notification.create({ data: { recipientId: delegate.id, type: "INSCRIPCION", title: "Inscripción aprobada", body: "Tu equipo " + request.teamName + " fue aprobado para la temporada " + request.season.name + ".", href: "/admin/mi-equipo", sourceKey: "registration-approved:" + request.id } });
         await tx.leagueRegistration.update({ where: { id }, data: { status: "APROBADA", userId: delegate.id, teamId: team.id, passwordHash: null, reviewedById: actor.id, reviewedAt: new Date(), reviewNote: note || null } });
       }
       await tx.activityLog.create({ data: { userId: actor.id, message: actor.firstName + (decision === "APROBAR" ? " aprobó " : " rechazó ") + "la inscripción de " + request.teamName + "." } });

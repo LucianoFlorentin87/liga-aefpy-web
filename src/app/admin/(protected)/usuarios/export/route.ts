@@ -1,3 +1,4 @@
+import { safeExcelText } from "@/lib/excel-safe";
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
@@ -82,15 +83,15 @@ export async function GET() {
     }
 
     const row = sheet.addRow({
-      team: team.name,
-      shortName: team.shortName,
-      delegateName: team.delegateName || "—",
-      delegatePhone: team.delegatePhone || "—",
-      homeVenue: team.homeVenue || "—",
-      username,
-      password,
-      email,
-      accountStatus,
+      team: safeExcelText(team.name),
+      shortName: safeExcelText(team.shortName),
+      delegateName: safeExcelText(team.delegateName || "—"),
+      delegatePhone: safeExcelText(team.delegatePhone || "—"),
+      homeVenue: safeExcelText(team.homeVenue || "—"),
+      username: safeExcelText(username),
+      password: safeExcelText(password),
+      email: safeExcelText(email),
+      accountStatus: safeExcelText(accountStatus),
       lastLoginAt: delegate?.lastLoginAt ? formatDateShort(delegate.lastLoginAt) : hasAccount ? "Nunca" : "—",
     });
     row.font = { name: "Arial" };

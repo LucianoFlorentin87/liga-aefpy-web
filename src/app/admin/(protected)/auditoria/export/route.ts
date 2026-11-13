@@ -1,3 +1,4 @@
+import { safeExcelText } from "@/lib/excel-safe";
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
@@ -47,8 +48,8 @@ export async function GET(request: Request) {
         minute: "2-digit",
         timeZone: "America/Asuncion",
       }).format(entry.createdAt),
-      user: entry.user ? `${entry.user.firstName} ${entry.user.lastName} (${entry.user.username})` : "—",
-      message: entry.message,
+      user: entry.user ? safeExcelText(`${entry.user.firstName} ${entry.user.lastName} (${entry.user.username})`) : "—",
+      message: safeExcelText(entry.message),
     });
     row.font = { name: "Arial" };
     row.alignment = { wrapText: true, vertical: "top" };

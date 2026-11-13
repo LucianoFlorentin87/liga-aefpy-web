@@ -7,6 +7,7 @@
     "build": "node scripts/restore-committee-assets.cjs && next build",
     "start": "next start",
     "lint": "eslint",
+    "test:security": "tsx --test tests/*.test.ts",
     "postinstall": "node scripts/restore-committee-assets.cjs && prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -28,10 +29,10 @@
     "@types/react-dom": "^19",
     "bcryptjs": "^3.0.3",
     "eslint": "^9",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "16.4.6",
     "exceljs": "^4.4.0",
     "jose": "^6.2.8",
-    "next": "16.3.0",
+    "next": "^16.4.6",
     "pdf-lib": "1.17.1",
     "playwright": "^1.63.0",
     "prisma": "^6.19.3",
@@ -42,9 +43,14 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14"
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.2",
+    "minimatch": "^11.0.1",
+    "uuid": "^11.1.1"
   }
 }

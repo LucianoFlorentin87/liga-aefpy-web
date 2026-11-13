@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium, type Browser, type Page } from "playwright";
 import { requireEfhubSearchAccess } from "@/lib/permissions";
+import { consumeAuthAttempt } from "@/lib/auth-rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -56,6 +57,9 @@ async function getBrowser(): Promise<Browser> {
 type EfhubCacheEntry = { cards: EfhubCardResult[]; expiresAt: number };
 const searchCache = new Map<string, EfhubCacheEntry>();
 const CACHE_TTL_MS = 10 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 150;
+const MAX_CONCURRENT_SCRAPES = 2;
+let activeScrapes = 0;
 
 function getCached(key: string): EfhubCardResult[] | null {
   const entry = searchCache.get(key);
@@ -68,6 +72,10 @@ function getCached(key: string): EfhubCardResult[] | null {
 }
 
 function setCached(key: string, cards: EfhubCardResult[]) {
+  if (searchCache.size >= MAX_CACHE_ENTRIES) {
+    const oldest = searchCache.keys().next().value;
+    if (oldest) searchCache.delete(oldest);
+  }
   searchCache.set(key, { cards, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
@@ -151,19 +159,31 @@ async function scrapeCards(page: Page): Promise<EfhubCardResult[]> {
  * prisma/migrations/20260924000000_efhub_cards y el modelo EfhubCard.
  */
 export async function GET(request: NextRequest) {
-  await requireEfhubSearchAccess();
+  const actor = await requireEfhubSearchAccess();
 
   const search = request.nextUrl.searchParams.get("q")?.trim();
   if (!search || search.length < 2) {
     return NextResponse.json({ cards: [] });
   }
 
+  if (search.length > 80 || !/^[\\p{L}\\p{N} .'-]+$/u.test(search)) {
+    return NextResponse.json({ error: "Búsqueda inválida." }, { status: 400 });
+  }
+  // Database-backed quota shared across app instances.
+  const actorId = actor.session.sub;
+  if (!await consumeAuthAttempt("efhub-search", actorId, 30, 60 * 60)) {
+    return NextResponse.json({ error: "Límite de búsquedas alcanzado. Intentá más tarde." }, { status: 429 });
+  }
   const cacheKey = search.toLowerCase();
   const cached = getCached(cacheKey);
   if (cached) {
     return NextResponse.json({ cards: cached });
   }
 
+  if (activeScrapes >= MAX_CONCURRENT_SCRAPES) {
+    return NextResponse.json({ error: "El buscador está ocupado. Reintentá en unos segundos." }, { status: 503 });
+  }
+  activeScrapes++;
   let context;
 
   try {
@@ -224,16 +244,17 @@ export async function GET(request: NextRequest) {
 
     if (cards.length > 0) setCached(cacheKey, cards.slice(0, 60));
     return NextResponse.json({ cards: cards.slice(0, 60) });
-  } catch (error) {
+  } catch {
     // Si el browser reusado quedó en mal estado, se descarta para que la
     // próxima búsqueda lance uno nuevo en vez de repetir el mismo error.
     browserPromise = null;
     return NextResponse.json(
-      { error: "No se pudo consultar eFHUB.", details: error instanceof Error ? error.message : String(error) },
+      { error: "No se pudo consultar eFHUB." },
       { status: 500 },
     );
   } finally {
-    if (context) await context.close();
+    activeScrapes--;
+    if (context) await context.close().catch(() => undefined);
     scheduleIdleClose();
   }
 }

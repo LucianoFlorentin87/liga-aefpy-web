@@ -25,6 +25,7 @@ export type SessionPayload = {
   firstName: string;
   lastName: string;
   role: RoleKey;
+  sessionVersion: number;
 };
 
 export async function createSession(payload: SessionPayload) {
@@ -62,6 +63,7 @@ export async function getSession(): Promise<SessionPayload | null> {
       firstName: payload.firstName as string,
       lastName: payload.lastName as string,
       role: payload.role as RoleKey,
+      sessionVersion: payload.sessionVersion as number,
     };
   } catch {
     return null;
@@ -95,6 +97,7 @@ export async function requireActiveUser() {
 
   if (!user || user.status !== "ACTIVO") return null;
   if (session.role !== user.role.key) return null;
+  if (!Number.isInteger(session.sessionVersion) || session.sessionVersion !== user.sessionVersion) return null;
 
   return { session, user };
 }

@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/activity";
 import { matchSchema } from "@/lib/validation";
 import { matchStatusLabel } from "@/lib/format";
 import { reconcileSanctions } from "@/lib/sanctions";
+import { notifyTeamDelegates } from "@/lib/notifications";
 
 export type FormState = { error?: string; success?: string };
 
@@ -43,7 +44,7 @@ export async function createMatchAction(_prevState: FormState, formData: FormDat
   ]);
   if (!home || !away) return { error: "Seleccioná equipos válidos." };
 
-  await prisma.match.create({
+  const createdMatch = await prisma.match.create({
     data: {
       matchday: parsed.data.matchday,
       date: new Date(parsed.data.date),
@@ -57,6 +58,7 @@ export async function createMatchAction(_prevState: FormState, formData: FormDat
   });
   if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
+  for (const teamId of new Set([home.id, away.id])) await notifyTeamDelegates({ teamId, type: "CALENDARIO", title: "Nuevo partido programado", body: `${home.name} vs ${away.name} · Jornada ${parsed.data.matchday} · ${parsed.data.time} h. Consultá el fixture para confirmar la fecha.`, href: "/fixture", sourceKey: "match-created:" + createdMatch.id });
   await logActivity(`${actor.firstName} ${actor.lastName} agregó el partido ${home.name} vs ${away.name} (Jornada ${parsed.data.matchday}).`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
@@ -106,6 +108,9 @@ export async function updateMatchAction(_prevState: FormState, formData: FormDat
   });
   if (parsed.data.status === "FINALIZADO") await reconcileSanctions();
 
+  if (target.date.getTime() !== new Date(parsed.data.date).getTime() || target.time !== parsed.data.time || target.status !== parsed.data.status || target.venue !== parsed.data.venue || target.homeTeamId !== home.id || target.awayTeamId !== away.id) {
+    for (const teamId of new Set([target.homeTeamId, target.awayTeamId, home.id, away.id])) await notifyTeamDelegates({ teamId, type: parsed.data.status === "FINALIZADO" ? "RESULTADO" : "CALENDARIO", title: "Cambio en un partido", body: `${home.name} vs ${away.name} · Jornada ${parsed.data.matchday}. Estado: ${matchStatusLabel(parsed.data.status)}. Horario: ${parsed.data.time} h.`, href: "/fixture", sourceKey: "match-updated:" + id + ":" + Date.now() });
+  }
   await logActivity(`${actor.firstName} ${actor.lastName} actualizó el partido ${home.name} vs ${away.name}.`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath(`/admin/partidos/${id}`);
@@ -126,6 +131,7 @@ export async function deleteMatchAction(formData: FormData): Promise<void> {
   if (target._count.goals > 0 || target._count.cards > 0) return; // hay que suspender/reprogramar, no eliminar
 
   await prisma.match.delete({ where: { id } });
+  for (const teamId of [target.homeTeamId, target.awayTeamId]) await notifyTeamDelegates({ teamId, type: "CALENDARIO", title: "Partido retirado del fixture", body: `${target.homeTeam.name} vs ${target.awayTeam.name} fue retirado del calendario.`, href: "/fixture", sourceKey: "match-deleted:" + id });
   await logActivity(`${actor.firstName} ${actor.lastName} eliminó el partido ${target.homeTeam.name} vs ${target.awayTeam.name}.`, actor.id);
   revalidatePath("/admin/partidos");
   revalidatePath("/admin/resultados");
@@ -175,7 +181,16 @@ export async function updateMatchesStatusAction(_prevState: BulkFormState, formD
   if (ids.length === 0) return { error: "No seleccionaste ningún partido." };
   if (!BULK_STATUSES.includes(status as (typeof BULK_STATUSES)[number])) return { error: "Estado inválido." };
 
+  const changedMatches = await prisma.match.findMany({ where: { id: { in: ids }, status: { not: status as (typeof BULK_STATUSES)[number] } }, include: { homeTeam: true, awayTeam: true } });
   await prisma.match.updateMany({ where: { id: { in: ids } }, data: { status: status as (typeof BULK_STATUSES)[number] } });
+  for (const match of changedMatches) {
+    for (const teamId of [match.homeTeamId, match.awayTeamId]) await notifyTeamDelegates({
+      teamId, type: status === "FINALIZADO" ? "RESULTADO" : "CALENDARIO",
+      title: "Estado de partido actualizado",
+      body: `${match.homeTeam.name} vs ${match.awayTeam.name}: ${matchStatusLabel(status)}.`,
+      href: "/fixture", sourceKey: "match-bulk-status:" + match.id + ":" + status + ":" + Date.now(),
+    });
+  }
   if (status === "FINALIZADO") await reconcileSanctions();
   await logActivity(
     `${actor.firstName} ${actor.lastName} cambió el estado de ${ids.length} partido(s) en lote a "${matchStatusLabel(status)}".`,

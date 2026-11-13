@@ -1,12 +1,12 @@
 "use server";
 
 import { randomBytes, createHash } from "node:crypto";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { requestPasswordResetSchema, completePasswordResetSchema } from "@/lib/validation";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
 import { logActivity } from "@/lib/activity";
+import { consumeAuthAttempt } from "@/lib/auth-rate-limit";
 
 export type FormState = { error?: string; success?: string };
 
@@ -23,8 +23,25 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  // Identical response for existing and unknown accounts; quota is persistent.
+  if (!await consumeAuthAttempt("staff-reset", email, 3, 60 * 60)) {
+    return { success: GENERIC_SUCCESS };
+  }
   const user = await prisma.user.findFirst({ where: { email, status: "ACTIVO" } });
   if (!user) {
+    return { success: GENERIC_SUCCESS };
+  }
+
+  // Validate the canonical origin before persisting a usable reset token.
+  const configuredOrigin = process.env.APP_URL;
+  if (!configuredOrigin) return { success: GENERIC_SUCCESS };
+  let origin: URL;
+  try {
+    origin = new URL(configuredOrigin);
+    if (origin.username || origin.password || origin.search || origin.hash ||
+      (process.env.NODE_ENV === "production" && origin.protocol !== "https:") ||
+      !["https:", "http:"].includes(origin.protocol)) return { success: GENERIC_SUCCESS };
+  } catch {
     return { success: GENERIC_SUCCESS };
   }
 
@@ -35,12 +52,11 @@ export async function requestPasswordResetAction(_prevState: FormState, formData
     data: { tokenHash, userId: user.id, expiresAt: new Date(Date.now() + TOKEN_TTL_MS) },
   });
 
-  const hdrs = await headers();
-  const host = hdrs.get("host");
-  const proto = hdrs.get("x-forwarded-proto") ?? "https";
-  const resetUrl = `${proto}://${host}/admin/restablecer-contrasena?token=${rawToken}`;
+  // Never derive a password-reset destination from attacker-controlled Host headers.
+  const resetUrl = new URL("/admin/restablecer-contrasena", origin);
+  resetUrl.searchParams.set("token", rawToken);
 
-  await sendPasswordResetEmail(user.email, `${user.firstName} ${user.lastName}`, resetUrl);
+  await sendPasswordResetEmail(user.email, `${user.firstName} ${user.lastName}`, resetUrl.toString());
 
   return { success: GENERIC_SUCCESS };
 }
@@ -68,10 +84,16 @@ export async function completePasswordResetAction(_prevState: FormState, formDat
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
-  await prisma.$transaction([
-    prisma.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false } }),
-    prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
-  ]);
+  const changed = await prisma.$transaction(async (tx) => {
+    const consumed = await tx.passwordResetToken.updateMany({
+      where: { id: record.id, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
+    if (consumed.count !== 1) return false;
+    await tx.user.update({ where: { id: record.userId }, data: { passwordHash, mustChangePassword: false, sessionVersion: { increment: 1 } } });
+    return true;
+  });
+  if (!changed) return { error: invalidMessage };
 
   await logActivity(`${record.user.firstName} ${record.user.lastName} restableció su contraseña por correo.`, record.userId);
 
