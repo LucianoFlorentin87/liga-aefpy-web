@@ -13,7 +13,7 @@ export function CardIcon({ color, className = "" }: { color: "yellow" | "red"; c
       height="15"
       viewBox="0 0 11 15"
       aria-hidden="true"
-      className={`inline-block shrink-0 align-middle ${color === "yellow" ? "text-yellow-500" : "text-[var(--football-card-red)]"} ${className}`}
+      className={`inline-block shrink-0 align-middle ${color === "yellow" ? "text-[var(--football-card-yellow)]" : "text-[var(--football-card-red)]"} ${className}`}
     >
       <rect x="0.75" y="0.75" width="9.5" height="13.5" rx="1.5" fill="currentColor" />
     </svg>
