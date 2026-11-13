@@ -1035,3 +1035,57 @@ table.data-table tbody tr:hover {
   color: var(--color-navy-900);
   background: color-mix(in srgb, var(--aefpy-cyan) 14%, var(--color-surface));
 }
+
+
+/* Visible AEFPY accents: default state (not only hover/focus).
+   Keep all original panel geometry, lime primary CTAs and semantic status colors. */
+.admin-arena {
+  --aefpy-visible-cyan: #00d4ff;
+  --aefpy-cyan-soft: #75e7ff;
+}
+.admin-arena .admin-sidebar-nav h2 {
+  color: #7cdeed;
+}
+.admin-arena .admin-nav-search input {
+  border-color: #34727a;
+}
+.admin-arena .admin-nav-search input:focus-visible {
+  border-color: var(--aefpy-visible-cyan);
+  outline-color: var(--aefpy-visible-cyan);
+}
+.admin-arena .admin-sidebar-nav a[aria-current="page"] {
+  box-shadow: inset 3px 0 0 var(--aefpy-visible-cyan);
+}
+.admin-arena .admin-icon-button {
+  border-color: #3b6670;
+}
+.admin-arena .admin-tool-card {
+  border-color: #38636a;
+}
+.admin-arena .admin-tool-card h2,
+.admin-arena .admin-tool-card h3 {
+  text-decoration-color: var(--aefpy-visible-cyan);
+}
+.admin-arena .admin-dialog-card {
+  border-top: 2px solid var(--aefpy-visible-cyan);
+}
+/* Inputs, select and textarea are legible and visibly cyan-framed at rest. */
+.admin-arena :is(input.input, textarea.input, select.input) {
+  border-color: #40727b;
+}
+.admin-arena :is(input.input, textarea.input, select.input):focus {
+  border-color: var(--aefpy-visible-cyan);
+}
+/* Explicitly exclude warnings, destructive actions and card indicators. */
+.admin-arena :is(.btn-danger, .field-error, [role="alert"]) {
+  --aefpy-visible-cyan: #00d4ff;
+}
+/* Theme-aware default border accents, without changing surfaces. */
+:root[data-theme="light"] .admin-arena .admin-sidebar-nav h2 { color: #176d82; }
+:root[data-theme="light"] .admin-arena :is(input.input,textarea.input,select.input) { border-color: #468695; }
+:root[data-theme="light"] .admin-arena .admin-tool-card { border-color: #88b9c1; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .admin-arena .admin-sidebar-nav h2 { color: #176d82; }
+  :root:not([data-theme="dark"]) .admin-arena :is(input.input,textarea.input,select.input) { border-color: #468695; }
+  :root:not([data-theme="dark"]) .admin-arena .admin-tool-card { border-color: #88b9c1; }
+}
