@@ -45,7 +45,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="card w-full max-w-3xl p-5"
+        className="card admin-dialog-card w-full max-w-3xl p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between gap-3">
