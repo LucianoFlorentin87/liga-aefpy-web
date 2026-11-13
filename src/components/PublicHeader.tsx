@@ -49,7 +49,7 @@ export async function PublicHeader() {
               </Link>
               <Link
                 href="/cuenta/registro"
-                className="inline-flex items-center rounded-full bg-[var(--color-red-600)] px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-white hover:bg-[var(--color-red-700)]"
+                className="inline-flex items-center rounded-md bg-[var(--arena-accent)] px-3.5 py-2 text-[0.72rem] font-bold uppercase tracking-wide text-[var(--arena-ink)] transition-colors hover:bg-[#e0ff82]"
               >
                 Registrarme
               </Link>
@@ -62,7 +62,7 @@ export async function PublicHeader() {
               rojo claro fijo que ya usa NextMatchCard. */}
           <Link
             href="/admin"
-            className="hidden xl:inline-flex items-center rounded-full border border-red-300/50 px-3.5 py-1.5 text-[0.72rem] font-bold uppercase tracking-wide text-red-300 hover:bg-[var(--color-red-500)]/10"
+            className="hidden xl:inline-flex items-center rounded-md border border-white/20 px-3.5 py-2 text-[0.72rem] font-bold uppercase tracking-wide text-white/75 transition-colors hover:bg-white/10 hover:text-white"
           >
             Administración
           </Link>
