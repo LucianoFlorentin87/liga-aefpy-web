@@ -854,3 +854,87 @@ table.data-table tbody tr:hover {
 .admin-arena .field-error {
   color: var(--football-card-red);
 }
+
+
+/* AEFPY chromatic refinement — preserve layout, hierarchy and football identity.
+   Brand colors never replace disciplinary or destructive semantic colors. */
+.league-site, .admin-arena {
+  --football-cyan: #00d4ff;
+  --football-pitch-line: #ffffff65;
+  --aefpy-primary: #d1ff3b;
+  --aefpy-secondary: #00d4ff;
+  --aefpy-button-ink: #101411;
+}
+/* The field remains decorative, with neutral WHITE markings rather than lime. */
+.league-site .arena-pitch,
+.league-site .arena-pitch span:first-child,
+.league-site .arena-pitch span:nth-child(2),
+.league-site .arena-pitch span:last-child,
+.league-site .arena-hero::after {
+  border-color: var(--football-pitch-line);
+}
+/* Match the existing hero buttons: lime primary, cyan secondary, dark text. */
+.league-site .arena-button {
+  background: var(--aefpy-primary);
+  color: var(--aefpy-button-ink);
+}
+.league-site .arena-button:hover { background: #e1ff7e; }
+.league-site .arena-actions .arena-text-link {
+  min-height: 50px;
+  padding: .9rem 1.25rem;
+  border-radius: .25rem;
+  background: var(--aefpy-secondary);
+  color: var(--aefpy-button-ink);
+  transition: background-color 180ms, transform 180ms;
+}
+.league-site .arena-actions .arena-text-link:hover {
+  background: #55e5ff;
+  color: var(--aefpy-button-ink);
+  transform: translateY(-2px);
+}
+.league-site .arena-actions .arena-text-link:active { transform: translateY(0); }
+/* Secondary information links use cyan only on the dark hero, never on light panels. */
+.league-site .arena-match-footer { color: #f0f3eb; }
+.league-site .arena-match-footer:hover { background: #00d4ff13; color: #70e9ff; }
+.league-site .arena-match-empty > span { color: var(--aefpy-secondary); }
+/* Destructive controls must retain white text on dark red, not inherit card-red text. */
+.admin-arena .btn-danger {
+  background: #a3121f;
+  color: #fff;
+}
+.admin-arena .btn-danger:hover { background: #7b1420; color: #fff; }
+.league-site .btn-danger { color: #fff; background: #a3121f; }
+.league-site .btn-danger:hover { color: #fff; background: #7b1420; }
+.league-site :is(.arena-button, .arena-text-link):focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-site .arena-actions .arena-text-link { transition: none; }
+  .league-site .arena-actions .arena-text-link:hover,
+  .league-site .arena-actions .arena-text-link:active { transform: none; }
+}
+
+
+/* Historical closures are neutral information, not amber warnings. */
+.league-site .league-info {
+  padding: 1rem;
+  border: 1px solid #276775;
+  border-radius: .35rem;
+  background: #142c32;
+  color: #c2d4d6;
+  font-size: .8rem;
+  line-height: 1.7;
+}
+:root[data-theme="light"] .league-site .league-info {
+  border-color: #73adba;
+  background: #e7f7fb;
+  color: #164553;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .league-site .league-info {
+    border-color: #73adba;
+    background: #e7f7fb;
+    color: #164553;
+  }
+}
