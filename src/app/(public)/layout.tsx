@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { InfoBar } from "@/components/InfoBar";
 import { PublicHeader } from "@/components/PublicHeader";
 import { PublicFooter } from "@/components/PublicFooter";
+import { Logo } from "@/components/Logo";
 
 // Settings and maintenance mode are read at request time, never during build.
 export const dynamic = "force-dynamic";
@@ -14,14 +15,25 @@ export default async function PublicLayout({ children }: { children: React.React
   // (src/app/admin/**) y no pasa por este layout, así que sigue andando normal.
   if (settings?.maintenanceMode) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy-950)] px-4 py-10">
-        <div className="w-full max-w-sm text-center">
-          <div className="card p-6">
-            <p className="eyebrow">Sitio en mantenimiento</p>
-            <h1 className="mt-1 text-lg font-extrabold text-[var(--color-navy-900)]">Volvemos pronto</h1>
-            <p className="mt-3 text-sm text-[var(--color-gray-500)]">{settings.maintenanceMessage}</p>
+      <div className="league-site flex min-h-screen flex-col bg-[var(--background)]">
+        <header className="league-header border-b border-white/10 bg-[var(--color-navy-950)]">
+          <div className="mx-auto flex h-16 max-w-[82rem] items-center px-4">
+            <Logo size={38} variant="light" showTagline={false} name={settings.orgName} />
           </div>
-        </div>
+        </header>
+        <main className="flex flex-1 items-center justify-center px-4 py-12">
+          <section aria-labelledby="maintenance-title" className="card w-full max-w-lg space-y-4 p-6 text-center sm:p-9">
+            <div className="mx-auto w-fit rounded-md border border-[var(--color-gray-200)] px-3 py-1 text-xs font-bold uppercase tracking-widest text-[var(--color-gray-500)]">
+              Liga AEFPY
+            </div>
+            <h1 id="maintenance-title" className="text-2xl font-extrabold text-[var(--color-navy-900)]">Sitio en mantenimiento</h1>
+            <p className="text-sm leading-7 text-[var(--color-gray-600)]">{settings.maintenanceMessage}</p>
+            <div aria-hidden="true" className="mx-auto h-1 w-16 rounded-full bg-[var(--arena-accent)]" />
+          </section>
+        </main>
+        <footer className="px-4 py-5 text-center text-xs text-[var(--color-gray-500)]">
+          {settings.orgName} · Sitio temporalmente no disponible
+        </footer>
       </div>
     );
   }
