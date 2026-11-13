@@ -15,6 +15,6 @@ export function RegulationUploadForm() {
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm" required className="mt-1" /><span>Confirmo que este PDF es definitivo y que los delegados deberán aceptar expresamente esta nueva versión.</span></label>
     {state.error && <p role="alert" className="text-red-700">{state.error}</p>}
     {state.success && <p role="status" className="text-green-700">{state.success}</p>}
-    <button disabled={pending} className="rounded-lg bg-[var(--color-navy-950)] px-5 py-3 text-white disabled:opacity-50">{pending ? 'Publicando…' : 'Publicar nueva versión'}</button>
+    <button disabled={pending} className="rounded-lg bg-green-600 px-5 py-3 font-semibold text-white transition-colors duration-200 hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 disabled:cursor-wait disabled:bg-green-600 disabled:opacity-80">{pending ? 'Publicando…' : 'Publicar nueva versión'}</button>
   </form>;
 }
