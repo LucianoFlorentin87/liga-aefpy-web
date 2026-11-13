@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { FaRegUser, FaLock, FaArrowRight } from "react-icons/fa6";
+import { FaRegUser, FaLock } from "react-icons/fa6";
 import { loginAction, type LoginState } from "@/app/admin/login/actions";
 import { PasswordInput } from "@/components/PasswordInput";
 import { AUTH_INPUT_CLASSES } from "@/components/auth-styles";
@@ -64,7 +64,6 @@ export function LoginForm() {
         className="auth-submit"
       >
         {pending ? "Ingresando…" : "Ingresar"}
-        {!pending && <FaArrowRight aria-hidden="true" className="text-xs" />}
       </button>
     </form>
   );

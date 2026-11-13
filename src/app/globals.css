@@ -938,3 +938,100 @@ table.data-table tbody tr:hover {
     color: #164553;
   }
 }
+
+
+/* AEFPY cross-section color system: public pages, admin panels, access and dialogs.
+   Existing geometry, panel surfaces and lime primary CTAs remain unchanged.
+   Cyan is reserved for navigation feedback, focus, borders and secondary actions. */
+.league-site, .admin-arena, .auth-screen {
+  --aefpy-cyan: #00d4ff;
+  --aefpy-cyan-hover: #55e5ff;
+  --aefpy-cyan-deep: #103843;
+  --aefpy-cyan-ink: #07191e;
+  --aefpy-lime: #d1ff3b;
+}
+/* All auth variants share the same pitch markings as the public homepage. */
+.auth-screen .auth-pitch {
+  border-color: #ffffff55;
+  background: repeating-linear-gradient(90deg,transparent 0,transparent 109px,#ffffff08 110px,#ffffff08 111px);
+}
+.auth-screen .auth-pitch > span { border-color: #ffffff65; }
+/* Keep the login card and its green primary action, but add cyan depth. */
+.auth-screen .auth-card {
+  border-right-color: #00d4ff38;
+  border-bottom-color: #00d4ff38;
+  border-left-color: #00d4ff38;
+}
+.auth-screen .auth-card :is(.auth-input, .input):focus-visible {
+  border-color: var(--aefpy-cyan);
+  outline: 2px solid var(--aefpy-cyan);
+  outline-offset: 2px;
+}
+.auth-screen .auth-back-link:hover,
+.auth-screen .auth-back-link:focus-visible { color: var(--aefpy-cyan-hover); }
+.auth-screen .auth-card :is(.auth-secondary a, .auth-inline-link):hover { color: var(--aefpy-cyan-hover); }
+.auth-screen .auth-submit:focus-visible,
+.auth-screen .auth-card .btn-primary:focus-visible { outline: 3px solid var(--aefpy-cyan); outline-offset: 3px; }
+/* Unified secondary actions in public and administrative screens.
+   Do not recolor regular cards, destructive actions or status badges. */
+.league-site .btn-navy,
+.admin-arena .btn-navy {
+  background: var(--aefpy-cyan-deep);
+  color: #f3fcff;
+  border: 1px solid var(--aefpy-cyan);
+}
+.league-site .btn-navy:hover,
+.admin-arena .btn-navy:hover { background: #155062; color: #fff; }
+.league-site .btn-outline:hover,
+.admin-arena .btn-outline:hover {
+  border-color: var(--aefpy-cyan);
+  background: color-mix(in srgb, var(--aefpy-cyan) 9%, var(--color-surface));
+}
+.league-site .btn-ghost:hover,
+.admin-arena .btn-ghost:hover {
+  background: color-mix(in srgb, var(--aefpy-cyan) 9%, var(--color-surface));
+}
+.league-site :is(.input, select, textarea):focus-visible,
+.admin-arena :is(.input, select, textarea):focus-visible {
+  outline: 2px solid var(--aefpy-cyan);
+  outline-offset: 2px;
+}
+.league-site :is(a,button,input,select,textarea):focus-visible,
+.admin-arena :is(a,button,input,select,textarea):focus-visible {
+  outline-color: var(--aefpy-cyan);
+}
+.admin-arena .admin-icon-button:hover {
+  border-color: var(--aefpy-cyan);
+  background: color-mix(in srgb, var(--aefpy-cyan) 9%, var(--color-surface));
+}
+.admin-arena .admin-sidebar-nav a:hover:not([aria-current="page"]) {
+  background: #00d4ff18;
+  color: #f4fbff;
+}
+.admin-arena .admin-tool-card:hover { border-color: var(--aefpy-cyan); }
+.admin-arena .admin-nav-search input:focus-visible { outline-color: var(--aefpy-cyan); }
+.admin-arena .admin-stat-card:nth-child(2) { border-top-color: var(--aefpy-cyan); }
+.league-site .arena-section-link:hover {
+  color: var(--color-navy-900);
+  border-bottom-color: var(--aefpy-cyan);
+}
+/* Hover on cards and tables stays subtle and legible in both themes. */
+.league-site .league-team-card:hover,
+.admin-arena .card:focus-within { border-color: color-mix(in srgb, var(--aefpy-cyan) 45%, var(--color-gray-200)); }
+@media (prefers-reduced-motion: reduce) {
+  .auth-screen .auth-submit, .auth-screen .auth-card .btn-primary { transition: none; }
+}
+
+/* Shared admin modal: same understated surface, cyan interaction cue. */
+.admin-arena .admin-dialog-card {
+  border-color: color-mix(in srgb, var(--aefpy-cyan) 32%, var(--color-gray-200));
+  box-shadow: 0 24px 64px #00000035;
+}
+.admin-arena .admin-dialog-card > div:first-child {
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+.admin-arena .admin-dialog-card > div:first-child .btn-ghost:hover {
+  color: var(--color-navy-900);
+  background: color-mix(in srgb, var(--aefpy-cyan) 14%, var(--color-surface));
+}
