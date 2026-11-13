@@ -218,7 +218,7 @@ export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams
       </div>
 
       {teams.length === 0 && (
-        <p className="rounded-lg bg-[var(--color-amber-bg)] px-3 py-2 text-sm font-medium text-[var(--color-amber-text)]">
+        <p className="admin-notice admin-notice-warning" role="status">
           Primero cargá al menos un equipo en Torneo → Equipos.
         </p>
       )}
