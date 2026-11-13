@@ -9,8 +9,8 @@ import { committeeAction } from './actions';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Comité y reclamos' };
 const box = 'rounded-xl border border-[var(--color-gray-200)] bg-[var(--color-surface)] p-5 space-y-4';
-const input = 'w-full rounded-lg border border-[var(--color-gray-300)] p-3 bg-[var(--color-surface)]';
-const button = 'rounded-lg bg-[var(--color-navy-950)] px-4 py-2 text-white font-semibold';
+const input = 'input';
+const button = 'btn btn-primary';
 const dt = (d: Date | null) => d ? new Intl.DateTimeFormat('es-PY', { timeZone: 'America/Asuncion', dateStyle:'short',timeStyle:'short' }).format(d) : 'Pendiente';
 function Fields({ op, id }: { op: string; id?:string }) { return <><input type="hidden" name="operation" value={op}/>{id && <input type="hidden" name="caseId" value={id}/>}</>; }
 export default async function CommitteePage({searchParams}:{searchParams:Promise<{id?:string;error?:string}>}) {
@@ -29,7 +29,7 @@ export default async function CommitteePage({searchParams}:{searchParams:Promise
  const notice = c?.events.find(e=>e.action==='RESOLUCION_NOTIFICADA');
  return <div className="space-y-5 max-w-5xl">
  <header><p className="text-sm text-[var(--color-gray-500)]">Organización de la liga</p><h1 className="text-2xl font-bold">Comité y reclamos</h1><p className="mt-2 text-sm">Expedientes privados, defensa de las partes y decisiones de tres miembros. Horarios de Paraguay.</p></header>
- {query.error && <p role="alert" className="rounded-lg border border-red-400 p-3">{query.error}</p>}
+ {query.error && <p role="alert" className="card border-l-4 border-[var(--color-red-accent)] p-3 field-error">{query.error}</p>}
  <div className="flex gap-3 flex-wrap"><Link href="/admin/comite" className={button}>Ver expedientes</Link><a href="/documentos/Reglamento_AEFPY_v1.1.pdf" className="underline p-2">Consultar reglamento v1.1</a></div>
  <p className="text-sm border-l-4 border-amber-500 pl-3">El efecto deportivo forma parte de la propuesta votada. Se aplica una sola vez cuando la decisión queda firme, conservando goles, tarjetas y resultado anterior en el historial. Las sanciones personales requieren su registro y verificación en el módulo de sanciones.</p>
  {c ? <>
