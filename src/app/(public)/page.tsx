@@ -39,8 +39,8 @@ export default async function HomePage() {
             <h1 className="arena-headline">La liga.<br /><em>Tu juego.</em></h1>
             <p className="arena-description">{settings?.heroSubtitle || "Cada fecha cuenta. Seguí los partidos, los protagonistas y la carrera por el título."}</p>
             <nav aria-label="Accesos rápidos del torneo" className="arena-actions">
-              <Link className="arena-button" href="/fixture">Explorar fixture <span aria-hidden="true">↗</span></Link>
-              <Link className="arena-text-link" href="/resultados">Ver resultados <span aria-hidden="true">→</span></Link>
+              <Link className="arena-button" href="/fixture">Explorar fixture</Link>
+              <Link className="arena-text-link" href="/resultados">Ver resultados</Link>
             </nav>
           </div>
           <div className="league-enter league-enter-delayed arena-match-wrap"><NextMatchCard match={nextMatch} /></div>
