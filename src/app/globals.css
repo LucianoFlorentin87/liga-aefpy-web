@@ -1035,3 +1035,46 @@ table.data-table tbody tr:hover {
   color: var(--color-navy-900);
   background: color-mix(in srgb, var(--aefpy-cyan) 14%, var(--color-surface));
 }
+
+
+/* Registration: cyan must be visible before hovering, not only on focus. */
+.league-site .registration-page .registration-form-card {
+  border-color: #39808b;
+  border-top: 2px solid #00d4ff;
+}
+.league-site .registration-page .registration-steps h2::before,
+.league-site .registration-page .registration-form-card > h2::before {
+  content: "";
+  display: inline-block;
+  width: 1.5rem;
+  height: .2rem;
+  margin-right: .75rem;
+  vertical-align: middle;
+  background: #00d4ff;
+  border-radius: 1rem;
+}
+.league-site .registration-page .league-field .input {
+  border-color: #46838c;
+}
+.league-site .registration-page .league-field .input:focus {
+  border-color: #00d4ff;
+  outline: 2px solid #00d4ff;
+  outline-offset: 2px;
+}
+.league-site .registration-page .league-info {
+  border-color: #00b5d7;
+  background: #10343d;
+  color: #e8faff;
+}
+.league-site .registration-page .league-info strong,
+.league-site .registration-page .league-info a { color: #78edff; }
+.league-site .registration-page .registration-steps a:hover { color: #00d4ff; }
+:root[data-theme="light"] .league-site .registration-page .league-info {
+  background: #e7f7fb;
+  color: #164553;
+}
+:root[data-theme="light"] .league-site .registration-page .league-info :is(strong,a) { color: #086c86; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .league-site .registration-page .league-info { background: #e7f7fb; color: #164553; }
+  :root:not([data-theme="dark"]) .league-site .registration-page .league-info :is(strong,a) { color: #086c86; }
+}
