@@ -838,3 +838,9 @@ table.data-table tbody tr:hover {
   .league-site .arena-scorer { transition: none; }
   .league-site .arena-scorer:hover { transform: none; }
 }
+
+/* Football rule colors must not inherit AEFPY brand accents. */
+:root {
+  --football-card-yellow: #eab308;
+  --football-card-red: #ef3340;
+}
