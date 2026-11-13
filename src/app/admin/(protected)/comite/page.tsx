@@ -8,7 +8,7 @@ import { EFFECTS, effectLabel } from '@/lib/committee-effects';
 import { committeeAction } from './actions';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Comité y reclamos' };
-const box = 'rounded-xl border border-[var(--color-gray-200)] bg-[var(--color-surface)] p-5 space-y-4';
+const box = 'rounded-xl border border-[#376c77] bg-[var(--color-surface)] p-5 space-y-4';
 const input = 'input';
 const button = 'btn btn-primary';
 const dt = (d: Date | null) => d ? new Intl.DateTimeFormat('es-PY', { timeZone: 'America/Asuncion', dateStyle:'short',timeStyle:'short' }).format(d) : 'Pendiente';
@@ -28,10 +28,10 @@ export default async function CommitteePage({searchParams}:{searchParams:Promise
  const closed = !!c?.resolvedAt;
  const notice = c?.events.find(e=>e.action==='RESOLUCION_NOTIFICADA');
  return <div className="space-y-5 max-w-5xl">
- <header><p className="text-sm text-[var(--color-gray-500)]">Organización de la liga</p><h1 className="text-2xl font-bold">Comité y reclamos</h1><p className="mt-2 text-sm">Expedientes privados, defensa de las partes y decisiones de tres miembros. Horarios de Paraguay.</p></header>
+ <header><p className="text-sm text-[#75e7ff]">Organización de la liga</p><h1 className="text-2xl font-bold">Comité y reclamos</h1><p className="mt-2 text-sm">Expedientes privados, defensa de las partes y decisiones de tres miembros. Horarios de Paraguay.</p></header>
  {query.error && <p role="alert" className="card border-l-4 border-[var(--color-red-accent)] p-3 field-error">{query.error}</p>}
  <div className="flex gap-3 flex-wrap"><Link href="/admin/comite" className={button}>Ver expedientes</Link><a href="/documentos/Reglamento_AEFPY_v1.1.pdf" className="underline p-2">Consultar reglamento v1.1</a></div>
- <p className="text-sm border-l-4 border-amber-500 pl-3">El efecto deportivo forma parte de la propuesta votada. Se aplica una sola vez cuando la decisión queda firme, conservando goles, tarjetas y resultado anterior en el historial. Las sanciones personales requieren su registro y verificación en el módulo de sanciones.</p>
+ <p className="text-sm border-l-4 border-[#00d4ff] bg-[#00d4ff0a] px-3 py-2">El efecto deportivo forma parte de la propuesta votada. Se aplica una sola vez cuando la decisión queda firme, conservando goles, tarjetas y resultado anterior en el historial. Las sanciones personales requieren su registro y verificación en el módulo de sanciones.</p>
  {c ? <>
  <section className={box}><h2 className="text-xl font-bold">{c.title}</h2><p className="text-sm">Expediente {c.id} · {c.status}</p>{c.nature && <p className="text-sm">{CLAIM_NATURES[c.nature as ClaimNature]?.label??c.nature} · Artículo {c.article}</p>}<p>{names.get(c.applicantId) ?? 'Reclamante'} / {names.get(c.respondentId) ?? 'Contraparte'}</p>{c.parentId && <Link href={'/admin/comite?id='+c.parentId} className="underline">Ver decisión inicial</Link>}
  <dl className="grid gap-3 sm:grid-cols-3 text-sm"><div><dt>Pruebas del reclamante</dt><dd>{dt(c.evidenceDeadline)}</dd></div><div><dt>Fin de defensa</dt><dd>{dt(c.defenseDeadline)}</dd></div><div><dt>Cierre de votación</dt><dd>{dt(c.voteDeadline)}</dd></div></dl>
