@@ -1131,3 +1131,59 @@ table.data-table tbody tr:hover {
   :root:not([data-theme="dark"]) .league-site .registration-page .league-info { background: #e7f7fb; color: #164553; }
   :root:not([data-theme="dark"]) .league-site .registration-page .league-info :is(strong,a) { color: #086c86; }
 }
+
+
+/* Unified semantic notices: neutral surface, clear accent, no muddy amber fill.
+   Warnings remain amber (never cyan), informational notices remain cyan. */
+.admin-arena .admin-notice,
+.admin-arena .league-warning {
+  display: block;
+  padding: .85rem 1rem;
+  border: 1px solid #526063;
+  border-left: 4px solid #fbbf24;
+  border-radius: .6rem;
+  background: #1c2423;
+  color: #f8e5ad;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+.admin-arena .admin-notice-warning { border-left-color: #fbbf24; }
+.admin-arena .admin-notice-info {
+  border-color: #367784;
+  border-left-color: #00d4ff;
+  background: #112b32;
+  color: #d9f8ff;
+}
+.admin-arena .admin-notice-success {
+  border-color: #3b705b;
+  border-left-color: #22c55e;
+  background: #152c23;
+  color: #d7fce6;
+}
+.admin-arena .admin-notice-error {
+  border-color: #804148;
+  border-left-color: #ef4444;
+  background: #301b20;
+  color: #ffe0e2;
+}
+:root[data-theme="light"] .admin-arena :is(.admin-notice-warning,.league-warning) {
+  background: #fff9e9;
+  border-color: #dfc786;
+  border-left-color: #a86b00;
+  color: #674000;
+}
+:root[data-theme="light"] .admin-arena .admin-notice-info { background: #e9f9fd; color: #14546a; }
+:root[data-theme="light"] .admin-arena .admin-notice-success { background: #ebf9ef; color: #17623b; }
+:root[data-theme="light"] .admin-arena .admin-notice-error { background: #fff0f1; color: #8b1826; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .admin-arena :is(.admin-notice-warning,.league-warning) {
+    background: #fff9e9;
+    border-color: #dfc786;
+    border-left-color: #a86b00;
+    color: #674000;
+  }
+  :root:not([data-theme="dark"]) .admin-arena .admin-notice-info { background: #e9f9fd; color: #14546a; }
+  :root:not([data-theme="dark"]) .admin-arena .admin-notice-success { background: #ebf9ef; color: #17623b; }
+  :root:not([data-theme="dark"]) .admin-arena .admin-notice-error { background: #fff0f1; color: #8b1826; }
+}
