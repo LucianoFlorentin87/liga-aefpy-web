@@ -21,7 +21,7 @@ export function WidgetCard({
   return (
     <div className={`card overflow-hidden ${className ?? ""}`}>
       <div className="flex min-h-16 items-center justify-between gap-3 border-b border-[var(--color-gray-200)] px-4 py-2">
-        <h2 className="border-l-3 border-[var(--color-red-accent)] pl-3 text-sm font-extrabold text-[var(--color-navy-900)]">{title}</h2>
+        <h2 className="football-widget-heading border-l-3 border-[var(--color-red-accent)] pl-3 text-sm font-extrabold text-[var(--color-navy-900)]">{title}</h2>
         <Link
           href={href}
           aria-label={ariaLabel}
