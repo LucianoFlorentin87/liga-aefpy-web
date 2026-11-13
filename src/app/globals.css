@@ -1021,3 +1021,17 @@ table.data-table tbody tr:hover {
 @media (prefers-reduced-motion: reduce) {
   .auth-screen .auth-submit, .auth-screen .auth-card .btn-primary { transition: none; }
 }
+
+/* Shared admin modal: same understated surface, cyan interaction cue. */
+.admin-arena .admin-dialog-card {
+  border-color: color-mix(in srgb, var(--aefpy-cyan) 32%, var(--color-gray-200));
+  box-shadow: 0 24px 64px #00000035;
+}
+.admin-arena .admin-dialog-card > div:first-child {
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+.admin-arena .admin-dialog-card > div:first-child .btn-ghost:hover {
+  color: var(--color-navy-900);
+  background: color-mix(in srgb, var(--aefpy-cyan) 14%, var(--color-surface));
+}
