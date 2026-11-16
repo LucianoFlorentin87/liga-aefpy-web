@@ -1,3 +1,4 @@
+import { FootballPitch } from "@/components/FootballPitch";
 import { registrationIsOpen } from "@/lib/league-validation";
 import Link from "next/link";
 import { prisma, getCurrentSeason } from "@/lib/db";
@@ -31,7 +32,7 @@ export default async function HomePage() {
     <div className="league-home">
       {season.status === "INSCRIPCION" && <div className="bg-[var(--color-surface)] border-b border-[var(--color-gray-200)]"><div className="container-page flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="arena-overline">{registrationIsOpen(season) ? "Inscripciones abiertas" : "Inscripciones en revisión"}</p><strong className="text-sm">{season.name}</strong></div><Link href={"/inscripcion/" + season.slug} className="arena-section-link">Inscribí tu equipo ↗</Link></div></div>}
       <section className="arena-hero">
-        <div aria-hidden="true" className="arena-pitch"><span /><span /><span /></div>
+        <FootballPitch className="arena-pitch" />
         <div className="container-page arena-hero-grid">
           <div className="league-enter arena-intro">
             <p className="arena-kicker"><span /> {settings?.orgTagline || "Asociación de Efootball Paraguay"}</p>

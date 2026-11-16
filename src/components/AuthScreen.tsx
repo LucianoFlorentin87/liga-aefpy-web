@@ -1,3 +1,4 @@
+import { FootballPitch } from "@/components/FootballPitch";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
@@ -18,7 +19,7 @@ export function AuthScreen({ children, orgName = "Liga AEFPY", orgTagline = "Aso
     <header className="auth-topbar"><Link href="/" aria-label={orgName + " · inicio"}><Logo size={38} variant="light" showTagline={false} name={orgName} /></Link><Link href="/" className="auth-back-link"><span aria-hidden="true">↖</span> Volver a la liga</Link></header>
     <div className="auth-layout">
       <aside className="auth-story">
-        <div aria-hidden="true" className="auth-pitch"><span /><span /></div>
+        <FootballPitch className="auth-pitch" />
         <p className="auth-eyebrow"><i aria-hidden="true" />{copy.eyebrow}</p>
         <p className="auth-display">{copy.first}<br /><em>{copy.second}</em></p>
         <p className="auth-story-description">{copy.description}</p>
