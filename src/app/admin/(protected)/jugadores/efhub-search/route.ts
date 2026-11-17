@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { chromium, type Browser, type Page } from "playwright";
 import { requireEfhubSearchAccess } from "@/lib/permissions";
 import { consumeAuthAttempt } from "@/lib/auth-rate-limit";
+import { isValidEfhubSearch } from "@/lib/efhub-search";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -166,7 +167,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ cards: [] });
   }
 
-  if (search.length > 80 || !/^[\\p{L}\\p{N} .'-]+$/u.test(search)) {
+  if (!isValidEfhubSearch(search)) {
     return NextResponse.json({ error: "Búsqueda inválida." }, { status: 400 });
   }
   // Database-backed quota shared across app instances.
