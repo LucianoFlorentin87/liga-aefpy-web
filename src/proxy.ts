@@ -48,6 +48,7 @@ export async function proxy(request: NextRequest) {
       "/admin/cuenta",
       "/admin/comite",
       "/admin/notificaciones",
+      "/admin/aceptar-reglamento",
       // No abre /admin/jugadores (esa pantalla sigue vedada al delegado):
       // sólo el endpoint de búsqueda de cartas, que el picker de
       // /admin/mi-equipo consulta por fetch. La autorización real la hace
