@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { prisma, seasonAdminDb } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import { teamSchema } from "@/lib/validation";
@@ -315,8 +315,20 @@ export async function deleteTeamAction(formData: FormData): Promise<void> {
   const hasRelated = target._count.players > 0 || target._count.homeMatches > 0 || target._count.awayMatches > 0;
   if (hasRelated) return; // el UI ya avisa: hay que desactivar, no se puede eliminar
 
-  await prisma.team.delete({ where: { id } });
-  await logActivity(`${actor.firstName} ${actor.lastName} eliminó el equipo "${target.name}".`, actor.id);
+  await seasonAdminDb.$transaction(async tx => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock_shared(736527184)`;
+    const settings = await tx.tournamentSettings.findUniqueOrThrow({ where: { id: "settings" } });
+    await tx.$queryRaw`SELECT id FROM teams WHERE id = ${id} FOR UPDATE`;
+    const current = await tx.team.findFirst({ where: { id, seasonId: settings.currentSeasonId! }, include: { _count: { select: { players: true, homeMatches: true, awayMatches: true } } } });
+    if (!current || current._count.players || current._count.homeMatches || current._count.awayMatches) return;
+    // Detach first: the legacy FK cascades users when their team is deleted.
+    await tx.user.updateMany({ where: { teamId: id }, data: { teamId: null } });
+    await tx.team.delete({ where: { id } });
+    await tx.activityLog.create({ data: { userId: actor.id, message: `${actor.firstName} ${actor.lastName} eliminó el equipo "${current.name}". Se conservaron las cuentas de sus delegados y la inscripción original.` } });
+  }, { isolationLevel: "Serializable" });
+  revalidatePath("/admin/inscripciones");
+  revalidatePath("/admin/usuarios");
+  revalidatePath("/");
   revalidatePath("/admin/equipos");
   revalidatePath("/equipos");
 }
