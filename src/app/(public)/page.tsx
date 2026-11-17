@@ -14,6 +14,7 @@ import { WidgetCard } from "@/components/WidgetCard";
 import { TeamCrest } from "@/components/TeamCrest";
 import { PlayerCardThumb } from "@/components/PlayerCardThumb";
 import { formatDateShort } from "@/lib/format";
+import { hasCompetitiveStandings } from "@/lib/standings-presentation";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function HomePage() {
   const season = await getCurrentSeason();
   const [primaryVideo, ...videos] = featuredVideos;
   const leaders = standings.slice(0, 3);
+  const ranked = hasCompetitiveStandings(standings, season.status);
 
   return (
     <div className="league-home">
@@ -48,7 +50,7 @@ export default async function HomePage() {
         </div>
         <div className="container-page arena-bottomline">
           <span>Competición. Comunidad. eFootball.</span>
-          <span><b>{teams.length}</b> equipos <i aria-hidden="true">/</i> <b>{standings.length}</b> en la clasificación</span>
+          <span><b>{teams.length}</b> equipos <i aria-hidden="true">/</i> {ranked ? <><b>{standings.length}</b> en la clasificación</> : "Clasificación pendiente"}</span>
         </div>
       </section>
 
@@ -60,8 +62,10 @@ export default async function HomePage() {
       </section>}
 
       <section className="container-page arena-section">
-        <div className="arena-section-heading"><div><p className="arena-overline">La pelea por el título</p><h2>Arriba de todos.</h2></div><Link href="/posiciones" className="arena-section-link">Clasificación completa <span aria-hidden="true">↗</span></Link></div>
-        {leaders.length > 0 && <ol className="arena-podium" aria-label="Primeros puestos de la clasificación">
+        <div className="arena-section-heading"><div><p className="arena-overline">{ranked ? "La pelea por el título" : "La liga se prepara"}</p><h2>{ranked ? "Arriba de todos." : "Equipos participantes."}</h2></div><Link href={ranked ? "/posiciones" : "/equipos"} className="arena-section-link">{ranked ? "Clasificación completa" : "Ver todos los equipos"} <span aria-hidden="true">↗</span></Link></div>
+        {!ranked && <p className="mb-6 text-sm text-[var(--color-gray-500)]">Todavía no hay clasificación deportiva. Los puestos y el líder se mostrarán cuando la liga esté en curso y haya resultados registrados.</p>}
+        {!ranked && teams.length > 0 && <ul className="arena-podium" aria-label="Equipos participantes, sin clasificación">{teams.slice(0, 3).map(team => <li key={team.id} className="arena-leader"><Link href={"/equipos/" + team.id}><span className="arena-leader-label">Equipo participante</span><div className="arena-leader-team"><TeamCrest name={team.name} shortName={team.shortName} logoUrl={team.logoUrl} size={64} /><h3>{team.name}</h3></div></Link></li>)}</ul>}
+        {ranked && leaders.length > 0 && <ol className="arena-podium" aria-label="Primeros puestos de la clasificación">
           {leaders.map((team, index) => <li key={team.teamId} className={index === 0 ? "arena-leader arena-leader-first" : "arena-leader"}>
             <Link href={"/equipos/" + team.teamId}>
               <span className="arena-rank" aria-hidden="true">0{index + 1}</span>
@@ -71,7 +75,7 @@ export default async function HomePage() {
             </Link>
           </li>)}
         </ol>}
-        <div className="arena-data-grid"><WidgetCard title="Últimos resultados" href="/resultados" ariaLabel="Ver todos los resultados"><ResultsList matches={recentResults} /></WidgetCard><StandingsWidget rows={standings} limit={10} /></div>
+        <div className="arena-data-grid"><WidgetCard title="Últimos resultados" href="/resultados" ariaLabel="Ver todos los resultados"><ResultsList matches={recentResults} /></WidgetCard><StandingsWidget rows={standings} limit={10} ranked={ranked} /></div>
       </section>
 
       {scorers.length > 0 && <section className="arena-scorers-section">

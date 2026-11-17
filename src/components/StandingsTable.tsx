@@ -3,8 +3,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
 import { PositionTrendIcon } from "@/components/PositionTrendIcon";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
+import { hasCompetitiveStandings } from "@/lib/standings-presentation";
 
-export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[]; limit?: number }) {
+export function StandingsTable({ rows, limit, ranked = hasCompetitiveStandings(rows) }: { rows: StandingsRowWithTrend[]; limit?: number; ranked?: boolean }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   if (data.length === 0) {
@@ -13,6 +14,7 @@ export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[];
 
   return (
     <div className="table-scroll">
+      {!ranked && <p className="mb-4 text-sm text-[var(--color-gray-500)]">Sin clasificación todavía. Los equipos se muestran sin puestos.</p>}
       <table className="data-table">
         <thead>
           <tr>
@@ -33,8 +35,8 @@ export function StandingsTable({ rows, limit }: { rows: StandingsRowWithTrend[];
             <tr key={row.teamId}>
               <td className="font-semibold text-[var(--color-gray-500)]">
                 <span className="flex items-center gap-1.5">
-                  {index + 1}
-                  <PositionTrendIcon trend={row.trend} />
+                  {ranked ? index + 1 : "—"}
+                  {ranked && <PositionTrendIcon trend={row.trend} />}
                 </span>
               </td>
               <td className="font-semibold text-[var(--color-navy-900)]">

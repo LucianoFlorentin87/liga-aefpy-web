@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { computeStandingsWithTrend } from "@/lib/stats";
 import { PageHeader } from "@/components/PageHeader";
 import { StandingsTable } from "@/components/StandingsTable";
+import { getCurrentSeason } from "@/lib/db";
+import { hasCompetitiveStandings } from "@/lib/standings-presentation";
 
 export const metadata: Metadata = { title: "Posiciones" };
 export const dynamic = "force-dynamic";
 
 export default async function PosicionesPage() {
-  const standings = await computeStandingsWithTrend();
+  const [standings, season] = await Promise.all([computeStandingsWithTrend(), getCurrentSeason()]);
 
   return (
     <div>
@@ -17,7 +19,7 @@ export default async function PosicionesPage() {
       />
       <div className="container-page py-8">
         <div className="card p-3 sm:p-5">
-          <StandingsTable rows={standings} />
+          <StandingsTable rows={standings} ranked={hasCompetitiveStandings(standings, season.status)} />
         </div>
       </div>
     </div>
