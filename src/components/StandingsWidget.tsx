@@ -3,12 +3,14 @@ import { EmptyState } from "@/components/EmptyState";
 import { TeamCrest } from "@/components/TeamCrest";
 import { WidgetCard } from "@/components/WidgetCard";
 import { PositionTrendIcon } from "@/components/PositionTrendIcon";
+import { hasCompetitiveStandings } from "@/lib/standings-presentation";
 
-export function StandingsWidget({ rows, limit = 10 }: { rows: StandingsRowWithTrend[]; limit?: number }) {
+export function StandingsWidget({ rows, limit = 10, ranked = hasCompetitiveStandings(rows) }: { rows: StandingsRowWithTrend[]; limit?: number; ranked?: boolean }) {
   const data = limit ? rows.slice(0, limit) : rows;
 
   return (
     <WidgetCard title="Tabla de posiciones" href="/posiciones" ariaLabel="Ver tabla completa" bodyClassName="">
+      {!ranked && <p className="p-4 text-sm text-[var(--color-gray-500)]">Sin clasificación todavía. Los equipos se muestran sin puestos.</p>}
       {data.length === 0 ? (
         <div className="p-5">
           <EmptyState title="Sin datos registrados" hint="Todavía no hay partidos finalizados para calcular la tabla." />
@@ -31,11 +33,11 @@ export function StandingsWidget({ rows, limit = 10 }: { rows: StandingsRowWithTr
           </thead>
           <tbody>
             {data.map((row, index) => (
-              <tr key={row.teamId} className={`border-b border-[var(--color-gray-100)] last:border-0 ${index === 0 ? "bg-[var(--color-gray-50)]" : ""}`}>
+              <tr key={row.teamId} className={`border-b border-[var(--color-gray-100)] last:border-0 ${ranked && index === 0 ? "bg-[var(--color-gray-50)]" : ""}`}>
                 <td className="py-2 pl-4 font-semibold text-[var(--color-gray-500)]">
                   <span className="flex items-center gap-1.5">
-                    {index + 1}
-                    <PositionTrendIcon trend={row.trend} />
+                    {ranked ? index + 1 : "—"}
+                    {ranked && <PositionTrendIcon trend={row.trend} />}
                   </span>
                 </td>
                 <td className="py-2">
