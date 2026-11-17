@@ -36,5 +36,16 @@ test('toda la cadena de migraciones conserva la liga cerrada y aísla el histori
   await assert.rejects(db.exec(`INSERT INTO regulation_acceptances(id,"publicationId","seasonId","userId",username,"delegateName","teamId","teamName") VALUES ('wrong-edition','pub','liga-inicial','delegate','testdelegate','Prueba Local','new-team','Nuevo')`),/published edition/);
   const grants=await db.query<{allowed:boolean}>("SELECT has_table_privilege('anon','regulation_acceptances','SELECT') AS allowed");assert.equal(grants.rows[0].allowed,false);
 
+  // Safe team deletion detaches accounts before the legacy CASCADE FK runs.
+  await db.exec(`INSERT INTO league_registrations(id,"seasonId","teamName","shortName",gamertag,"delegateFirstName","delegateLastName",email,phone,username,"userId",status,"teamId") VALUES ('original-request','new-season','Nuevo','NUE','game','Prueba','Local','test@example.invalid','123456','testdelegate','delegate','APROBADA','new-team');
+   BEGIN;
+   UPDATE users SET "teamId"=NULL WHERE "teamId"='new-team';
+   DELETE FROM teams WHERE id='new-team';
+   COMMIT;`);
+  assert.equal((await db.query('SELECT id FROM users WHERE id=\'delegate\'')).rows.length,1);
+  const retained=await db.query<{teamId:string|null;userId:string;status:string}>('SELECT "teamId","userId",status FROM league_registrations WHERE id=\'original-request\'');
+  assert.deepEqual(retained.rows[0],{teamId:null,userId:'delegate',status:'APROBADA'});
+  assert.equal((await db.query('SELECT id FROM regulation_acceptances WHERE id=\'ack\'')).rows.length,1);
+
  }finally{await db.close();}
 });

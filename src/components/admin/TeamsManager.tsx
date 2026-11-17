@@ -229,7 +229,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                                 alert("Este equipo tiene jugadores o partidos asociados: desactivalo en vez de eliminarlo.");
                                 return;
                               }
-                              if (!confirm(`¿Eliminar el equipo ${t.name}?`)) e.preventDefault();
+                              if (!confirm(`¿Eliminar el equipo ${t.name}? Se conservarán la cuenta del delegado y la inscripción como historial. Durante inscripciones abiertas podrás aprobar su reincorporación desde Inscripciones.`)) e.preventDefault();
                             }}
                           >
                             <input type="hidden" name="id" value={t.id} />

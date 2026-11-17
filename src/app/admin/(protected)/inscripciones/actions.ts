@@ -4,6 +4,28 @@ import { revalidatePath } from "next/cache";
 import { seasonAdminDb } from "@/lib/db";
 import { requirePermission } from "@/lib/permissions";
 import type { LeagueActionState } from "@/lib/league-action-state";
+import { randomBytes } from "node:crypto";
+import { hashPassword } from "@/lib/password";
+import { reinstateRegistration, ReinstatementError } from "@/lib/registration-reinstatement";
+
+export async function reinstateLeagueRegistration(_state: LeagueActionState, form: FormData): Promise<LeagueActionState> {
+  const { user: actor } = await requirePermission("inscripciones");
+  const id = String(form.get("registrationId") || "");
+  if (!id || form.get("confirm") !== "on") return { error: "Confirmá la reincorporación del equipo." };
+  // No usable password is disclosed or emailed; a deleted account must use email recovery.
+  const lockedPasswordHash = await hashPassword(randomBytes(32).toString("hex"));
+  try {
+    const result = await seasonAdminDb.$transaction(tx => reinstateRegistration(tx, id, actor.id, lockedPasswordHash), { isolationLevel: "Serializable", timeout: 15000 });
+    revalidatePath("/", "layout");
+    return result.recoveredAccount
+      ? { success: "Equipo reincorporado sobre la inscripción original. Cuenta recuperada con el mismo correo y usuario. El delegado debe elegir su contraseña desde Recuperar contraseña.", link: "/admin/recuperar-contrasena", linkLabel: "Recuperar contraseña por correo" }
+      : { success: "Equipo reincorporado sobre la inscripción original. El delegado conserva su cuenta y contraseña." };
+  } catch (error) {
+    if (error instanceof ReinstatementError) return { error: error.message };
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { error: "Ya existe un equipo o una cuenta con esos datos. Actualizá la página." };
+    return { error: "No se pudo reincorporar. Actualizá la página y volvé a intentar." };
+  }
+}
 
 class ReviewError extends Error {}
 export async function reviewLeagueRegistration(_state: LeagueActionState, form: FormData): Promise<LeagueActionState> {
