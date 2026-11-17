@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { currentRegulation } from '@/lib/regulations';
 import { ClaimClassification } from '@/components/admin/ClaimClassification';
 import { CLAIM_NATURES, type ClaimNature } from '@/lib/regulation-policy';
 import { seasonAdminDb as db } from '@/lib/db';
@@ -15,6 +16,7 @@ const dt = (d: Date | null) => d ? new Intl.DateTimeFormat('es-PY', { timeZone: 
 function Fields({ op, id }: { op: string; id?:string }) { return <><input type="hidden" name="operation" value={op}/>{id && <input type="hidden" name="caseId" value={id}/>}</>; }
 export default async function CommitteePage({searchParams}:{searchParams:Promise<{id?:string;error?:string}>}) {
  const query = await searchParams, a = await committeeActor();
+ const regulation = await currentRegulation(a.seasonId);
  const members = await db.committeeMember.findMany({ where:{seasonId:a.seasonId,active:true}, orderBy:[{alternate:'asc'},{createdAt:'asc'}] });
  const cases = await db.committeeCase.findMany({ where:{ seasonId:a.seasonId, ...((a.operator || a.member?.active) ? {} : { OR:[{applicantId:a.user.id},{respondentId:a.user.id},{ballots:{some:{userId:a.user.id}}}] }) }, orderBy:{createdAt:'desc'},select:{id:true,title:true,status:true,createdAt:true},take:100 });
  const users = await db.user.findMany({where:{status:'ACTIVO',OR:[{team:{seasonId:a.seasonId}},{id:{in:members.map(m=>m.userId)}},...(a.operator?[{role:{key:'SUPERADMIN' as const}},{role:{key:'ADMINISTRADOR' as const}},{role:{key:'CARGA_DATOS' as const}}]:[])]},select:{id:true,firstName:true,lastName:true,team:{select:{name:true}}},orderBy:{firstName:'asc'}});
@@ -30,7 +32,7 @@ export default async function CommitteePage({searchParams}:{searchParams:Promise
  return <div className="space-y-5 max-w-5xl">
  <header><p className="text-sm text-[#75e7ff]">Organización de la liga</p><h1 className="text-2xl font-bold">Comité y reclamos</h1><p className="mt-2 text-sm">Expedientes privados, defensa de las partes y decisiones de tres miembros. Horarios de Paraguay.</p></header>
  {query.error && <p role="alert" className="card border-l-4 border-[var(--color-red-accent)] p-3 field-error">{query.error}</p>}
- <div className="flex gap-3 flex-wrap"><Link href="/admin/comite" className={button}>Ver expedientes</Link><a href="/documentos/Reglamento_AEFPY_v1.1.pdf" className="underline p-2">Consultar reglamento v1.1</a></div>
+ <div className="flex gap-3 flex-wrap"><Link href="/admin/comite" className={button}>Ver expedientes</Link>{regulation ? <a href={regulation.pdfUrl} className="underline p-2" target="_blank" rel="noreferrer">Consultar reglamento vigente v{regulation.version}</a> : <Link href="/reglamento" className="underline p-2">Consultar reglamento (sin versión adoptada)</Link>}</div>
  <p className="text-sm border-l-4 border-[#00d4ff] bg-[#00d4ff0a] px-3 py-2">El efecto deportivo forma parte de la propuesta votada. Se aplica una sola vez cuando la decisión queda firme, conservando goles, tarjetas y resultado anterior en el historial. Las sanciones personales requieren su registro y verificación en el módulo de sanciones.</p>
  {c ? <>
  <section className={box}><h2 className="text-xl font-bold">{c.title}</h2><p className="text-sm">Expediente {c.id} · {c.status}</p>{c.nature && <p className="text-sm">{CLAIM_NATURES[c.nature as ClaimNature]?.label??c.nature} · Artículo {c.article}</p>}<p>{names.get(c.applicantId) ?? 'Reclamante'} / {names.get(c.respondentId) ?? 'Contraparte'}</p>{c.parentId && <Link href={'/admin/comite?id='+c.parentId} className="underline">Ver decisión inicial</Link>}
