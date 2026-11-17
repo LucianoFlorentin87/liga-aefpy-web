@@ -603,6 +603,14 @@ table.data-table tbody tr:hover {
 .admin-back-site { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:auto 1rem 1rem; padding:.9rem .75rem; border-top:1px solid #ffffff13; font-size:.7rem; color:#a9bda3; }
 .admin-main { min-width:0; flex:1; padding:2rem; scroll-margin-top:5.5rem; }
 .admin-main .card { border-radius:.4rem; box-shadow:none; }
+.regulation-workspace { display:grid; grid-template-columns:minmax(0,1fr); gap:1.25rem; align-items:start; }
+.regulation-document { height:65dvh; min-height:24rem; }
+.regulation-acceptance { min-width:0; overflow-wrap:anywhere; }
+@media(min-width:1280px) {
+  .regulation-workspace { grid-template-columns:minmax(0,1fr) minmax(18rem,22rem); }
+  .regulation-document { height:calc(100dvh - 18rem); min-height:32rem; }
+  .regulation-acceptance { position:sticky; top:5.75rem; }
+}
 .admin-main>div>div>h1,.admin-page-heading h1 { font-size:clamp(1.8rem,3vw,2.7rem); font-weight:900; line-height:1.12; letter-spacing:-.05em; }
 .admin-page-heading>p:last-child { margin-top:.6rem; max-width:48rem; color:var(--color-gray-500); font-size:.85rem; line-height:1.7; }
 .admin-page-heading .arena-overline { margin-bottom:.65rem; }
