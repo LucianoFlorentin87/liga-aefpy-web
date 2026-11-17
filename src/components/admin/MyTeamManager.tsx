@@ -231,14 +231,18 @@ export function MyTeamManager({ team, players }: { team: Team; players: PlayerRo
         </p>
       </div>
 
-      <div className="card p-5">
-        <h2 className="section-title mb-4">Datos del equipo</h2>
+      <nav aria-label="Gestión de mi equipo" className="flex flex-wrap gap-4 text-sm">
+        <a href="#datos-del-equipo" className="underline font-semibold">Editar datos y escudo</a>
+        <a href="#jugadores-del-equipo" className="underline font-semibold">Agregar jugadores y cartas eFHUB</a>
+      </nav>
+      <div id="datos-del-equipo" className="card p-5">
+        <h2 className="section-title mb-4">Datos del equipo y escudo</h2>
         <TeamProfileForm team={team} />
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div id="jugadores-del-equipo" className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="section-title">Jugadores</h2>
+          <h2 className="section-title">Jugadores y cartas eFHUB</h2>
           <button className="btn btn-primary" onClick={() => setPanel({ mode: "create" })}>
             + Nuevo jugador
           </button>
