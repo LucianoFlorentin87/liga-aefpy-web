@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const ALLOWED_LOGO_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+const ALLOWED_LOGO_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 /**
@@ -12,7 +12,7 @@ const MAX_LOGO_BYTES = 2 * 1024 * 1024;
  * try/catch y el usuario ve una pantalla de error genérica en vez de un
  * mensaje claro — validando acá nunca se llega a esa situación.
  */
-export function LogoFileInput({ label = "Logo (opcional, PNG/JPG/WEBP/SVG, máx. 2MB)" }: { label?: string }) {
+export function LogoFileInput({ label = "Escudo del equipo (opcional, PNG/JPG/WEBP, máx. 2 MB)" }: { label?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -22,7 +22,7 @@ export function LogoFileInput({ label = "Logo (opcional, PNG/JPG/WEBP/SVG, máx.
       return;
     }
     if (!ALLOWED_LOGO_TYPES.has(file.type)) {
-      setError("Formato no soportado — usá PNG, JPG, WEBP o SVG.");
+      setError("Formato no soportado. Usá PNG, JPG o WEBP.");
       e.target.value = "";
       return;
     }
@@ -40,7 +40,7 @@ export function LogoFileInput({ label = "Logo (opcional, PNG/JPG/WEBP/SVG, máx.
       <input
         name="logo"
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp"
         onChange={handleChange}
         className="input"
       />
