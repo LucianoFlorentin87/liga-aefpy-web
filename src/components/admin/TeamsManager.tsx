@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Link from "next/link";
 import type { TeamStatus } from "@prisma/client";
 import { ActiveStatusBadge } from "@/components/StatusBadge";
 import { LogoFileInput } from "@/components/admin/LogoFileInput";
@@ -72,7 +73,10 @@ function TeamForm({ mode, team, onDone }: { mode: "create" | "edit"; team?: Team
         <label className="field-label">Gamertag / ID de plataforma</label>
         <input name="gamertag" placeholder="PSN, Xbox Live, EA ID…" defaultValue={team?.gamertag ?? ""} className="input" />
       </div>
-      <LogoFileInput />
+      <div className="sm:col-span-2 space-y-2">
+        <p className="text-sm text-[var(--color-gray-500)]">{team?.logoUrl ? "Escudo cargado. Podés reemplazarlo seleccionando otro archivo." : "Todavía no se cargó un escudo para este equipo."}</p>
+        <LogoFileInput />
+      </div>
       <div>
         <label className="field-label">Estado</label>
         <select name="status" required defaultValue={team?.status ?? "ACTIVO"} className="input">
@@ -141,6 +145,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
               <thead>
                 <tr>
                   <th>Equipo</th>
+                  <th>Escudo</th>
                   <th>Delegado</th>
                   <th>Teléfono</th>
                   <th className="text-center">Jugadores</th>
@@ -156,6 +161,7 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                       <td className="font-semibold text-[var(--color-navy-900)]">
                         {t.name} <span className="text-[var(--color-gray-500)]">({t.shortName})</span>
                       </td>
+                      <td>{t.logoUrl ? "Cargado" : "Sin escudo"}</td>
                       <td>{t.delegateName || "—"}</td>
                       <td>{t.delegatePhone || "—"}</td>
                       <td className="text-center">{t._count.players}</td>
@@ -165,8 +171,9 @@ export function TeamsManager({ teams }: { teams: TeamRow[] }) {
                       <td>
                         <div className="flex flex-wrap gap-1.5">
                           <button className="btn btn-ghost !px-2 !py-1 text-xs" onClick={() => setPanel({ mode: "edit", team: t })}>
-                            Editar
+                            Editar datos y escudo
                           </button>
+                          <Link href={`/admin/jugadores?equipo=${encodeURIComponent(t.id)}`} className="btn btn-ghost !px-2 !py-1 text-xs">Gestionar jugadores</Link>
                           {t.status !== "RETIRADO" && (
                             <form action={toggleTeamStatusAction}>
                               <input type="hidden" name="id" value={t.id} />

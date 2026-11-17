@@ -6,7 +6,7 @@ import { PlayersManager } from "@/components/admin/PlayersManager";
 export const metadata: Metadata = { title: "Jugadores" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminJugadoresPage() {
+export default async function AdminJugadoresPage({ searchParams }: { searchParams: Promise<{ equipo?: string }> }) {
   await requirePermission("jugadores");
 
   const [players, teams] = await Promise.all([
@@ -21,5 +21,7 @@ export default async function AdminJugadoresPage() {
     prisma.team.findMany({ where: { status: "ACTIVO" }, orderBy: { name: "asc" } }),
   ]);
 
-  return <PlayersManager players={players} teams={teams} />;
+  const { equipo } = await searchParams;
+  const initialTeamId = teams.some((team) => team.id === equipo) ? equipo : undefined;
+  return <PlayersManager players={players} teams={teams} initialTeamId={initialTeamId} />;
 }

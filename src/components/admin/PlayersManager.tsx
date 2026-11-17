@@ -177,9 +177,9 @@ function PlayerForm({
   );
 }
 
-export function PlayersManager({ players, teams }: { players: PlayerRow[]; teams: TeamOption[] }) {
+export function PlayersManager({ players, teams, initialTeamId = "" }: { players: PlayerRow[]; teams: TeamOption[]; initialTeamId?: string }) {
   const [panel, setPanel] = useState<{ mode: "create" | "edit"; player?: PlayerRow; defaultTeamId?: string } | null>(null);
-  const [teamFilter, setTeamFilter] = useState("");
+  const [teamFilter, setTeamFilter] = useState(initialTeamId);
 
   const filtered = teamFilter ? players.filter((p) => p.teamId === teamFilter) : players;
 
