@@ -25,11 +25,11 @@ test("delegate can access the regulation acceptance page without being sent back
 });
 
 test("delegate can access own team and inbox while administrator pages remain blocked", async () => {
-  for (const allowed of ["/admin/mi-equipo", "/admin/notificaciones", "/admin/comite", "/admin/cuenta"]) {
+  for (const allowed of ["/admin/mi-equipo", "/admin/notificaciones", "/admin/comite", "/admin/cuenta", "/admin/jugadores/efhub-search", "/admin/aceptar-reglamento?motivo=mi-equipo"]) {
     const response = await proxy(await requestAsDelegate(allowed));
     assert.equal(response.headers.get("location"), null, allowed);
   }
-  for (const blocked of ["/admin/reglamento", "/admin/usuarios", "/admin/equipos"]) {
+  for (const blocked of ["/admin/reglamento", "/admin/usuarios", "/admin/equipos", "/admin/jugadores", "/admin/aceptar-reglamento-ajeno"]) {
     const response = await proxy(await requestAsDelegate(blocked));
     assert.equal(response.headers.get("location"), "https://liga.example/admin/mi-equipo", blocked);
   }

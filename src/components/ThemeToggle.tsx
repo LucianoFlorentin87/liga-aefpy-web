@@ -15,7 +15,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     const dark = stored === "dark" || (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setIsDark(dark);
+    const frame = requestAnimationFrame(() => setIsDark(dark));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {

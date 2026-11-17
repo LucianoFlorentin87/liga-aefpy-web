@@ -99,6 +99,6 @@ export async function requireDelegate() {
   const team = await prisma.team.findUnique({ where: { id: user.teamId }, select: { id: true } });
   if (!team) redirect("/inscripcion?estado=renovar");
   const rules = await delegateRegulationState(user.id);
-  if (rules.publication && !rules.acceptance) redirect("/admin/aceptar-reglamento");
+  if (rules.publication && !rules.acceptance) redirect("/admin/aceptar-reglamento?motivo=mi-equipo");
   return { session, user, teamId: user.teamId };
 }

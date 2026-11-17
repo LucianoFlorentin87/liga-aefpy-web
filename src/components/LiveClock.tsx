@@ -19,9 +19,9 @@ export function LiveClock() {
   const [time, setTime] = useState<string | null>(null);
 
   useEffect(() => {
-    setTime(formatter.format(new Date()));
+    const frame = requestAnimationFrame(() => setTime(formatter.format(new Date())));
     const id = setInterval(() => setTime(formatter.format(new Date())), 15_000);
-    return () => clearInterval(id);
+    return () => { cancelAnimationFrame(frame); clearInterval(id); };
   }, []);
 
   return <span suppressHydrationWarning>{time ?? "--:--"}</span>;
